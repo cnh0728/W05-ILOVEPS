@@ -49,7 +49,8 @@ public:
     void Initialize(FGraphicsDevice* graphics);
    
     void PrepareShader() const;
-    
+    void PrepareFogShader() const;
+
     //Render
     void RenderPrimitive(ID3D11Buffer* pBuffer, UINT numVertices) const;
     void RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT numVertices, ID3D11Buffer* pIndexBuffer, UINT numIndices) const;
@@ -136,7 +137,15 @@ public:
     ID3D11ShaderResourceView* pConeSRV = nullptr;
     ID3D11ShaderResourceView* pOBBSRV = nullptr;
 
+private:
+    // Fog용 셰이더 및 입력 레이아웃
+    ID3D11VertexShader* StaticMeshFogVertexShader = nullptr;
+    ID3D11PixelShader* StaticMeshFogPixelShader = nullptr;
+    ID3D11InputLayout* FogInputLayout = nullptr;
+    UINT FogStride = 0;
 
+    // Fog 상수 버퍼
+    ID3D11Buffer* FogConstantBuffer = nullptr;
 public:
     FRenderResourceManager& GetResourceManager() { return RenderResourceManager; }
     FShaderManager& GetShaderManager() { return ShaderManager; }
@@ -146,5 +155,24 @@ private:
     FRenderResourceManager RenderResourceManager;
     FShaderManager ShaderManager;
     FConstantBufferUpdater ConstantBufferUpdater;
+    
 };
+struct FMatrixConstants
+{
+    FMatrix MVP;
+    FMatrix MInverseTranspose;
+    FVector4 UUID;
+    bool isSelected;
+    FVector Padding;
+};
+
+struct FFogParams
+{
+    FVector CameraWorldPos;
+    float FogStart;
+    float FogEnd;
+    float Padding;
+    FVector4 FogColor;
+};
+
 

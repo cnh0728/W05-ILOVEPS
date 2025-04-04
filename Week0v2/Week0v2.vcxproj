@@ -451,6 +451,28 @@
     <ClInclude Include="UEditorStateManager.h" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\StaticMeshFogPixelShader.hlsl">
+      <ObjectFileOutput>C:\Users\Jungle\Documents\GitHub\W05-ILOVEPS\Binaries\x64\Debug\%(Filename).cso</ObjectFileOutput>
+      <TrackerLogDirectory>C:\Users\Jungle\Documents\GitHub\W05-ILOVEPS\Intermediate\Build\x64\Debug\Week4PIETime.tlog\</TrackerLogDirectory>
+      <EntryPointName>mainPS</EntryPointName>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ShaderModel>5.0</ShaderModel>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <DisableOptimizations>true</DisableOptimizations>
+      <EnableDebuggingInformation>true</EnableDebuggingInformation>
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Shaders\StaticMeshFogVertexShader.hlsl">
+      <ObjectFileOutput>C:\Users\Jungle\Documents\GitHub\W05-ILOVEPS\Binaries\x64\Debug\%(Filename).cso</ObjectFileOutput>
+      <TrackerLogDirectory>C:\Users\Jungle\Documents\GitHub\W05-ILOVEPS\Intermediate\Build\x64\Debug\Week4PIETime.tlog\</TrackerLogDirectory>
+      <EntryPointName>mainVS</EntryPointName>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ShaderModel>5.0</ShaderModel>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <DisableOptimizations>true</DisableOptimizations>
+      <EnableDebuggingInformation>true</EnableDebuggingInformation>
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
     <FxCompile Include="Shaders\StaticMeshPixelShader.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>

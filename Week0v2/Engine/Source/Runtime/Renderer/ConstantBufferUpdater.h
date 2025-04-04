@@ -4,12 +4,16 @@
 #include <d3d11.h>
 #include "Define.h"
 
+struct FFogParams;
+
 class FConstantBufferUpdater
 {
 public:
     void Initialize(ID3D11DeviceContext* InDeviceContext);
 
     void UpdateConstant(ID3D11Buffer* ConstantBuffer, const FMatrix& MVP, const FMatrix& NormalMatrix, FVector4 UUIDColor, bool IsSelected) const;
+    void UpdateFogConstant(ID3D11Buffer* FogConstantBuffer, const FFogParams& FogParams) const;
+
     void UpdateMaterialConstant(ID3D11Buffer* MaterialConstantBuffer, const FObjMaterialInfo& MaterialInfo) const;
     void UpdateLightConstant(ID3D11Buffer* LightingBuffer) const;
     void UpdateLitUnlitConstant(ID3D11Buffer* FlagBuffer, int isLit) const;

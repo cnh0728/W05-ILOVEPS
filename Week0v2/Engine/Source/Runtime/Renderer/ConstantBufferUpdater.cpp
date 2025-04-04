@@ -1,6 +1,8 @@
 #include "ConstantBufferUpdater.h"
 #include <Engine/Texture.h>
 
+#include "Renderer.h"
+
 void FConstantBufferUpdater::Initialize(ID3D11DeviceContext* InDeviceContext)
 {
     DeviceContext = InDeviceContext;
@@ -21,6 +23,16 @@ void FConstantBufferUpdater::UpdateConstant(ID3D11Buffer* ConstantBuffer, const 
             constants->IsSelected = IsSelected;
         }
         DeviceContext->Unmap(ConstantBuffer, 0);
+    }
+}
+void FConstantBufferUpdater::UpdateFogConstant(ID3D11Buffer* FogConstantBuffer, const FFogParams& FogParams) const
+{
+    if (FogConstantBuffer)
+    {
+        D3D11_MAPPED_SUBRESOURCE mapped;
+        DeviceContext->Map(FogConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+        memcpy(mapped.pData, &FogParams, sizeof(FFogParams));
+        DeviceContext->Unmap(FogConstantBuffer, 0);
     }
 }
 

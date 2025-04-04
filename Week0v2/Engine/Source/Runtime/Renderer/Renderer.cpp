@@ -82,6 +82,15 @@ void FRenderer::CreateShader()
     ShaderManager.CreatePixelShader(
         L"Shaders/ShaderLine.hlsl", "mainPS",
         PixelLineShader);
+
+    ShaderManager.CreateVertexShader(
+    L"Shaders/StaticMeshFogVertexShader.hlsl", "mainVS",
+    StaticMeshFogVertexShader, layout, ARRAYSIZE(layout), &FogInputLayout, &FogStride, sizeof(FVertexSimple));
+
+    ShaderManager.CreatePixelShader(
+        L"Shaders/StaticMeshFogPixelShader.hlsl", "mainPS",
+        StaticMeshFogPixelShader);
+
 }
 
 void FRenderer::ReleaseShader()
@@ -89,6 +98,8 @@ void FRenderer::ReleaseShader()
     ShaderManager.ReleaseShader(InputLayout, VertexShader, PixelShader);
     ShaderManager.ReleaseShader(TextureInputLayout, VertexTextureShader, PixelTextureShader);
     ShaderManager.ReleaseShader(nullptr, VertexLineShader, PixelLineShader);
+    ShaderManager.ReleaseShader(FogInputLayout, StaticMeshFogVertexShader, StaticMeshFogPixelShader);
+
 }
 
 
@@ -108,6 +119,24 @@ void FRenderer::PrepareShader() const
         Graphics->DeviceContext->PSSetConstantBuffers(3, 1, &FlagBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(4, 1, &SubMeshConstantBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(5, 1, &TextureConstantBufer);
+    }
+}
+void FRenderer::PrepareFogShader() const
+{
+    Graphics->DeviceContext->VSSetShader(StaticMeshFogVertexShader, nullptr, 0);
+    Graphics->DeviceContext->PSSetShader(StaticMeshFogPixelShader, nullptr, 0);
+    Graphics->DeviceContext->IASetInputLayout(FogInputLayout);
+
+    if (ConstantBuffer)
+    {
+        Graphics->DeviceContext->VSSetConstantBuffers(0, 1, &ConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(0, 1, &ConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(1, 1, &MaterialConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(2, 1, &LightingBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(3, 1, &FlagBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(4, 1, &SubMeshConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(5, 1, &TextureConstantBufer);
+        Graphics->DeviceContext->PSSetConstantBuffers(6, 1, &FogConstantBuffer); // ✅ Fog 추가
     }
 }
 
@@ -164,6 +193,8 @@ void FRenderer::CreateConstantBuffer()
     TextureConstantBufer = RenderResourceManager.CreateConstantBuffer(sizeof(FTextureConstants));
     LightingBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FLighting));
     FlagBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FLitUnlitConstants));
+    FogConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FFogParams));
+
 }
 
 void FRenderer::ReleaseConstantBuffer()
@@ -373,7 +404,17 @@ void FRenderer::RenderTexturedModelPrimitive(
 
 void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport)
 {
-    PrepareShader();
+    PrepareFogShader(); // ✅ Fog 셰이더 준비
+
+    // Fog 파라미터 준비
+    FFogParams FogParams;
+    FogParams.CameraWorldPos = ActiveViewport->ViewTransformPerspective.GetLocation();
+    FogParams.FogStart = 20.0f;
+    FogParams.FogEnd = 300.0f;
+    FogParams.FogColor = FVector4(0.7f, 0.7f, 0.7f, 1.0f);
+    
+    ID3D11DeviceContext* Context = Graphics->DeviceContext;
+
     for (UStaticMeshComponent* StaticMeshComp : StaticMeshObjs)
     {
         FMatrix Model = JungleMath::CreateModelMatrix(
@@ -381,17 +422,18 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
             StaticMeshComp->GetWorldRotation(),
             StaticMeshComp->GetWorldScale()
         );
+
+        FMatrix View = ActiveViewport->GetViewMatrix();
+        FMatrix Proj = ActiveViewport->GetProjectionMatrix();
+
         // 최종 MVP 행렬
-        FMatrix MVP = Model * ActiveViewport->GetViewMatrix() * ActiveViewport->GetProjectionMatrix();
+        FMatrix MVP = Model * View * Proj;
         // 노말 회전시 필요 행렬
         FMatrix NormalMatrix = FMatrix::Transpose(FMatrix::Inverse(Model));
         FVector4 UUIDColor = StaticMeshComp->EncodeUUID() / 255.0f;
-        if (World->GetSelectedActor() == StaticMeshComp->GetOwner())
-        {
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, true);
-        }
-        else
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, false);
+
+        bool bSelected = (World->GetSelectedActor() == StaticMeshComp->GetOwner());
+        ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, bSelected);
 
         if (USkySphereComponent* skysphere = Cast<USkySphereComponent>(StaticMeshComp))
         {
@@ -411,15 +453,22 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
             );
         }
 
-
         if (!StaticMeshComp->GetStaticMesh()) continue;
 
         OBJ::FStaticMeshRenderData* renderData = StaticMeshComp->GetStaticMesh()->GetRenderData();
         if (renderData == nullptr) continue;
 
+        // ⬇ Fog 파라미터 넘기기 (PS: b6 슬롯)
+        ConstantBufferUpdater.UpdateFogConstant(FogConstantBuffer, FogParams);
+        //Context->UpdateSubresource(FogConstantBuffer, 0, nullptr, &FogParams, 0, 0);
+        Context->PSSetConstantBuffers(6, 1, &FogConstantBuffer);
+
+        // 렌더링 (Fog 셰이더 포함)
         RenderPrimitive(renderData, StaticMeshComp->GetStaticMesh()->GetMaterials(), StaticMeshComp->GetOverrideMaterials(), StaticMeshComp->GetselectedSubMeshIndex());
     }
 }
+
+
 
 void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport)
 {

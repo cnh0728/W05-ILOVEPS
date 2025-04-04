@@ -6,6 +6,7 @@
 #include "UnrealEd/UnrealEd.h"
 #include "UnrealClient.h"
 #include "Actors/Player.h"
+#include "Components/CubeComp.h"
 #include "GameFramework/Actor.h"
 #include "slate/Widgets/Layout/SSplitter.h"
 #include "LevelEditor/SLevelEditor.h"
@@ -59,7 +60,6 @@ int32 UEditorEngine::Init(HWND hwnd)
     LevelEditor->Initialize();
     
     SceneMgr = new FSceneMgr();
-
     return 0;
 }
 
