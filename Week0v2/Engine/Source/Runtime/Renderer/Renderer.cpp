@@ -562,8 +562,9 @@ void FRenderer::ChangeViewMode(EViewModeIndex evi) const
     case EViewModeIndex::VMI_Lit:
         ConstantBufferUpdater.UpdateLitUnlitConstant(FlagBuffer, 1);
         break;
-    case EViewModeIndex::VMI_Wireframe:
     case EViewModeIndex::VMI_Unlit:
+    case EViewModeIndex::VMI_Buffer_SceneDepth:
+    case EViewModeIndex::VMI_Wireframe:
         ConstantBufferUpdater.UpdateLitUnlitConstant(FlagBuffer, 0);
         break;
     }
