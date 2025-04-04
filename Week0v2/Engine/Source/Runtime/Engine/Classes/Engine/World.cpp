@@ -1,5 +1,6 @@
 #include "World.h"
 
+#include "FSceneBuilder.h"
 #include "Actors/Player.h"
 #include "BaseGizmos/TransformGizmo.h"
 #include "Camera/CameraComponent.h"
@@ -46,25 +47,14 @@ void UWorld::CreateBaseObject()
     /*
     AStaticMeshActor* TempActor = SpawnActor<AStaticMeshActor>();
     TempActor->SetActorLabel(TEXT("OBJ_CUBE"));*/
-    UStaticMeshComponent* plane = FObjectFactory::ConstructObject<UStaticMeshComponent>();
-    plane->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Cube.obj"));
-    plane->SetLocation({0,0,1});
-    plane->SetScale({500,500,0.5});
-    for (int i = 0; i < 5; i++)
-    {
-        for (int j = 0; j < 5; j++)
-        {
-            for (int k = 0; k < 5; k++)
-            {
-                UStaticMeshComponent* apple = FObjectFactory::ConstructObject<UStaticMeshComponent>();
-                //UStaticMeshComponent* apple = SpawnedActor->AddComponent<UStaticMeshComponent>();
-                apple->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"apple_mid.obj"));
-                FVector newPos = FVector(i, j, k);
-                apple->SetLocation(newPos);
-            }
-        }
-    }
+    // 사과 배치
+    SpawnAppleGrid(this,2,2,100);
+
+    // 방 구조체 배치 (중심: 0,0,0 / 크기: 500x500 / 높이: 300)
+    SpawnBoxStructure(this, FVector(0, 0, 0), FVector(500, 500, 0), 300.0f);
+
 }
+
 
 void UWorld::ReleaseBaseObject()
 {

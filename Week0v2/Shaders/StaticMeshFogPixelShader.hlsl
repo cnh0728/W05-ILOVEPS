@@ -81,12 +81,18 @@ float4 mainPS(PS_INPUT input) : SV_Target
     }*/
     //baseColor =  float4(0,0,1,1);
     // ✅ Apply fog based on distance
+    // 거리 기반
     float distance = length(input.worldPos - CameraWorldPos);
-    float alpha = saturate((distance - FogStart) / (FogEnd - FogStart)); // 멀수록 alpha ↑
-    baseColor = lerp(baseColor, FogColor.rgb, alpha);
+    float fogFactorDist = saturate((distance - FogStart) / (FogEnd - FogStart));
 
-    //baseColor = lerp(FogColor.rgb, baseColor, fogFactor);
-    //baseColor = lerp(baseColor, FogColor.rgb, 1.0f - fogFactor);
-    //baseColor = FogColor.rgb;
+    float fogHeightStart = 0.0f; // 바닥
+    float fogHeightEnd = 10.0f;  // 천장 가까이
+    float fogFactorHeight = saturate((fogHeightEnd - input.worldPos.z) / (fogHeightEnd - fogHeightStart));
+
+    // ⬇ 둘 중 강한 값을 쓰거나, 곱하거나
+    float fogFactor = max(fogFactorDist, fogFactorHeight);
+    // float fogFactor = fogFactorDist * fogFactorHeight;
+
+    baseColor = lerp(baseColor, FogColor.rgb, fogFactor);
     return float4(baseColor, TransparencyScalar);
 }
