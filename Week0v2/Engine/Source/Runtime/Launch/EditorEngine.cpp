@@ -66,20 +66,23 @@ int32 UEditorEngine::Init(HWND hwnd)
 
 void UEditorEngine::Render()
 {
-    graphicDevice.Prepare();
+    //graphicDevice.Prepare();
     if (LevelEditor->IsMultiViewport())
     {
-        std::shared_ptr<FEditorViewportClient> viewportClient = GetLevelEditor()->GetActiveViewportClient();
+        std::shared_ptr<FEditorViewportClient> ActivatedViewportClient = GetLevelEditor()->GetActiveViewportClient();
         for (int i = 0; i < 4; ++i)
         {
+            // @todo Fix Problem
             LevelEditor->SetViewportClient(i);
+            graphicDevice.Prepare(LevelEditor->GetActiveViewportClient().get());
             renderer.PrepareRender();
             renderer.Render(GWorld,LevelEditor->GetActiveViewportClient());
         }
-        GetLevelEditor()->SetViewportClient(viewportClient);
+        GetLevelEditor()->SetViewportClient(ActivatedViewportClient);
     }
     else
     {
+        graphicDevice.Prepare(LevelEditor->GetActiveViewportClient().get());
         renderer.PrepareRender();
         renderer.Render(GWorld,LevelEditor->GetActiveViewportClient());
     }

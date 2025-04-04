@@ -5,12 +5,11 @@
 
 #define _TCHAR_DEFINED
 #include <d3d11.h>
-
 #include "EngineBaseTypes.h"
-
 #include "Core/HAL/PlatformType.h"
 #include "Core/Math/Vector4.h"
 
+class FEditorViewportClient;
 class FGraphicsDevice {
 public:
     ID3D11Device* Device = nullptr;
@@ -49,7 +48,7 @@ public:
     void Release();
     void SwapBuffer();
     void Prepare();
-    void Prepare(D3D11_VIEWPORT* viewport);
+    void Prepare(FEditorViewportClient* ViewPort);
     void OnResize(HWND hWindow);
     ID3D11RasterizerState* GetCurrentRasterizer() { return CurrentRasterizer; }
     void ChangeRasterizer(EViewModeIndex evi);
