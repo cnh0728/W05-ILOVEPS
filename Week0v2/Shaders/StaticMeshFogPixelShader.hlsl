@@ -79,12 +79,14 @@ float4 mainPS(PS_INPUT input) : SV_Target
     {
         baseColor += EmissiveColor;
     }
-    //baseColor =  float4(1,0,0,1);
+    baseColor =  float4(0,0,1,1);
     // ✅ Apply fog based on distance
     float distance = length(input.worldPos - CameraWorldPos);
-    float fogFactor = saturate((FogEnd - distance) / (FogEnd - FogStart));
+    float alpha = saturate((distance - FogStart) / (FogEnd - FogStart)); // 멀수록 alpha ↑
+    baseColor = lerp(baseColor, FogColor.rgb, alpha);
+
     //baseColor = lerp(FogColor.rgb, baseColor, fogFactor);
-    baseColor = lerp(baseColor, FogColor.rgb, 1.0f - fogFactor);
-    
+    //baseColor = lerp(baseColor, FogColor.rgb, 1.0f - fogFactor);
+    //baseColor = FogColor.rgb;
     return float4(baseColor, TransparencyScalar);
 }

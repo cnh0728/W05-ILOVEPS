@@ -171,7 +171,7 @@ struct FFogParams
     FVector CameraWorldPos;
     float FogStart;
     float FogEnd;
-    float Padding;
+    FVector Padding;
     FVector4 FogColor;
 };
 

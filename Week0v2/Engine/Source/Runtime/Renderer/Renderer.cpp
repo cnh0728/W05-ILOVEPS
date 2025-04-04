@@ -411,8 +411,11 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
     FogParams.CameraWorldPos = ActiveViewport->ViewTransformPerspective.GetLocation();
     FogParams.FogStart = 20.0f;
     FogParams.FogEnd = 300.0f;
-    FogParams.FogColor = FVector4(0.7f, 0.7f, 0.7f, 1.0f);
-    
+    FogParams.FogColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
+    //FogParams.FogColor = FVector4(0.2f, 0.2f, 1.0f, 1.0f); // 연파랑 fog
+    //FogParams.FogColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f); // pure black
+
+
     ID3D11DeviceContext* Context = Graphics->DeviceContext;
 
     for (UStaticMeshComponent* StaticMeshComp : StaticMeshObjs)
