@@ -11,7 +11,7 @@ class FConstantBufferUpdater
 public:
     void Initialize(ID3D11DeviceContext* InDeviceContext);
 
-    void UpdateConstant(ID3D11Buffer* ConstantBuffer, const FMatrix& MVP, const FMatrix& NormalMatrix, FVector4 UUIDColor, bool IsSelected) const;
+    void UpdateConstant(ID3D11Buffer* ConstantBuffer, const FMatrix& MVP, const FMatrix& NormalMatrix,const FMatrix& ModelMatrix, FVector4 UUIDColor, bool IsSelected) const;
     void UpdateFogConstant(ID3D11Buffer* FogConstantBuffer, const FFogParams& FogParams) const;
 
     void UpdateMaterialConstant(ID3D11Buffer* MaterialConstantBuffer, const FObjMaterialInfo& MaterialInfo) const;

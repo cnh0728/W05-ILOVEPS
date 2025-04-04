@@ -4,6 +4,7 @@ cbuffer MatrixConstants : register(b0)
 {
     row_major float4x4 MVP;
     row_major float4x4 MInverseTranspose;
+    row_major float4x4 ModelMatrix;
     float4 UUID;
     bool isSelected;
     float3 MatrixPad0;
@@ -41,6 +42,8 @@ PS_INPUT mainVS(VS_INPUT input)
     output.normal = mul(input.normal, MInverseTranspose);
 
     output.texcoord = input.texcoord;
+    float4 worldPos = mul(input.position, ModelMatrix);
     output.worldPos = mul(input.position, MInverseTranspose).xyz;
+    output.worldPos = worldPos.xyz;
     return output;
 }

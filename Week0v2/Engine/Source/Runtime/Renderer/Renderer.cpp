@@ -411,7 +411,7 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
     FogParams.CameraWorldPos = ActiveViewport->ViewTransformPerspective.GetLocation();
     FogParams.FogStart = 20.0f;
     FogParams.FogEnd = 300.0f;
-    FogParams.FogColor = FVector4(1.0f, 1.0f, 1.0f, 1.0f);
+    FogParams.FogColor = FVector4(0.4f, 0.4f, 0.7f, 1.0f);
     //FogParams.FogColor = FVector4(0.2f, 0.2f, 1.0f, 1.0f); // 연파랑 fog
     //FogParams.FogColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f); // pure black
 
@@ -436,7 +436,7 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
         FVector4 UUIDColor = StaticMeshComp->EncodeUUID() / 255.0f;
 
         bool bSelected = (World->GetSelectedActor() == StaticMeshComp->GetOwner());
-        ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, bSelected);
+        ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix,Model, UUIDColor, bSelected);
 
         if (USkySphereComponent* skysphere = Cast<USkySphereComponent>(StaticMeshComp))
         {
@@ -516,9 +516,9 @@ void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorV
         FMatrix MVP = Model * ActiveViewport->GetViewMatrix() * ActiveViewport->GetProjectionMatrix();
 
         if (GizmoComp == World->GetPickingGizmo())
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, true);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix,Model, UUIDColor, true);
         else
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, false);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix,Model, UUIDColor, false);
 
         if (!GizmoComp->GetStaticMesh()) continue;
 
@@ -551,9 +551,9 @@ void FRenderer::RenderBillboards(UWorld* World, std::shared_ptr<FEditorViewportC
         FMatrix NormalMatrix = FMatrix::Transpose(FMatrix::Inverse(Model));
         FVector4 UUIDColor = BillboardComp->EncodeUUID() / 255.0f;
         if (BillboardComp == World->GetPickingGizmo())
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, true);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix,Model, UUIDColor, true);
         else
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, false);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix,Model, UUIDColor, false);
 
         if (UParticleSubUVComp* SubUVParticle = Cast<UParticleSubUVComp>(BillboardComp))
         {

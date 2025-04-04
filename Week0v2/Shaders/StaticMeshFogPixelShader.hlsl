@@ -60,7 +60,7 @@ float4 mainPS(PS_INPUT input) : SV_Target
 {
     float3 texColor = Textures.Sample(Sampler, input.texcoord + UVOffset);
     float3 baseColor = (texColor.g == 0) ? DiffuseColor : texColor + DiffuseColor;
-    
+    /*
     if (IsLit && input.normalFlag > 0.5)
     {
         float3 N = normalize(input.normal);
@@ -78,8 +78,8 @@ float4 mainPS(PS_INPUT input) : SV_Target
     else
     {
         baseColor += EmissiveColor;
-    }
-    baseColor =  float4(0,0,1,1);
+    }*/
+    //baseColor =  float4(0,0,1,1);
     // ✅ Apply fog based on distance
     float distance = length(input.worldPos - CameraWorldPos);
     float alpha = saturate((distance - FogStart) / (FogEnd - FogStart)); // 멀수록 alpha ↑

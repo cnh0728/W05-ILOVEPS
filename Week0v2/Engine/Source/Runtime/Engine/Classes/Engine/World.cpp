@@ -11,19 +11,22 @@
 #include "UnrealEd/SceneMgr.h"
 #include "UObject/UObjectIterator.h"
 #include "Level.h"
+#include "Components/CubeComp.h"
 
 
 UWorld::UWorld(const UWorld& Other): UObject(Other)
                                    , defaultMapName(Other.defaultMapName)
                                    , Level(Other.Level)
                                    , WorldType(Other.WorldType)
-                                    , EditorPlayer(Other.EditorPlayer)
+                                   , EditorPlayer(Other.EditorPlayer)
 {
 }
 
 void UWorld::InitWorld()
 {
     // TODO: Load Scene
+    FManagerOBJ::CreateStaticMesh("Assets/Cube.obj");
+    FManagerOBJ::CreateStaticMesh("Assets/apple_mid.obj");
     CreateBaseObject();
     Level = FObjectFactory::ConstructObject<ULevel>();
 }
@@ -38,6 +41,28 @@ void UWorld::CreateBaseObject()
     if (LocalGizmo == nullptr)
     {
         LocalGizmo = FObjectFactory::ConstructObject<UTransformGizmo>();
+    }
+    
+    /*
+    AStaticMeshActor* TempActor = SpawnActor<AStaticMeshActor>();
+    TempActor->SetActorLabel(TEXT("OBJ_CUBE"));*/
+    UStaticMeshComponent* plane = FObjectFactory::ConstructObject<UStaticMeshComponent>();
+    plane->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Cube.obj"));
+    plane->SetLocation({0,0,1});
+    plane->SetScale({500,500,0.5});
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = 0; j < 5; j++)
+        {
+            for (int k = 0; k < 5; k++)
+            {
+                UStaticMeshComponent* apple = FObjectFactory::ConstructObject<UStaticMeshComponent>();
+                //UStaticMeshComponent* apple = SpawnedActor->AddComponent<UStaticMeshComponent>();
+                apple->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"apple_mid.obj"));
+                FVector newPos = FVector(i, j, k);
+                apple->SetLocation(newPos);
+            }
+        }
     }
 }
 
