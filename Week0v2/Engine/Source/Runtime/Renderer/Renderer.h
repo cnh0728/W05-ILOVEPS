@@ -35,6 +35,12 @@ public:
     ID3D11PixelShader* PixelShader = nullptr;
     ID3D11InputLayout* InputLayout = nullptr;
 
+    ID3D11VertexShader* SceneDepthVS = nullptr;
+    ID3D11PixelShader* SceneDepthPS = nullptr;
+
+    ID3D11Buffer* SceneDepthVertexBuffer = nullptr;
+    ID3D11Buffer* SceneDepthIndexBuffer = nullptr;
+    ID3D11SamplerState* SceneDepthSamplerState = nullptr;
 
     ID3D11Buffer* ConstantBuffer = nullptr;
     ID3D11Buffer* LightingBuffer = nullptr;
@@ -51,6 +57,7 @@ public:
     void Initialize(FGraphicsDevice* graphics);
    
     void PrepareShader() const;
+    void PrepareSceneDepthShader() const;
     
     //Render
     void RenderPrimitive(ID3D11Buffer* pBuffer, UINT numVertices) const;
@@ -121,6 +128,9 @@ public: // line shader
     void RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport);
     void RenderLight(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void RenderBillboards(UWorld* World,std::shared_ptr<FEditorViewportClient> ActiveViewport);
+    void RenderPostProcess(UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport) const;
+    void RenderDepth(std::shared_ptr<FEditorViewportClient> ActiveViewport) const;
+
 private:
     TArray<UStaticMeshComponent*> StaticMeshObjs;
     TArray<UGizmoBaseComponent*> GizmoObjs;

@@ -5,6 +5,7 @@
 #include "Actors/Player.h"
 #include "BaseGizmos/GizmoBaseComponent.h"
 #include "Components/LightComponent.h"
+#include "Components/QuadTexture.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/UBillboardComponent.h"
 #include "Components/UParticleSubUVComp.h"
@@ -32,6 +33,21 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
     CreateShader();
     CreateConstantBuffer();
     ConstantBufferUpdater.UpdateLitUnlitConstant(FlagBuffer, 1);
+
+    // Create Screen Quad //
+    SceneDepthVertexBuffer = RenderResourceManager.CreateVertexBuffer(quadTextureVertices, ARRAYSIZE(quadTextureVertices));
+    SceneDepthIndexBuffer = RenderResourceManager.CreateIndexBuffer(quadTextureInices, ARRAYSIZE(quadTextureInices));
+    //샘플러 스테이트 생성
+    D3D11_SAMPLER_DESC samplerDesc = {};
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    samplerDesc.MinLOD = 0;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+    Graphics->Device->CreateSamplerState(&samplerDesc, &SceneDepthSamplerState);
 }
 
 void FRenderer::Release()
@@ -83,6 +99,14 @@ void FRenderer::CreateShader()
     ShaderManager.CreatePixelShader(
         L"Shaders/ShaderLine.hlsl", "mainPS",
         PixelLineShader);
+
+    ShaderManager.CreateVertexShader(
+        L"Shaders/SceneDepthVS.hlsl", "main",
+        SceneDepthVS, textureLayout, ARRAYSIZE(textureLayout), &TextureInputLayout, &TextureStride, sizeof(FVertexTexture));
+
+    ShaderManager.CreatePixelShader(
+        L"Shaders/SceneDepthPS.hlsl", "main",
+        SceneDepthPS);
 }
 
 void FRenderer::ReleaseShader()
@@ -90,6 +114,7 @@ void FRenderer::ReleaseShader()
     ShaderManager.ReleaseShader(InputLayout, VertexShader, PixelShader);
     ShaderManager.ReleaseShader(TextureInputLayout, VertexTextureShader, PixelTextureShader);
     ShaderManager.ReleaseShader(nullptr, VertexLineShader, PixelLineShader);
+    ShaderManager.ReleaseShader(nullptr, SceneDepthVS, SceneDepthPS);
 }
 
 // Prepare
@@ -148,6 +173,22 @@ void FRenderer::PrepareLineShader() const
         Graphics->DeviceContext->VSSetShaderResources(4, 1, &pOBBSRV);
     }
 }
+
+void FRenderer::PrepareSceneDepthShader() const
+{
+    // Bind Shader
+    Graphics->DeviceContext->VSSetShader(SceneDepthVS, nullptr, 0);
+    Graphics->DeviceContext->PSSetShader(SceneDepthPS, nullptr, 0);
+    Graphics->DeviceContext->IASetInputLayout(TextureInputLayout);
+
+    // Unbind DSV
+    Graphics->DeviceContext->OMSetRenderTargets(1, &Graphics->FrameBufferRTV, nullptr);
+
+    // Bind SRV and Sampler
+    Graphics->DeviceContext->PSSetShaderResources(0, 1, &Graphics->DepthStencilSRV);
+    Graphics->DeviceContext->PSSetSamplers(0, 1, &SceneDepthSamplerState);
+}
+
 #pragma endregion Shader
 
 #pragma region ConstantBuffer
@@ -268,12 +309,20 @@ void FRenderer::Render(UWorld* World, const std::shared_ptr<FEditorViewportClien
         RenderBillboards(World, ActiveViewport);
     }
 
-    // 4. Render Gizmos //
-    RenderGizmos(World, ActiveViewport);
-
-    // 5. Render Light Source //
+    // 4. Render Light Source //
     RenderLight(World, ActiveViewport);
 
+    // 5. Render Post Process //
+    RenderPostProcess(World, ActiveViewport);
+
+    // SceneDepth //
+    if (ActiveViewport->GetViewMode() == EViewModeIndex::VMI_Buffer_SceneDepth)
+    {
+        RenderDepth(ActiveViewport);
+    }
+
+    // 6. Render Gizmos //
+    RenderGizmos(World, ActiveViewport);
     ClearRenderArr();
 }
 
@@ -573,6 +622,28 @@ void FRenderer::RenderBatch(
     Graphics->DeviceContext->DrawInstanced(vertexCountPerInstance, instanceCount, 0, 0);
     Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
+
+void FRenderer::RenderPostProcess(UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport) const
+{
+    // ...
+
+}
+
+void FRenderer::RenderDepth(std::shared_ptr<FEditorViewportClient> ActiveViewport) const
+{
+    PrepareSceneDepthShader();
+
+    // Bind Vertex Buffer
+    UINT offset = 0;
+    Graphics->DeviceContext->IASetVertexBuffers(0, 1, &SceneDepthVertexBuffer, &TextureStride, &offset);
+    Graphics->DeviceContext->IASetIndexBuffer(SceneDepthIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+    //Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+    // Draw Quad
+    Graphics->DeviceContext->DrawIndexed(6, 0, 0);
+}
+
 #pragma endregion Render
 
 void FRenderer::ChangeViewMode(EViewModeIndex evi) const
