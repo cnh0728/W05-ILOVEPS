@@ -30,9 +30,12 @@ private:
     float litFlag = 0;
 public:
     FGraphicsDevice* Graphics;
+
     ID3D11VertexShader* VertexShader = nullptr;
     ID3D11PixelShader* PixelShader = nullptr;
     ID3D11InputLayout* InputLayout = nullptr;
+
+
     ID3D11Buffer* ConstantBuffer = nullptr;
     ID3D11Buffer* LightingBuffer = nullptr;
     ID3D11Buffer* FlagBuffer = nullptr;
@@ -43,7 +46,6 @@ public:
     FLighting lightingData;
 
     uint32 Stride;
-    uint32 Stride2;
 
 public:
     void Initialize(FGraphicsDevice* graphics);
@@ -54,7 +56,7 @@ public:
     void RenderPrimitive(ID3D11Buffer* pBuffer, UINT numVertices) const;
     void RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT numVertices, ID3D11Buffer* pIndexBuffer, UINT numIndices) const;
     void RenderPrimitive(OBJ::FStaticMeshRenderData* renderData, TArray<FStaticMaterial*> materials, TArray<UMaterial*> overrideMaterial, int selectedSubMeshIndex) const;
-   
+
     void RenderTexturedModelPrimitive(ID3D11Buffer* pVertexBuffer, UINT numVertices, ID3D11Buffer* pIndexBuffer, UINT numIndices, ID3D11ShaderResourceView* InTextureSRV, ID3D11SamplerState* InSamplerState) const;
     //Release
     void Release();
@@ -70,7 +72,6 @@ public:
 
     // update
     void UpdateMaterial(const FObjMaterialInfo& MaterialInfo) const;
-
 
 public://텍스쳐용 기능 추가
     ID3D11VertexShader* VertexTextureShader = nullptr;
@@ -98,25 +99,24 @@ public:
 
     void PrepareSubUVConstant() const;
 
-
 public: // line shader
     void PrepareLineShader() const;
     void RenderBatch(const FGridParameters& gridParam, ID3D11Buffer* pVertexBuffer, int boundingBoxCount, int coneCount, int coneSegmentCount, int obbCount) const;
-    void UpdateGridConstantBuffer(const FGridParameters& gridParams) const;
-    void UpdateLinePrimitveCountBuffer(int numBoundingBoxes, int numCones) const;
+    void UpdateGridConstantBuffer(const FGridParameters& GridParams) const;
+    void UpdateLinePrimitveCountBuffer(int NumBoundingBoxes, int NumCones) const;
 
     ID3D11ShaderResourceView* CreateBoundingBoxSRV(ID3D11Buffer* pBoundingBoxBuffer, UINT numBoundingBoxes);
     ID3D11ShaderResourceView* CreateOBBSRV(ID3D11Buffer* pBoundingBoxBuffer, UINT numBoundingBoxes);
-    ID3D11ShaderResourceView* CreateConeSRV(ID3D11Buffer* pConeBuffer, UINT numCones);
+    ID3D11ShaderResourceView* CreateConeSRV(ID3D11Buffer* pConeBuffer, UINT NumCones);
 
-    void UpdateBoundingBoxBuffer(ID3D11Buffer* pBoundingBoxBuffer, const TArray<FBoundingBox>& BoundingBoxes, int numBoundingBoxes) const;
-    void UpdateOBBBuffer(ID3D11Buffer* pBoundingBoxBuffer, const TArray<FOBB>& BoundingBoxes, int numBoundingBoxes) const;
-    void UpdateConesBuffer(ID3D11Buffer* pConeBuffer, const TArray<FCone>& Cones, int numCones) const;
+    void UpdateBoundingBoxBuffer(ID3D11Buffer* pBoundingBoxBuffer, const TArray<FBoundingBox>& BoundingBoxes, int NumBoundingBoxes) const;
+    void UpdateOBBBuffer(ID3D11Buffer* pBoundingBoxBuffer, const TArray<FOBB>& BoundingBoxes, int NumBoundingBoxes) const;
+    void UpdateConesBuffer(ID3D11Buffer* pConeBuffer, const TArray<FCone>& Cones, int NumCones) const;
 
     //Render Pass Demo
     void PrepareRender();
     void ClearRenderArr();
-    void Render(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
+    void Render(UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport);
     void RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport);
     void RenderLight(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);

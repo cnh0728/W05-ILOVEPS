@@ -136,6 +136,7 @@ struct FVertexTexture
 	float x, y, z;    // Position
 	float u, v; // Texture
 };
+
 struct FGridParameters
 {
 	float gridSpacing;
@@ -143,20 +144,24 @@ struct FGridParameters
 	FVector gridOrigin;
 	float pad;
 };
+
 struct FSimpleVertex
 {
 	float dummy; // 내용은 사용되지 않음
     float padding[11];
 };
+
 struct FOBB {
     FVector corners[8];
 };
+
 struct FRect
 {
     FRect() : leftTopX(0), leftTopY(0), width(0), height(0) {}
     FRect(float x, float y, float w, float h) : leftTopX(x), leftTopY(y), width(w), height(h) {}
     float leftTopX, leftTopY, width, height;
 };
+
 struct FPoint
 {
     FPoint() : x(0), y(0) {}
@@ -166,6 +171,7 @@ struct FPoint
 
     float x, y;
 };
+
 struct FBoundingBox
 {
     FBoundingBox(){}
@@ -251,6 +257,7 @@ struct FBoundingBox
     }
 
 };
+
 struct FCone
 {
     FVector ConeApex; // 원뿔의 꼭짓점
@@ -264,6 +271,7 @@ struct FCone
     float pad[3];
 
 };
+
 struct FPrimitiveCounts 
 {
 	int BoundingBoxCount;
@@ -271,6 +279,7 @@ struct FPrimitiveCounts
 	int ConeCount; 
 	int pad1;
 };
+
 struct FLighting
 {
 	float lightDirX, lightDirY, lightDirZ; // 조명 방향
@@ -298,16 +307,17 @@ struct FConstants {
     FMatrix MVP;      // 모델
     FMatrix ModelMatrixInverseTranspose; // normal 변환을 위한 행렬
     FVector4 UUIDColor;
-    bool IsSelected;
+    int IsSelected;
     FVector pad;
 };
+
 struct FLitUnlitConstants {
     int isLit; // 1 = Lit, 0 = Unlit 
     FVector pad;
 };
 
 struct FSubMeshConstants {
-    float isSelectedSubMesh;
+    int isSelectedSubMesh;
     FVector pad;
 };
 

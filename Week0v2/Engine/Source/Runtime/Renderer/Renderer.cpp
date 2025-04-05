@@ -41,6 +41,7 @@ void FRenderer::Release()
 }
 
 #pragma region Shader
+
 void FRenderer::CreateShader()
 {
     // 기본 셰이더 설정
@@ -90,7 +91,6 @@ void FRenderer::ReleaseShader()
     ShaderManager.ReleaseShader(TextureInputLayout, VertexTextureShader, PixelTextureShader);
     ShaderManager.ReleaseShader(nullptr, VertexLineShader, PixelLineShader);
 }
-
 
 // Prepare
 void FRenderer::PrepareShader() const
@@ -150,8 +150,8 @@ void FRenderer::PrepareLineShader() const
 }
 #pragma endregion Shader
 
-
 #pragma region ConstantBuffer
+
 // ConstantBuffer
 void FRenderer::CreateConstantBuffer()
 {
@@ -178,6 +178,7 @@ void FRenderer::ReleaseConstantBuffer()
     RenderResourceManager.ReleaseBuffer(LightingBuffer);
     RenderResourceManager.ReleaseBuffer(FlagBuffer);
 }
+
 #pragma endregion ConstantBuffer
 
 #pragma region
@@ -200,7 +201,9 @@ void FRenderer::PrepareRender()
                 if (UStaticMeshComponent* pStaticMeshComp = Cast<UStaticMeshComponent>(iter))
                 {
                     if (!Cast<UGizmoBaseComponent>(iter))
+                    {
                         StaticMeshObjs.Add(pStaticMeshComp);
+                    }
                 }
                 if (UGizmoBaseComponent* pGizmoComp = Cast<UGizmoBaseComponent>(iter))
                 {
@@ -221,13 +224,14 @@ void FRenderer::PrepareRender()
         // UE_LOG(LogLevel::Display, "%d", GEngine->GetWorld()->GetActors().Num() );
         for (const auto iter : GEngine->GetWorld()->GetActors())
         {
-            
             for (const auto iter2 : iter->GetComponents())
             {
                 if (UStaticMeshComponent* pStaticMeshComp = Cast<UStaticMeshComponent>(iter2))
                 {
                     if (!Cast<UGizmoBaseComponent>(iter2))
+                    {
                         StaticMeshObjs.Add(pStaticMeshComp);
+                    }
                 }
                 if (UBillboardComponent* pBillboardComp = Cast<UBillboardComponent>(iter2))
                 {
@@ -242,19 +246,32 @@ void FRenderer::PrepareRender()
     }
 }
 
-void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport)
+void FRenderer::Render(UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport)
 {
     Graphics->DeviceContext->RSSetViewports(1, &ActiveViewport->GetD3DViewport());
     Graphics->ChangeRasterizer(ActiveViewport->GetViewMode());
     ChangeViewMode(ActiveViewport->GetViewMode());
     ConstantBufferUpdater.UpdateLightConstant(LightingBuffer);
+
+    // 1. Render Batch //
     UPrimitiveBatch::GetInstance().RenderBatch(ConstantBuffer, ActiveViewport->GetViewMatrix(), ActiveViewport->GetProjectionMatrix());
 
+    // 2. Render Static Mesh //
     if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Primitives))
+    {
         RenderStaticMeshes(World, ActiveViewport);
-    RenderGizmos(World, ActiveViewport);
+    }
+
+    // 3. Render Billboard (Billboard, Text) //
     if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_BillboardText))
+    {
         RenderBillboards(World, ActiveViewport);
+    }
+
+    // 4. Render Gizmos //
+    RenderGizmos(World, ActiveViewport);
+
+    // 5. Render Light Source //
     RenderLight(World, ActiveViewport);
 
     ClearRenderArr();
@@ -294,7 +311,7 @@ void FRenderer::RenderPrimitive(OBJ::FStaticMeshRenderData* renderData, TArray<F
     {
         int materialIndex = renderData->MaterialSubsets[subMeshIndex].MaterialIndex;
 
-        subMeshIndex == selectedSubMeshIndex ? ConstantBufferUpdater.UpdateSubMeshConstant(SubMeshConstantBuffer, true) : ConstantBufferUpdater.UpdateSubMeshConstant(SubMeshConstantBuffer, false);
+        subMeshIndex == selectedSubMeshIndex ? ConstantBufferUpdater.UpdateSubMeshConstant(SubMeshConstantBuffer, 1) : ConstantBufferUpdater.UpdateSubMeshConstant(SubMeshConstantBuffer, 0);
 
         overrideMaterial[materialIndex] != nullptr ?
             UpdateMaterial(overrideMaterial[materialIndex]->GetMaterialInfo()) : UpdateMaterial(materials[materialIndex]->Material->GetMaterialInfo());
@@ -374,6 +391,7 @@ void FRenderer::RenderTexturedModelPrimitive(
 void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport)
 {
     PrepareShader();
+
     for (UStaticMeshComponent* StaticMeshComp : StaticMeshObjs)
     {
         FMatrix Model = JungleMath::CreateModelMatrix(
@@ -391,8 +409,11 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
             ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, true);
         }
         else
+        {
             ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, false);
+        }
 
+        // @todo Delete this
         if (USkySphereComponent* skysphere = Cast<USkySphereComponent>(StaticMeshComp))
         {
             ConstantBufferUpdater.UpdateTextureConstant(TextureConstantBufer, skysphere->UOffset, skysphere->VOffset);
@@ -411,7 +432,6 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
             );
         }
 
-
         if (!StaticMeshComp->GetStaticMesh()) continue;
 
         OBJ::FStaticMeshRenderData* renderData = StaticMeshComp->GetStaticMesh()->GetRenderData();
@@ -423,6 +443,7 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
 
 void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport)
 {
+    PrepareShader();
     if (!World->GetSelectedActor())
     {
         return;
@@ -528,7 +549,6 @@ void FRenderer::RenderBillboards(UWorld* World, std::shared_ptr<FEditorViewportC
     PrepareShader();
 }
 
-
 void FRenderer::RenderLight(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport)
 {
     for (auto Light : LightObjs)
@@ -590,8 +610,6 @@ void FRenderer::UpdateMaterial(const FObjMaterialInfo& MaterialInfo) const
     }
 }
 
-
-
 ID3D11ShaderResourceView* FRenderer::CreateBoundingBoxSRV(ID3D11Buffer* pBoundingBoxBuffer, UINT numBoundingBoxes)
 {
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
@@ -599,7 +617,6 @@ ID3D11ShaderResourceView* FRenderer::CreateBoundingBoxSRV(ID3D11Buffer* pBoundin
     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
     srvDesc.Buffer.ElementOffset = 0;
     srvDesc.Buffer.NumElements = numBoundingBoxes;
-
 
     Graphics->Device->CreateShaderResourceView(pBoundingBoxBuffer, &srvDesc, &pBBSRV);
     return pBBSRV;
@@ -616,25 +633,24 @@ ID3D11ShaderResourceView* FRenderer::CreateOBBSRV(ID3D11Buffer* pBoundingBoxBuff
     return pOBBSRV;
 }
 
-ID3D11ShaderResourceView* FRenderer::CreateConeSRV(ID3D11Buffer* pConeBuffer, UINT numCones)
+ID3D11ShaderResourceView* FRenderer::CreateConeSRV(ID3D11Buffer* pConeBuffer, UINT NumCones)
 {
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
     srvDesc.Format = DXGI_FORMAT_UNKNOWN; 
     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
     srvDesc.Buffer.ElementOffset = 0;
-    srvDesc.Buffer.NumElements = numCones;
-
+    srvDesc.Buffer.NumElements = NumCones;
 
     Graphics->Device->CreateShaderResourceView(pConeBuffer, &srvDesc, &pConeSRV);
     return pConeSRV;
 }
 
-void FRenderer::UpdateBoundingBoxBuffer(ID3D11Buffer* pBoundingBoxBuffer, const TArray<FBoundingBox>& BoundingBoxes, int numBoundingBoxes) const
+void FRenderer::UpdateBoundingBoxBuffer(ID3D11Buffer* pBoundingBoxBuffer, const TArray<FBoundingBox>& BoundingBoxes, int NumBoundingBoxes) const
 {
     if (!pBoundingBoxBuffer) return;
     D3D11_MAPPED_SUBRESOURCE mappedResource;
     Graphics->DeviceContext->Map(pBoundingBoxBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-    auto pData = reinterpret_cast<FBoundingBox*>(mappedResource.pData);
+    auto pData = static_cast<FBoundingBox*>(mappedResource.pData);
     for (int i = 0; i < BoundingBoxes.Num(); ++i)
     {
         pData[i] = BoundingBoxes[i];
@@ -642,12 +658,12 @@ void FRenderer::UpdateBoundingBoxBuffer(ID3D11Buffer* pBoundingBoxBuffer, const 
     Graphics->DeviceContext->Unmap(pBoundingBoxBuffer, 0);
 }
 
-void FRenderer::UpdateOBBBuffer(ID3D11Buffer* pBoundingBoxBuffer, const TArray<FOBB>& BoundingBoxes, int numBoundingBoxes) const
+void FRenderer::UpdateOBBBuffer(ID3D11Buffer* pBoundingBoxBuffer, const TArray<FOBB>& BoundingBoxes, int NumBoundingBoxes) const
 {
     if (!pBoundingBoxBuffer) return;
     D3D11_MAPPED_SUBRESOURCE mappedResource;
     Graphics->DeviceContext->Map(pBoundingBoxBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-    auto pData = reinterpret_cast<FOBB*>(mappedResource.pData);
+    auto pData = static_cast<FOBB*>(mappedResource.pData);
     for (int i = 0; i < BoundingBoxes.Num(); ++i)
     {
         pData[i] = BoundingBoxes[i];
@@ -655,12 +671,12 @@ void FRenderer::UpdateOBBBuffer(ID3D11Buffer* pBoundingBoxBuffer, const TArray<F
     Graphics->DeviceContext->Unmap(pBoundingBoxBuffer, 0);
 }
 
-void FRenderer::UpdateConesBuffer(ID3D11Buffer* pConeBuffer, const TArray<FCone>& Cones, int numCones) const
+void FRenderer::UpdateConesBuffer(ID3D11Buffer* pConeBuffer, const TArray<FCone>& Cones, int NumCones) const
 {
     if (!pConeBuffer) return;
     D3D11_MAPPED_SUBRESOURCE mappedResource;
     Graphics->DeviceContext->Map(pConeBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-    auto pData = reinterpret_cast<FCone*>(mappedResource.pData);
+    auto pData = static_cast<FCone*>(mappedResource.pData);
     for (int i = 0; i < Cones.Num(); ++i)
     {
         pData[i] = Cones[i];
@@ -668,13 +684,13 @@ void FRenderer::UpdateConesBuffer(ID3D11Buffer* pConeBuffer, const TArray<FCone>
     Graphics->DeviceContext->Unmap(pConeBuffer, 0);
 }
 
-void FRenderer::UpdateGridConstantBuffer(const FGridParameters& gridParams) const
+void FRenderer::UpdateGridConstantBuffer(const FGridParameters& GridParams) const
 {
-    D3D11_MAPPED_SUBRESOURCE mappedResource;
-    HRESULT hr = Graphics->DeviceContext->Map(GridConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    D3D11_MAPPED_SUBRESOURCE MappedResource;
+    HRESULT hr = Graphics->DeviceContext->Map(GridConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource);
     if (SUCCEEDED(hr))
     {
-        memcpy(mappedResource.pData, &gridParams, sizeof(FGridParameters));
+        memcpy(MappedResource.pData, &GridParams, sizeof(FGridParameters));
         Graphics->DeviceContext->Unmap(GridConstantBuffer, 0);
     }
     else
@@ -683,12 +699,12 @@ void FRenderer::UpdateGridConstantBuffer(const FGridParameters& gridParams) cons
     }
 }
 
-void FRenderer::UpdateLinePrimitveCountBuffer(int numBoundingBoxes, int numCones) const
+void FRenderer::UpdateLinePrimitveCountBuffer(const int NumBoundingBoxes, const int NumCones) const
 {
-    D3D11_MAPPED_SUBRESOURCE mappedResource;
-    HRESULT hr = Graphics->DeviceContext->Map(LinePrimitiveBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
-    auto pData = static_cast<FPrimitiveCounts*>(mappedResource.pData);
-    pData->BoundingBoxCount = numBoundingBoxes;
-    pData->ConeCount = numCones;
+    D3D11_MAPPED_SUBRESOURCE MappedResource;
+    HRESULT hr = Graphics->DeviceContext->Map(LinePrimitiveBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &MappedResource);
+    auto pData = static_cast<FPrimitiveCounts*>(MappedResource.pData);
+    pData->BoundingBoxCount = NumBoundingBoxes;
+    pData->ConeCount = NumCones;
     Graphics->DeviceContext->Unmap(LinePrimitiveBuffer, 0);
 }

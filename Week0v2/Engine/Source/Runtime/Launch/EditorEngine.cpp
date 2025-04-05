@@ -74,7 +74,7 @@ void UEditorEngine::Render()
         {
             // @todo Fix Problem
             LevelEditor->SetViewportClient(i);
-            graphicDevice.Prepare(LevelEditor->GetActiveViewportClient().get());
+            graphicDevice.PrepareRTV(graphicDevice.FrameBufferRTV, LevelEditor->GetActiveViewportClient().get());
             renderer.PrepareRender();
             renderer.Render(GWorld,LevelEditor->GetActiveViewportClient());
         }
@@ -82,7 +82,7 @@ void UEditorEngine::Render()
     }
     else
     {
-        graphicDevice.Prepare(LevelEditor->GetActiveViewportClient().get());
+        graphicDevice.PrepareRTV(graphicDevice.FrameBufferRTV, LevelEditor->GetActiveViewportClient().get());
         renderer.PrepareRender();
         renderer.Render(GWorld,LevelEditor->GetActiveViewportClient());
     }
@@ -145,7 +145,9 @@ void UEditorEngine::Input()
                 LevelEditor->OffMultiViewport();
             }
             else
+            {
                 LevelEditor->OnMultiViewport();
+            }
         }
     }
     else

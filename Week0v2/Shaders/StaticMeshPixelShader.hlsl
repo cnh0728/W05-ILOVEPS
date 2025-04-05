@@ -6,7 +6,7 @@ cbuffer MatrixConstants : register(b0)
     row_major float4x4 MVP;
     row_major float4x4 MInverseTranspose;
     float4 UUID;
-    bool isSelected;
+    int isSelected;
     float3 MatrixPad0;
 };
 
@@ -39,13 +39,13 @@ cbuffer LightingConstants : register(b2)
 
 cbuffer FlagConstants : register(b3)
 {
-    bool IsLit;
+    int IsLit;
     float3 flagPad0;
 }
 
 cbuffer SubMeshConstants : register(b4)
 {
-    bool IsSelectedSubMesh;
+    int IsSelectedSubMesh;
     float3 SubMeshPad0;
 }
 
@@ -60,7 +60,7 @@ struct PS_INPUT
     float4 position : SV_POSITION; // 변환된 화면 좌표
     float4 color : COLOR; // 전달할 색상
     float3 normal : NORMAL; // 정규화된 노멀 벡터
-    bool normalFlag : TEXCOORD0; // 노멀 유효성 플래그 (1.0: 유효, 0.0: 무효)
+    int normalFlag : TEXCOORD0; // 노멀 유효성 플래그 (1.0: 유효, 0.0: 무효)
     float2 texcoord : TEXCOORD1;
     int materialIndex : MATERIAL_INDEX;
 };

@@ -40,14 +40,14 @@ void FEditorViewportClient::Tick(float DeltaTime)
     Input();
     UpdateViewMatrix();
     UpdateProjectionMatrix();
-
 }
 
-void FEditorViewportClient::Release()
+void FEditorViewportClient::Release() const
 {
     if (Viewport)
+    {
         delete Viewport;
- 
+    }
 }
 
 

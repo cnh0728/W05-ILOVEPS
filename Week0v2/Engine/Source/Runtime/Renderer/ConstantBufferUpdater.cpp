@@ -6,7 +6,7 @@ void FConstantBufferUpdater::Initialize(ID3D11DeviceContext* InDeviceContext)
     DeviceContext = InDeviceContext;
 }
 
-void FConstantBufferUpdater::UpdateConstant(ID3D11Buffer* ConstantBuffer, const FMatrix& MVP, const FMatrix& NormalMatrix, FVector4 UUIDColor, bool IsSelected) const
+void FConstantBufferUpdater::UpdateConstant(ID3D11Buffer* ConstantBuffer, const FMatrix& MVP, const FMatrix& NormalMatrix, FVector4 UUIDColor, int IsSelected) const
 {
     if (ConstantBuffer)
     {
@@ -78,7 +78,7 @@ void FConstantBufferUpdater::UpdateLitUnlitConstant(ID3D11Buffer* FlagBuffer, in
     }
 }
 
-void FConstantBufferUpdater::UpdateSubMeshConstant(ID3D11Buffer* SubMeshConstantBuffer, bool isSelected) const
+void FConstantBufferUpdater::UpdateSubMeshConstant(ID3D11Buffer* SubMeshConstantBuffer, int isSelected) const
 {
     if (SubMeshConstantBuffer)
     {

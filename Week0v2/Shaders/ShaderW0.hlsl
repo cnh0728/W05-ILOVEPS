@@ -7,7 +7,7 @@ cbuffer MatrixBuffer : register(b0)
     row_major float4x4 MVP;
     row_major float4x4 MInverseTranspose;
     float4 UUID;
-    bool isSelected;
+    int isSelected;
     float3 MatrixPad0;
 };
 
@@ -22,7 +22,7 @@ cbuffer LightingBuffer : register(b1)
 
 cbuffer FFlagConstants : register(b2)
 {
-    bool IsLit;
+    int IsLit;
     float3 FlagPad0;
 }
 

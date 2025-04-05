@@ -90,7 +90,7 @@ public:
     virtual UWorld*     GetWorld() const { return NULL; };
     void Initialize(int32 viewportIndex);
     void Tick(float DeltaTime);
-    void Release();
+    void Release() const;
 
     void Input();
     void ResizeViewport(const DXGI_SWAP_CHAIN_DESC& swapchaindesc);
