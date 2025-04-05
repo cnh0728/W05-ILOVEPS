@@ -17,6 +17,12 @@ class SLevelEditor;
 
 extern UWorld* GWorld;
 
+enum class EFrameMode
+{
+    Normal,
+    Depth,
+};
+
 class UEditorEngine : public UEngine
 {
     DECLARE_CLASS(UEditorEngine, UEngine)
@@ -52,9 +58,15 @@ private:
     SLevelEditor* LevelEditor;
     UnrealEd* UnrealEditor;
     FSceneMgr* SceneMgr;
+
+    // EFrameMode FrameMode = EFrameMode::Normal;
+    EFrameMode FrameMode = EFrameMode::Depth;
     
     bool bTestInput = false;
 public:
+    void SetFrameMode(EFrameMode ChangeMode) { FrameMode = ChangeMode; }
+    
+    EFrameMode GetFrameMode() { return FrameMode; }
     UWorld* GetWorld() const { return GWorld; }
     SLevelEditor* GetLevelEditor() const { return LevelEditor; }
     UnrealEd* GetUnrealEditor() const { return UnrealEditor; }

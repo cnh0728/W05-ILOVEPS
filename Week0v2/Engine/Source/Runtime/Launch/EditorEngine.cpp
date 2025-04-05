@@ -38,6 +38,7 @@ int32 UEditorEngine::Init(HWND hwnd)
     UIMgr->Initialize(hWnd, graphicDevice.Device, graphicDevice.DeviceContext);
     resourceMgr.Initialize(&renderer, &graphicDevice);
 
+    graphicDevice.CreateScreenBuffer();
     
     FWorldContext EditorContext;
     EditorContext.WorldType = EWorldType::Editor;
@@ -67,6 +68,7 @@ int32 UEditorEngine::Init(HWND hwnd)
 void UEditorEngine::Render()
 {
     graphicDevice.Prepare();
+    
     if (LevelEditor->IsMultiViewport())
     {
         std::shared_ptr<FEditorViewportClient> viewportClient = GetLevelEditor()->GetActiveViewportClient();
@@ -83,6 +85,7 @@ void UEditorEngine::Render()
         renderer.PrepareRender();
         renderer.Render(GWorld,LevelEditor->GetActiveViewportClient());
     }
+    
 }
 
 void UEditorEngine::Tick(float deltaSeconds)

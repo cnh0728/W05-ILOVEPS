@@ -34,7 +34,7 @@ public:
         initData.pSysMem = data;
 
         ID3D11Buffer* buffer = nullptr;
-        HRESULT hr = Device->CreateBuffer(data ? &desc : &desc, data ? &initData : nullptr, &buffer);
+        HRESULT hr = Device->CreateBuffer(&desc, data ? &initData : nullptr, &buffer);
         return SUCCEEDED(hr) ? buffer : nullptr;
     }
 

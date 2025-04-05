@@ -25,11 +25,20 @@ public:
     ID3D11RasterizerState* RasterizerStateWIREFRAME = nullptr;
     DXGI_SWAP_CHAIN_DESC SwapchainDesc;
 
+    ID3D11Buffer* ScreenVertexBuffer = nullptr;
+    ID3D11Buffer* ScreenIndexBuffer = nullptr;
+    ID3D11SamplerState* ScreenSamplerState = nullptr;
+    UINT ScreenVertexCount;
+    UINT ScreenIndexCount;
     
     UINT screenWidth = 0;
     UINT screenHeight = 0;
     // Depth-Stencil 관련 변수
     ID3D11Texture2D* DepthStencilBuffer = nullptr;  // 깊이/스텐실 텍스처
+    ID3D11Texture2D* DepthStencilResourceBuffer = nullptr;
+
+    ID3D11ShaderResourceView* DepthStencilResourceView = nullptr;
+    
     ID3D11DepthStencilView* DepthStencilView = nullptr;  // 깊이/스텐실 뷰
     ID3D11DepthStencilState* DepthStencilState = nullptr;
     FLOAT ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f }; // 화면을 초기화(clear) 할 때 사용할 색상(RGBA)
@@ -37,6 +46,7 @@ public:
     ID3D11DepthStencilState* DepthStateDisable = nullptr;
 
     void Initialize(HWND hWindow);
+    void CreateScreenBuffer();
     void CreateDeviceAndSwapChain(HWND hWindow);
     void CreateDepthStencilBuffer(HWND hWindow);
     void CreateDepthStencilState();
@@ -48,8 +58,9 @@ public:
     void ReleaseDepthStencilResources();
     void Release();
     void SwapBuffer();
+    void RenderDepthMode();
     void Prepare();
-    void Prepare(D3D11_VIEWPORT* viewport);
+    // void Prepare(D3D11_VIEWPORT* viewport);
     void OnResize(HWND hWindow);
     ID3D11RasterizerState* GetCurrentRasterizer() { return CurrentRasterizer; }
     void ChangeRasterizer(EViewModeIndex evi);

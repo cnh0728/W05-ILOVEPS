@@ -82,6 +82,14 @@ void FRenderer::CreateShader()
     ShaderManager.CreatePixelShader(
         L"Shaders/ShaderLine.hlsl", "mainPS",
         PixelLineShader);
+
+    ShaderManager.CreateVertexShader(
+        L"Shaders/DepthVertexShader.hlsl", "mainVS",
+        DepthVertexShader, textureLayout, ARRAYSIZE(textureLayout), &TextureInputLayout, &TextureStride, sizeof(FVertexTexture));
+
+    ShaderManager.CreatePixelShader(
+        L"Shaders/DepthPixelShader.hlsl", "mainPS",
+        DepthPixelShader);
 }
 
 void FRenderer::ReleaseShader()
@@ -89,6 +97,8 @@ void FRenderer::ReleaseShader()
     ShaderManager.ReleaseShader(InputLayout, VertexShader, PixelShader);
     ShaderManager.ReleaseShader(TextureInputLayout, VertexTextureShader, PixelTextureShader);
     ShaderManager.ReleaseShader(nullptr, VertexLineShader, PixelLineShader);
+
+    ShaderManager.ReleaseShader(nullptr, DepthVertexShader, DepthPixelShader);
 }
 
 
@@ -246,17 +256,19 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
 {
     Graphics->DeviceContext->RSSetViewports(1, &ActiveViewport->GetD3DViewport());
     Graphics->ChangeRasterizer(ActiveViewport->GetViewMode());
-    ChangeViewMode(ActiveViewport->GetViewMode());
     ConstantBufferUpdater.UpdateLightConstant(LightingBuffer);
     UPrimitiveBatch::GetInstance().RenderBatch(ConstantBuffer, ActiveViewport->GetViewMatrix(), ActiveViewport->GetProjectionMatrix());
 
     if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Primitives))
         RenderStaticMeshes(World, ActiveViewport);
-    RenderGizmos(World, ActiveViewport);
     if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_BillboardText))
         RenderBillboards(World, ActiveViewport);
     RenderLight(World, ActiveViewport);
 
+    ChangeViewMode(ActiveViewport->GetViewMode());
+
+    RenderGizmos(World, ActiveViewport);
+    
     ClearRenderArr();
 }
 
@@ -479,8 +491,7 @@ void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorV
     Graphics->DeviceContext->RSSetState(Graphics->GetCurrentRasterizer());
 
 #pragma region GizmoDepth
-    ID3D11DepthStencilState* originalDepthState = Graphics->DepthStencilState;
-    Graphics->DeviceContext->OMSetDepthStencilState(originalDepthState, 0);
+    Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStencilState, 0);
 #pragma endregion GizmoDepth
 }
 
@@ -559,11 +570,12 @@ void FRenderer::ChangeViewMode(EViewModeIndex evi) const
 {
     switch (evi)
     {
-    case EViewModeIndex::VMI_Lit:
+    case VMI_Lit:
         ConstantBufferUpdater.UpdateLitUnlitConstant(FlagBuffer, 1);
         break;
-    case EViewModeIndex::VMI_Wireframe:
-    case EViewModeIndex::VMI_Unlit:
+    case VMI_DepthView:
+        Graphics->RenderDepthMode();
+    default:
         ConstantBufferUpdater.UpdateLitUnlitConstant(FlagBuffer, 0);
         break;
     }
