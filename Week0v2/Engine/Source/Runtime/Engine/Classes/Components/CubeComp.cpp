@@ -26,8 +26,8 @@ void UCubeComp::InitializeComponent()
 {
     Super::InitializeComponent();
 
-    FManagerOBJ::CreateStaticMesh("Assets/helloBlender.obj");
-    SetStaticMesh(FManagerOBJ::GetStaticMesh(L"helloBlender.obj"));
+    FManagerOBJ::CreateStaticMesh("Assets/apple_mid.obj");
+    SetStaticMesh(FManagerOBJ::GetStaticMesh(L"apple_mid.obj"));
 }
 
 void UCubeComp::TickComponent(float DeltaTime)

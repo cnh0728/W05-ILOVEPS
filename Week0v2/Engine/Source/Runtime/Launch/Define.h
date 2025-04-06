@@ -295,7 +295,8 @@ struct FMaterialConstants {
 };
 
 struct FConstants {
-    FMatrix MVP;      // 모델
+    FMatrix M;      // 모델
+    FMatrix VP;      // 모델
     FMatrix ModelMatrixInverseTranspose; // normal 변환을 위한 행렬
     FVector4 UUIDColor;
     bool IsSelected;
@@ -304,6 +305,25 @@ struct FConstants {
 struct FLitUnlitConstants {
     int isLit; // 1 = Lit, 0 = Unlit 
     FVector pad;
+};
+
+struct alignas(16) FFogConstants 
+{
+    FVector Color;
+    float Padding1;
+    float Density;
+    float FogStart;
+    float FogEnd;
+    int bIsFogOn; //bool 뭔가 이상해서 int로
+};
+
+struct alignas(16) FCameraPosConstants{
+    FVector CameraPos;
+    float Padding;
+};
+
+struct alignas(16) FFullScreenConstants{
+    int bIsDepth; //bool 뭔가 이상해서 int로
 };
 
 struct FSubMeshConstants {

@@ -268,29 +268,3 @@ void UText::CreateTextTextureVertexBuffer(const TArray<FVertexTexture>& _vertex,
 	//	nullptr, 0);
 
 }
-
-
-void UText::TextMVPRendering()
-{
-    UEditorEngine::renderer.PrepareTextureShader();
-    //FEngineLoop::renderer.UpdateSubUVConstant(0, 0);
-    //FEngineLoop::renderer.PrepareSubUVConstant();
-    FMatrix Model = CreateBillboardMatrix();
-
-    FMatrix MVP = Model * GetEngine()->GetLevelEditor()->GetActiveViewportClient()->GetViewMatrix() * GetEngine()->GetLevelEditor()->GetActiveViewportClient()->GetProjectionMatrix();
-    FMatrix NormalMatrix = FMatrix::Transpose(FMatrix::Inverse(Model));
-    FVector4 UUIDColor = EncodeUUID() / 255.0f;
-    if (this == GetWorld()->GetPickingGizmo()) {
-        UEditorEngine::renderer.GetConstantBufferUpdater().UpdateConstant(UEditorEngine::renderer.ConstantBuffer, MVP, NormalMatrix, UUIDColor, true);
-    }
-    else
-        UEditorEngine::renderer.GetConstantBufferUpdater().UpdateConstant(UEditorEngine::renderer.ConstantBuffer, MVP, NormalMatrix, UUIDColor, false);
-
-    if (ShowFlags::GetInstance().currentFlags & static_cast<uint64>(EEngineShowFlags::SF_BillboardText)) {
-        UEditorEngine::renderer.RenderTextPrimitive(vertexTextBuffer, numTextVertices,
-            Texture->TextureSRV, Texture->SamplerState);
-    }
-    //Super::Render();
-
-    UEditorEngine::renderer.PrepareShader();
-}

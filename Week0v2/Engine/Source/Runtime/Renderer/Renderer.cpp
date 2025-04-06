@@ -5,6 +5,7 @@
 #include "Actors/Player.h"
 #include "BaseGizmos/GizmoBaseComponent.h"
 #include "Components/LightComponent.h"
+#include "Components/QuadTexture.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/UBillboardComponent.h"
 #include "Components/UParticleSubUVComp.h"
@@ -32,6 +33,8 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
     CreateShader();
     CreateConstantBuffer();
     ConstantBufferUpdater.UpdateLitUnlitConstant(FlagBuffer, 1);
+
+    CreateScreenBuffer();
 }
 
 void FRenderer::Release()
@@ -53,11 +56,11 @@ void FRenderer::CreateShader()
     };
 
     ShaderManager.CreateVertexShader(
-        L"Shaders/StaticMeshVertexShader.hlsl", "mainVS",
+        L"Shaders/DefferedVertexShader.hlsl", "mainVS",
         VertexShader, layout, ARRAYSIZE(layout), &InputLayout, &Stride, sizeof(FVertexSimple));
 
     ShaderManager.CreatePixelShader(
-        L"Shaders/StaticMeshPixelShader.hlsl", "mainPS",
+        L"Shaders/DefferedPixelShader.hlsl", "mainPS",
         PixelShader);
 
     // 텍스쳐 셰이더 설정
@@ -84,12 +87,12 @@ void FRenderer::CreateShader()
         PixelLineShader);
 
     ShaderManager.CreateVertexShader(
-        L"Shaders/DepthVertexShader.hlsl", "mainVS",
-        DepthVertexShader, textureLayout, ARRAYSIZE(textureLayout), &TextureInputLayout, &TextureStride, sizeof(FVertexTexture));
+        L"Shaders/FullScreenVertexShader.hlsl", "mainVS",
+        FullScreenVertexShader, textureLayout, ARRAYSIZE(textureLayout), &TextureInputLayout, &TextureStride, sizeof(FVertexTexture));
 
     ShaderManager.CreatePixelShader(
-        L"Shaders/DepthPixelShader.hlsl", "mainPS",
-        DepthPixelShader);
+        L"Shaders/FullScreenPixelShader.hlsl", "mainPS",
+        FullScreenPixelShader);
 }
 
 void FRenderer::ReleaseShader()
@@ -98,7 +101,7 @@ void FRenderer::ReleaseShader()
     ShaderManager.ReleaseShader(TextureInputLayout, VertexTextureShader, PixelTextureShader);
     ShaderManager.ReleaseShader(nullptr, VertexLineShader, PixelLineShader);
 
-    ShaderManager.ReleaseShader(nullptr, DepthVertexShader, DepthPixelShader);
+    ShaderManager.ReleaseShader(nullptr, FullScreenVertexShader, FullScreenPixelShader);
 }
 
 
@@ -118,6 +121,24 @@ void FRenderer::PrepareShader() const
         Graphics->DeviceContext->PSSetConstantBuffers(3, 1, &FlagBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(4, 1, &SubMeshConstantBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(5, 1, &TextureConstantBufer);
+    }
+}
+
+void FRenderer::PrepareFullScreenShader() const
+{
+    Graphics->DeviceContext->VSSetShader(FullScreenVertexShader, nullptr, 0);
+    Graphics->DeviceContext->PSSetShader(FullScreenPixelShader, nullptr, 0);
+    Graphics->DeviceContext->IASetInputLayout(TextureInputLayout);
+    
+    //밑에는 렌더구간
+    Graphics->DeviceContext->OMSetDepthStencilState(nullptr, 0);
+    Graphics->DeviceContext->OMSetRenderTargets(1, &Graphics->FrameBufferRTV, nullptr); // 렌더 타겟 설정(백버퍼를 가르킴)
+    
+    if (FullScreenConstantBuffer)
+    {
+        Graphics->DeviceContext->PSSetConstantBuffers(0, 1, &FullScreenConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(1, 1, &CameraPosConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(2, 1, &FogConstantBuffer);
     }
 }
 
@@ -174,6 +195,9 @@ void FRenderer::CreateConstantBuffer()
     TextureConstantBufer = RenderResourceManager.CreateConstantBuffer(sizeof(FTextureConstants));
     LightingBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FLighting));
     FlagBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FLitUnlitConstants));
+    FogConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FFogConstants));
+    FullScreenConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FFullScreenConstants));
+    CameraPosConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FCameraPosConstants));
 }
 
 void FRenderer::ReleaseConstantBuffer()
@@ -187,6 +211,9 @@ void FRenderer::ReleaseConstantBuffer()
     RenderResourceManager.ReleaseBuffer(TextureConstantBufer);
     RenderResourceManager.ReleaseBuffer(LightingBuffer);
     RenderResourceManager.ReleaseBuffer(FlagBuffer);
+    RenderResourceManager.ReleaseBuffer(FogConstantBuffer);
+    RenderResourceManager.ReleaseBuffer(FullScreenConstantBuffer);
+    RenderResourceManager.ReleaseBuffer(CameraPosConstantBuffer);
 }
 #pragma endregion ConstantBuffer
 
@@ -257,6 +284,10 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
     Graphics->DeviceContext->RSSetViewports(1, &ActiveViewport->GetD3DViewport());
     Graphics->ChangeRasterizer(ActiveViewport->GetViewMode());
     ConstantBufferUpdater.UpdateLightConstant(LightingBuffer);
+    ConstantBufferUpdater.UpdateFogConstant(FogConstantBuffer, World->GetFog()); //TODO: Fog Update시에만 업데이트
+    ConstantBufferUpdater.UpdateCameraPosConstant(CameraPosConstantBuffer, ActiveViewport); //TODO: Camera Update시에만 업데이트
+    ChangeViewMode(ActiveViewport->GetViewMode());
+
     UPrimitiveBatch::GetInstance().RenderBatch(ConstantBuffer, ActiveViewport->GetViewMatrix(), ActiveViewport->GetProjectionMatrix());
 
     if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_Primitives))
@@ -264,12 +295,54 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
     if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_BillboardText))
         RenderBillboards(World, ActiveViewport);
     RenderLight(World, ActiveViewport);
-
-    ChangeViewMode(ActiveViewport->GetViewMode());
-
+    
     RenderGizmos(World, ActiveViewport);
     
+    RenderFullScreen();
+    
     ClearRenderArr();
+}
+
+void FRenderer::CreateScreenBuffer()
+{
+    FullScreenVertexBuffer = UEditorEngine::renderer.GetResourceManager().CreateVertexBuffer(quadTextureVertices, ARRAYSIZE(quadTextureVertices));
+    FullScreenVertexCount = ARRAYSIZE(quadTextureVertices);
+    
+    FullScreenIndexBuffer = UEditorEngine::renderer.GetResourceManager().CreateIndexBuffer(quadTextureInices, ARRAYSIZE(quadTextureInices));
+    FullScreenIndexCount = ARRAYSIZE(quadTextureInices);
+
+    D3D11_SAMPLER_DESC SamplerDesc = {};
+    SamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; // 선형 필터링
+    SamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;    // U축 래핑 모드
+    SamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;    // V축 래핑 모드
+    SamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+
+    Graphics->Device->CreateSamplerState(&SamplerDesc, &FullScreenSamplerState);
+}
+
+void FRenderer::RenderFullScreen()
+{
+    PrepareFullScreenShader();
+    
+    UINT offset = 0;
+    Graphics->DeviceContext->IASetVertexBuffers(0, 1, &FullScreenVertexBuffer, &TextureStride, &offset);
+    Graphics->DeviceContext->IASetIndexBuffer(FullScreenIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    Graphics->DeviceContext->PSSetShaderResources(0, Graphics->RenderResourceTextureCount, Graphics->FullScreenResourceView);
+    Graphics->DeviceContext->PSSetSamplers(0, 1, &FullScreenSamplerState);
+    Graphics->DeviceContext->DrawIndexed(FullScreenIndexCount, 0, 0);
+    
+    OrganizeFullScreen();
+}
+
+void FRenderer::OrganizeFullScreen()
+{
+    Graphics->DeviceContext->OMSetRenderTargets(1, &Graphics->FrameBufferRTV, Graphics->DepthStencilView); // 렌더 타겟 설정(백버퍼를 가르킴)
+    Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStencilState, 0);
+
+    Graphics->DeviceContext->VSSetShader(UEditorEngine::renderer.VertexShader, nullptr, 0);
+    Graphics->DeviceContext->PSSetShader(UEditorEngine::renderer.PixelShader, nullptr, 0);
+    Graphics->DeviceContext->IASetInputLayout(UEditorEngine::renderer.InputLayout);
 }
 
 void FRenderer::RenderPrimitive(ID3D11Buffer* pBuffer, UINT numVertices) const
@@ -394,16 +467,16 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
             StaticMeshComp->GetWorldScale()
         );
         // 최종 MVP 행렬
-        FMatrix MVP = Model * ActiveViewport->GetViewMatrix() * ActiveViewport->GetProjectionMatrix();
+        FMatrix VP = ActiveViewport->GetViewMatrix() * ActiveViewport->GetProjectionMatrix();
         // 노말 회전시 필요 행렬
-        FMatrix NormalMatrix = FMatrix::Transpose(FMatrix::Inverse(Model));
+        FMatrix NormalMatrix = FMatrix::FMatrix::Inverse(Model);
         FVector4 UUIDColor = StaticMeshComp->EncodeUUID() / 255.0f;
         if (World->GetSelectedActor() == StaticMeshComp->GetOwner())
         {
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, true);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, true);
         }
         else
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, false);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, false);
 
         if (USkySphereComponent* skysphere = Cast<USkySphereComponent>(StaticMeshComp))
         {
@@ -450,7 +523,6 @@ void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorV
 
     for (auto GizmoComp : GizmoObjs)
     {
-
         if ((GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowX ||
             GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowY ||
             GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowZ)
@@ -470,15 +542,15 @@ void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorV
             GizmoComp->GetWorldRotation(),
             GizmoComp->GetWorldScale()
         );
-        FMatrix NormalMatrix = FMatrix::Transpose(FMatrix::Inverse(Model));
+        FMatrix NormalMatrix = FMatrix::Inverse(Model);
         FVector4 UUIDColor = GizmoComp->EncodeUUID() / 255.0f;
 
-        FMatrix MVP = Model * ActiveViewport->GetViewMatrix() * ActiveViewport->GetProjectionMatrix();
+        FMatrix VP = ActiveViewport->GetViewMatrix() * ActiveViewport->GetProjectionMatrix();
 
         if (GizmoComp == World->GetPickingGizmo())
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, true);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, true);
         else
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, false);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, false);
 
         if (!GizmoComp->GetStaticMesh()) continue;
 
@@ -506,13 +578,13 @@ void FRenderer::RenderBillboards(UWorld* World, std::shared_ptr<FEditorViewportC
         FMatrix Model = BillboardComp->CreateBillboardMatrix();
 
         // 최종 MVP 행렬
-        FMatrix MVP = Model * ActiveViewport->GetViewMatrix() * ActiveViewport->GetProjectionMatrix();
-        FMatrix NormalMatrix = FMatrix::Transpose(FMatrix::Inverse(Model));
+        FMatrix VP = ActiveViewport->GetViewMatrix() * ActiveViewport->GetProjectionMatrix();
+        FMatrix NormalMatrix = FMatrix::Inverse(Model);
         FVector4 UUIDColor = BillboardComp->EncodeUUID() / 255.0f;
         if (BillboardComp == World->GetPickingGizmo())
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, true);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, true);
         else
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, MVP, NormalMatrix, UUIDColor, false);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, false);
 
         if (UParticleSubUVComp* SubUVParticle = Cast<UParticleSubUVComp>(BillboardComp))
         {
@@ -573,11 +645,24 @@ void FRenderer::ChangeViewMode(EViewModeIndex evi) const
     case VMI_Lit:
         ConstantBufferUpdater.UpdateLitUnlitConstant(FlagBuffer, 1);
         break;
-    case VMI_DepthView:
-        Graphics->RenderDepthMode();
     default:
         ConstantBufferUpdater.UpdateLitUnlitConstant(FlagBuffer, 0);
         break;
+    }
+
+    if (evi == VMI_DepthView)
+    {
+        ConstantBufferUpdater.UpdateFullScreenConstant(FullScreenConstantBuffer, true);
+        Graphics->RenderResourceTextureCount = 1;
+        Graphics->FullScreenResourceView[0] = Graphics->DepthStencilResourceView;
+    }else
+    {
+        ConstantBufferUpdater.UpdateFullScreenConstant(FullScreenConstantBuffer, false);
+        Graphics->RenderResourceTextureCount = 4;
+        for (int i=0;i<Graphics->RenderResourceTextureCount;i++)
+        {
+            Graphics->FullScreenResourceView[i] = Graphics->DeferredSRVs[i];
+        }
     }
 }
 

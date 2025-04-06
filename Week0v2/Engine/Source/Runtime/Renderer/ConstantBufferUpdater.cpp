@@ -1,12 +1,15 @@
 #include "ConstantBufferUpdater.h"
 #include <Engine/Texture.h>
 
+#include "Components/FogComponent.h"
+#include "UnrealEd/EditorViewportClient.h"
+
 void FConstantBufferUpdater::Initialize(ID3D11DeviceContext* InDeviceContext)
 {
     DeviceContext = InDeviceContext;
 }
 
-void FConstantBufferUpdater::UpdateConstant(ID3D11Buffer* ConstantBuffer, const FMatrix& MVP, const FMatrix& NormalMatrix, FVector4 UUIDColor, bool IsSelected) const
+void FConstantBufferUpdater::UpdateConstant(ID3D11Buffer* ConstantBuffer, const FMatrix& M, const FMatrix& VP, const FMatrix& NormalMatrix, FVector4 UUIDColor, bool IsSelected) const
 {
     if (ConstantBuffer)
     {
@@ -15,7 +18,8 @@ void FConstantBufferUpdater::UpdateConstant(ID3D11Buffer* ConstantBuffer, const 
         DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR); // update constant buffer every frame
         {
             FConstants* constants = static_cast<FConstants*>(ConstantBufferMSR.pData);
-            constants->MVP = MVP;
+            constants->M = M;
+            constants->VP = VP;
             constants->ModelMatrixInverseTranspose = NormalMatrix;
             constants->UUIDColor = UUIDColor;
             constants->IsSelected = IsSelected;
@@ -78,6 +82,20 @@ void FConstantBufferUpdater::UpdateLitUnlitConstant(ID3D11Buffer* FlagBuffer, in
     }
 }
 
+void FConstantBufferUpdater::UpdateFullScreenConstant(ID3D11Buffer* FullScreenConstantBuffer, bool bIsDepth) const
+{
+    if (FullScreenConstantBuffer)
+    {
+        D3D11_MAPPED_SUBRESOURCE constantbufferMSR;
+        DeviceContext->Map(FullScreenConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantbufferMSR);
+        FFullScreenConstants* constants = static_cast<FFullScreenConstants*>(constantbufferMSR.pData);
+        {
+            constants->bIsDepth = static_cast<int>(bIsDepth);
+        }
+        DeviceContext->Unmap(FullScreenConstantBuffer, 0);
+    }
+}
+
 void FConstantBufferUpdater::UpdateSubMeshConstant(ID3D11Buffer* SubMeshConstantBuffer, bool isSelected) const
 {
     if (SubMeshConstantBuffer)
@@ -120,5 +138,49 @@ void FConstantBufferUpdater::UpdateSubUVConstant(ID3D11Buffer* SubUVConstantBuff
             constants->indexV = _indexV;
         }
         DeviceContext->Unmap(SubUVConstantBuffer, 0);
+    }
+}
+
+void FConstantBufferUpdater::UpdateCameraPosConstant(ID3D11Buffer* CameraPosConstantBuffer, std::shared_ptr<FEditorViewportClient> ActiveViewPort)
+{
+    if (CameraPosConstantBuffer)
+    {
+        D3D11_MAPPED_SUBRESOURCE constantbufferMSR;
+
+        DeviceContext->Map(CameraPosConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantbufferMSR);
+        FCameraPosConstants* constants = (FCameraPosConstants*)constantbufferMSR.pData;
+        {
+            constants->CameraPos = ActiveViewPort->ViewTransformPerspective.GetLocation();
+        }
+        DeviceContext->Unmap(CameraPosConstantBuffer, 0);
+    }
+    
+}
+
+void FConstantBufferUpdater::UpdateFogConstant(ID3D11Buffer* FogConstantBuffer, UFogComponent* FogComp)
+{
+    if (FogConstantBuffer)
+    {
+        bool bIsFogOn = false;
+        if (FogComp)
+        {
+            bIsFogOn = true;
+        }
+        
+        D3D11_MAPPED_SUBRESOURCE constantbufferMSR;
+
+        DeviceContext->Map(FogConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantbufferMSR);
+        FFogConstants* constants = (FFogConstants*)constantbufferMSR.pData;
+        {
+            constants->bIsFogOn = static_cast<int>(bIsFogOn);
+            if (bIsFogOn)
+            {
+                constants->Color = FogComp->GetColor();
+                constants->Density = FogComp->GetDensity();
+                constants->FogStart = FogComp->GetStart();
+                constants->FogEnd = FogComp->GetEnd();
+            }
+        }
+        DeviceContext->Unmap(FogConstantBuffer, 0);
     }
 }

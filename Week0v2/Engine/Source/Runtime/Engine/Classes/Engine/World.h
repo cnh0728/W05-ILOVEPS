@@ -3,6 +3,7 @@
 #include "EngineBaseTypes.h"
 #include "EngineTypes.h"
 #include "Level.h"
+#include "Components/FogComponent.h"
 #include "Container/Set.h"
 #include "UObject/ObjectFactory.h"
 #include "UObject/ObjectMacros.h"
@@ -54,6 +55,7 @@ private:
     AActor* SelectedActor = nullptr;
     USceneComponent* pickingGizmo = nullptr;
     AEditorPlayer* EditorPlayer = nullptr;
+    UFogComponent* FogComponent;
 public:
     EWorldType::Type WorldType = EWorldType::None;
     const TSet<AActor*>& GetActors() const { return Level->GetActors(); }
@@ -65,6 +67,15 @@ public:
     void SetPickedActor(AActor* InActor)
     {
         SelectedActor = InActor;
+    }
+
+    UFogComponent* GetFog()
+    {
+        return FogComponent;
+    }
+    void SetFog(UFogComponent* InFog)
+    {
+        FogComponent = InFog;
     }
 
     USceneComponent* GetPickingGizmo() const { return pickingGizmo; }

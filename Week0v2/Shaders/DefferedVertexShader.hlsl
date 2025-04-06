@@ -1,7 +1,8 @@
 // MatrixBuffer: 변환 행렬 관리
 cbuffer MatrixConstants : register(b0)
 {
-    row_major float4x4 MVP;
+    row_major float4x4 M;
+    row_major float4x4 VP;
     row_major float4x4 MInverseTranspose;
     float4 UUID;
     bool isSelected;
@@ -20,39 +21,41 @@ struct VS_INPUT
 struct PS_INPUT
 {
     float4 position : SV_POSITION; // 변환된 화면 좌표
+    float3 worldPos : TEXCOORD0;
     float4 color : COLOR; // 전달할 색상
     float3 normal : NORMAL; // 정규화된 노멀 벡터
-    bool normalFlag : TEXCOORD0; // 노멀 유효성 플래그 (1.0: 유효, 0.0: 무효)
-    float2 texcoord : TEXCOORD1;
+    bool normalFlag : TEXCOORD1; // 노멀 유효성 플래그 (1.0: 유효, 0.0: 무효)
+    float2 texcoord : TEXCOORD2;
     int materialIndex : MATERIAL_INDEX;
 };
 
 PS_INPUT mainVS(VS_INPUT input)
 {
     PS_INPUT output;
-    
-    output.materialIndex = input.materialIndex;
-    
+
+    float4 worldPos = mul(input.position, M);
+    output.worldPos = worldPos.xyz;
+    output.position = mul(worldPos, VP);
     // 위치 변환
-    output.position = mul(input.position, MVP);
     output.color = input.color;
+    
     if (isSelected)
         output.color *= 0.5;
+
     // 입력 normal 값의 길이 확인
-    float normalThreshold = 0.001;
-    float normalLen = length(input.normal);
-    
-    if (normalLen < normalThreshold)
+    if (length(input.normal) > 0.001)
     {
-        output.normalFlag = 0.0;
+        output.normal = normalize(mul(input.normal, MInverseTranspose));
+        output.normalFlag = true; 
     }
     else
     {
-        //output.normal = normalize(input.normal);
-        output.normal = mul(input.normal, MInverseTranspose);
-        output.normalFlag = 1.0;
+        output.normal = float3(0, 0, 0);
+        output.normalFlag = false;
     }
+    
     output.texcoord = input.texcoord;
+    output.materialIndex = input.materialIndex;
     
     return output;
 }

@@ -33,12 +33,10 @@ int32 UEditorEngine::Init(HWND hwnd)
     /* must be initialized before window. */
     hWnd = hwnd;
     graphicDevice.Initialize(hWnd);
-    renderer.Initialize(&graphicDevice);
     UIMgr = new UImGuiManager;
     UIMgr->Initialize(hWnd, graphicDevice.Device, graphicDevice.DeviceContext);
     resourceMgr.Initialize(&renderer, &graphicDevice);
-
-    graphicDevice.CreateScreenBuffer();
+    renderer.Initialize(&graphicDevice);
     
     FWorldContext EditorContext;
     EditorContext.WorldType = EWorldType::Editor;

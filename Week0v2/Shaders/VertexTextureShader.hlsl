@@ -15,8 +15,6 @@ cbuffer constants : register(b0)
 }
 
 PSInput main(VSInput input) {
-
-
     PSInput output;
     output.position = mul(float4(input.position, 1.0f), MVP);
     

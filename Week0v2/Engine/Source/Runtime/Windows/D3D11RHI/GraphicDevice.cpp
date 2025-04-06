@@ -21,7 +21,7 @@ void FGraphicsDevice::CreateDeviceAndSwapChain(HWND hWindow) {
     // 스왑 체인 설정 구조체 초기화
     SwapchainDesc.BufferDesc.Width = 0; // 창 크기에 맞게 자동으로 설정
     SwapchainDesc.BufferDesc.Height = 0; // 창 크기에 맞게 자동으로 설정
-    SwapchainDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM; // 색상 포맷
+    SwapchainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // 색상 포맷
     SwapchainDesc.SampleDesc.Count = 1; // 멀티 샘플링 비활성화
     SwapchainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; // 렌더 타겟으로 사용
     SwapchainDesc.BufferCount = 2; // 더블 버퍼링
@@ -97,25 +97,6 @@ void FGraphicsDevice::CreateDepthStencilBuffer(HWND hWindow) {
     copySrvDesc.Texture2D.MipLevels = 1;
     
     Device->CreateShaderResourceView(DepthStencilBuffer, &copySrvDesc, &DepthStencilResourceView);
-}
-
-void FGraphicsDevice::RenderDepthMode()
-{
-    //밑에는 렌더구간
-    DeviceContext->VSSetShader(UEditorEngine::renderer.DepthVertexShader, nullptr, 0);
-    DeviceContext->PSSetShader(UEditorEngine::renderer.DepthPixelShader, nullptr, 0);
-    DeviceContext->IASetInputLayout(UEditorEngine::renderer.TextureInputLayout);
-    DeviceContext->OMSetDepthStencilState(nullptr, 0);
-    DeviceContext->OMSetRenderTargets(2, RTVs, nullptr); // 렌더 타겟 설정(백버퍼를 가르킴)
-
-    UEditorEngine::renderer.RenderTexturePrimitive(ScreenVertexBuffer, ScreenVertexCount, ScreenIndexBuffer, ScreenIndexCount, DepthStencilResourceView, ScreenSamplerState);
-
-    DeviceContext->OMSetRenderTargets(2, RTVs, DepthStencilView); // 렌더 타겟 설정(백버퍼를 가르킴)
-    DeviceContext->OMSetDepthStencilState(DepthStencilState, 0);
-
-    DeviceContext->VSSetShader(UEditorEngine::renderer.VertexShader, nullptr, 0);
-    DeviceContext->PSSetShader(UEditorEngine::renderer.PixelShader, nullptr, 0);
-    DeviceContext->IASetInputLayout(UEditorEngine::renderer.InputLayout);
 }
 
 void FGraphicsDevice::CreateDepthStencilState()
@@ -206,7 +187,7 @@ void FGraphicsDevice::CreateFrameBuffer()
 
     // 렌더 타겟 뷰 생성
     D3D11_RENDER_TARGET_VIEW_DESC framebufferRTVdesc = {};
-    framebufferRTVdesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB; // 색상 포맷
+    framebufferRTVdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB; // 색상 포맷
     framebufferRTVdesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D; // 2D 텍스처
 
     Device->CreateRenderTargetView(FrameBuffer, &framebufferRTVdesc, &FrameBufferRTV);
@@ -229,8 +210,38 @@ void FGraphicsDevice::CreateFrameBuffer()
 
     Device->CreateRenderTargetView(UUIDFrameBuffer, &UUIDFrameBufferRTVDesc, &UUIDFrameBufferRTV);
 
+    textureDesc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+    Device->CreateTexture2D(&textureDesc, nullptr, &PositionFrameBuffer);
+    Device->CreateRenderTargetView(PositionFrameBuffer, nullptr, &PositionFrameBufferRTV);
+    Device->CreateShaderResourceView(PositionFrameBuffer, nullptr, &PositionResourceView);
+    
+    textureDesc.Format = DXGI_FORMAT_R16G16B16A16_FLOAT;
+    Device->CreateTexture2D(&textureDesc, nullptr, &NormalFrameBuffer);
+    Device->CreateRenderTargetView(NormalFrameBuffer, nullptr, &NormalFrameBufferRTV);
+    Device->CreateShaderResourceView(NormalFrameBuffer, nullptr, &NormalResourceView);
+    
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    Device->CreateTexture2D(&textureDesc, nullptr, &AlbedoFrameBuffer);
+    Device->CreateRenderTargetView(AlbedoFrameBuffer, nullptr, &AlbedoFrameBufferRTV);
+    Device->CreateShaderResourceView(AlbedoFrameBuffer, nullptr, &AlbedoResourceView);
+
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    Device->CreateTexture2D(&textureDesc, nullptr, &MaterialFrameBuffer);
+    Device->CreateRenderTargetView(MaterialFrameBuffer, nullptr, &MaterialFrameBufferRTV);
+    Device->CreateShaderResourceView(MaterialFrameBuffer, nullptr, &MaterialResourceView);
+    
     RTVs[0] = FrameBufferRTV;
     RTVs[1] = UUIDFrameBufferRTV;
+    
+    DefferedRTVs[0] = PositionFrameBufferRTV;
+    DefferedRTVs[1] = NormalFrameBufferRTV;
+    DefferedRTVs[2] = AlbedoFrameBufferRTV;
+    DefferedRTVs[3] = MaterialFrameBufferRTV;
+
+    DeferredSRVs[0] = PositionResourceView;
+    DeferredSRVs[1] = NormalResourceView;
+    DeferredSRVs[2] = AlbedoResourceView;
+    DeferredSRVs[3] = MaterialResourceView;
 }
 
 void FGraphicsDevice::ReleaseFrameBuffer()
@@ -257,6 +268,78 @@ void FGraphicsDevice::ReleaseFrameBuffer()
     {
         UUIDFrameBufferRTV->Release();
         UUIDFrameBufferRTV = nullptr;
+    }
+
+    if (PositionFrameBuffer)
+    {
+        PositionFrameBuffer->Release();
+        PositionFrameBuffer = nullptr;
+    }
+
+    if (PositionFrameBufferRTV)
+    {
+        PositionFrameBufferRTV->Release();
+        PositionFrameBufferRTV = nullptr;
+    }
+
+    if (PositionResourceView)
+    {
+        PositionResourceView->Release();
+        PositionResourceView = nullptr;
+    }
+    
+    if (NormalFrameBuffer)
+    {
+        NormalFrameBuffer->Release();
+        NormalFrameBuffer = nullptr;
+    }
+
+    if (NormalFrameBufferRTV)
+    {
+        NormalFrameBufferRTV->Release();
+        NormalFrameBufferRTV = nullptr;
+    }
+
+    if (NormalResourceView)
+    {
+        NormalResourceView->Release();
+        NormalResourceView = nullptr;
+    }
+    
+    if (AlbedoFrameBuffer)
+    {
+        AlbedoFrameBuffer->Release();
+        AlbedoFrameBuffer = nullptr;
+    }
+    
+    if (AlbedoResourceView)
+    {
+        AlbedoResourceView->Release();
+        AlbedoResourceView = nullptr;
+    }
+
+    if (AlbedoResourceView)
+    {
+        AlbedoResourceView->Release();
+        AlbedoResourceView = nullptr;
+    }
+    
+    if (MaterialFrameBuffer)
+    {
+        MaterialFrameBuffer->Release();
+        MaterialFrameBuffer = nullptr;
+    }
+
+    if (MaterialResourceView)
+    {
+        MaterialResourceView->Release();
+        MaterialResourceView = nullptr;
+    }
+
+    if (MaterialResourceView)
+    {
+        MaterialResourceView->Release();
+        MaterialResourceView = nullptr;
     }
 }
 
@@ -318,27 +401,18 @@ void FGraphicsDevice::SwapBuffer() {
     SwapChain->Present(1, 0);
 }
 
-void FGraphicsDevice::CreateScreenBuffer()
-{
-    ScreenVertexBuffer = UEditorEngine::renderer.GetResourceManager().CreateVertexBuffer(quadTextureVertices, ARRAYSIZE(quadTextureVertices));
-    ScreenVertexCount = ARRAYSIZE(quadTextureVertices);
-    
-    ScreenIndexBuffer = UEditorEngine::renderer.GetResourceManager().CreateIndexBuffer(quadTextureInices, ARRAYSIZE(quadTextureInices));
-    ScreenIndexCount = ARRAYSIZE(quadTextureInices);
-
-    D3D11_SAMPLER_DESC SamplerDesc = {};
-    SamplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR; // 선형 필터링
-    SamplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;    // U축 래핑 모드
-    SamplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;    // V축 래핑 모드
-    SamplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
-
-    Device->CreateSamplerState(&SamplerDesc, &ScreenSamplerState);
-}
-
 void FGraphicsDevice::Prepare()
 {
-    DeviceContext->ClearRenderTargetView(FrameBufferRTV, ClearColor); // 렌더 타겟 뷰에 저장된 이전 프레임 데이터를 삭제
-    DeviceContext->ClearRenderTargetView(UUIDFrameBufferRTV, ClearColor); // 렌더 타겟 뷰에 저장된 이전 프레임 데이터를 삭제
+    for (ID3D11RenderTargetView* RTV : RTVs)
+    {
+        DeviceContext->ClearRenderTargetView(RTV, ClearColor); 
+    }
+    
+    for (ID3D11RenderTargetView* DRTV : DefferedRTVs)
+    {
+        DeviceContext->ClearRenderTargetView(DRTV, ClearColor); 
+    }
+    
     DeviceContext->ClearDepthStencilView(DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0); // 깊이 버퍼 초기화 추가
 
     DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST); // 정정 연결 방식 설정
@@ -348,7 +422,7 @@ void FGraphicsDevice::Prepare()
 
     DeviceContext->OMSetDepthStencilState(DepthStencilState, 0);
 
-    DeviceContext->OMSetRenderTargets(2, RTVs, DepthStencilView); // 렌더 타겟 설정(백버퍼를 가르킴)
+    DeviceContext->OMSetRenderTargets(ARRAYSIZE(DefferedRTVs), DefferedRTVs, DepthStencilView); // 렌더 타겟 설정(백버퍼를 가르킴)
     DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff); // 블렌뎅 상태 설정, 기본블렌딩 상태임
 }
 
@@ -368,7 +442,6 @@ void FGraphicsDevice::Prepare()
 //     DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff); // 블렌뎅 상태 설정, 기본블렌딩 상태임
 // }
 
-
 void FGraphicsDevice::OnResize(HWND hWindow) {
     // DeviceContext->OMSetRenderTargets(0, RTVs, 0);
     
@@ -385,8 +458,6 @@ void FGraphicsDevice::OnResize(HWND hWindow) {
 
     ReleaseFrameBuffer();
 
-
-
     if (screenWidth == 0 || screenHeight == 0) {
         MessageBox(hWindow, L"Invalid width or height for ResizeBuffers!", L"Error", MB_ICONERROR | MB_OK);
         return;
@@ -394,7 +465,7 @@ void FGraphicsDevice::OnResize(HWND hWindow) {
 
     // SwapChain 크기 조정
     HRESULT hr;
-    hr = SwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_B8G8R8A8_UNORM, 0);  // DXGI_FORMAT_B8G8R8A8_UNORM으로 시도
+    hr = SwapChain->ResizeBuffers(0, 0, 0, DXGI_FORMAT_R8G8B8A8_UNORM, 0);  // DXGI_FORMAT_B8G8R8A8_UNORM으로 시도
     if (FAILED(hr)) {
         MessageBox(hWindow, L"failed", L"ResizeBuffers failed ", MB_ICONERROR | MB_OK);
         return;

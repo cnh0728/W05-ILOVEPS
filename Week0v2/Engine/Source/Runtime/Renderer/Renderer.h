@@ -30,8 +30,9 @@ private:
     float litFlag = 0;
 public:
     FGraphicsDevice* Graphics;
-    ID3D11VertexShader* VertexShader = nullptr;
-    ID3D11PixelShader* PixelShader = nullptr;
+    ID3D11VertexShader* VertexShader = nullptr;     //main
+    ID3D11PixelShader* PixelShader = nullptr;       //main
+    
     ID3D11InputLayout* InputLayout = nullptr;
     ID3D11Buffer* ConstantBuffer = nullptr;
     ID3D11Buffer* LightingBuffer = nullptr;
@@ -39,7 +40,10 @@ public:
     ID3D11Buffer* MaterialConstantBuffer = nullptr;
     ID3D11Buffer* SubMeshConstantBuffer = nullptr;
     ID3D11Buffer* TextureConstantBufer = nullptr;
-
+    ID3D11Buffer* FogConstantBuffer = nullptr;
+    ID3D11Buffer* FullScreenConstantBuffer = nullptr;
+    ID3D11Buffer* CameraPosConstantBuffer = nullptr;
+    
     FLighting lightingData;
 
     uint32 Stride;
@@ -49,12 +53,12 @@ public:
     void Initialize(FGraphicsDevice* graphics);
    
     void PrepareShader() const;
-    
+    void PrepareFullScreenShader() const;
+
     //Render
     void RenderPrimitive(ID3D11Buffer* pBuffer, UINT numVertices) const;
     void RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT numVertices, ID3D11Buffer* pIndexBuffer, UINT numIndices) const;
     void RenderPrimitive(OBJ::FStaticMeshRenderData* renderData, TArray<FStaticMaterial*> materials, TArray<UMaterial*> overrideMaterial, int selectedSubMeshIndex) const;
-
 
     void RenderTexturedModelPrimitive(ID3D11Buffer* pVertexBuffer, UINT numVertices, ID3D11Buffer* pIndexBuffer, UINT numIndices, ID3D11ShaderResourceView* InTextureSRV, ID3D11SamplerState* InSamplerState) const;
     //Release
@@ -76,6 +80,7 @@ public:
 public://텍스쳐용 기능 추가
     ID3D11VertexShader* VertexTextureShader = nullptr;
     ID3D11PixelShader* PixelTextureShader = nullptr;
+
     ID3D11InputLayout* TextureInputLayout = nullptr;
 
     uint32 TextureStride;
@@ -118,6 +123,9 @@ public: // line shader
     void PrepareRender();
     void ClearRenderArr();
     void Render(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
+    void CreateScreenBuffer();
+    void RenderFullScreen();
+    void OrganizeFullScreen();
     void RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport);
     void RenderLight(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
@@ -137,8 +145,14 @@ public:
     ID3D11ShaderResourceView* pConeSRV = nullptr;
     ID3D11ShaderResourceView* pOBBSRV = nullptr;
 
-    ID3D11VertexShader* DepthVertexShader = nullptr;
-    ID3D11PixelShader* DepthPixelShader = nullptr;
+    ID3D11VertexShader* FullScreenVertexShader = nullptr;
+    ID3D11PixelShader* FullScreenPixelShader = nullptr;
+
+    ID3D11Buffer* FullScreenVertexBuffer = nullptr;
+    ID3D11Buffer* FullScreenIndexBuffer = nullptr;
+    ID3D11SamplerState* FullScreenSamplerState = nullptr;
+    UINT FullScreenVertexCount;
+    UINT FullScreenIndexCount;
     
 public:
     FRenderResourceManager& GetResourceManager() { return RenderResourceManager; }

@@ -1,5 +1,6 @@
 #include "ControlEditorPanel.h"
 
+#include "LaunchEngineLoop.h"
 #include "Engine/World.h"
 #include "Actors/Player.h"
 #include "Components/CubeComp.h"
@@ -16,6 +17,7 @@
 #include "PropertyEditor/ShowFlags.h"
 #include "UnrealEd/SceneMgr.h"
 #include "UEditorStateManager.h"
+#include "Components/FogComponent.h"
 
 void ControlEditorPanel::Render()
 {
@@ -260,7 +262,8 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
             { .label= "Sphere",    .obj= OBJ_SPHERE },
             { .label= "SpotLight", .obj= OBJ_SpotLight },
             { .label= "Particle",  .obj= OBJ_PARTICLE },
-            { .label= "Text",      .obj= OBJ_Text }
+            { .label= "Text",      .obj= OBJ_Text },
+            {.label="Fog",       .obj= OBJ_Fog },
         };
 
         for (const auto& primitive : primitives)
@@ -284,8 +287,8 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                     AStaticMeshActor* TempActor = World->SpawnActor<AStaticMeshActor>();
                     TempActor->SetActorLabel(TEXT("OBJ_CUBE"));
                     UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
-                    FManagerOBJ::CreateStaticMesh("Assets/Cube.obj");
-                    MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"Cube.obj"));
+                    FManagerOBJ::CreateStaticMesh("Assets/apple_mid.obj");
+                    MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"apple_mid.obj"));
                     break;
                 }
                 case OBJ_SpotLight:
@@ -318,6 +321,19 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                     TextComponent->SetText(L"안녕하세요 Jungle 1");
                     break;
                 }
+                case OBJ_Fog:
+                {
+                    UFogComponent* FogComponent = World->GetFog();
+                    if (FogComponent == nullptr)
+                    {
+                        SpawnedActor = World->SpawnActor<AActor>();
+                        SpawnedActor->SetActorLabel(TEXT("OBJ_Fog"));
+                        FogComponent = SpawnedActor->AddComponent<UFogComponent>();
+                        World->SetFog(FogComponent);
+                    }
+                    break;
+                }
+                    
                 case OBJ_TRIANGLE:
                 case OBJ_CAMERA:
                 case OBJ_PLAYER:
@@ -386,8 +402,6 @@ void ControlEditorPanel::CreateFlagButton() const
             if (ImGui::Selectable(ViewModeNames[i], bIsSelected))
             {
                 ActiveViewport->SetViewMode((EViewModeIndex)i);
-                UEditorEngine::graphicDevice.ChangeRasterizer(ActiveViewport->GetViewMode());
-                UEditorEngine::renderer.ChangeViewMode(ActiveViewport->GetViewMode());
             }
 
             if (bIsSelected)
