@@ -37,7 +37,7 @@ private:
     float MaxSpeed;
     FVector Acceleration;
     float GravityScale;
-    //FVector Velocity;
+    FVector Velocity;
 
 private:
     float Timer = 0.0f;

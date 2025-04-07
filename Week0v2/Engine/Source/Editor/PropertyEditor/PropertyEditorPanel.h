@@ -1,6 +1,7 @@
 #pragma once
 #include "Components/ActorComponent.h"
 #include "UnrealEd/EditorPanel.h"
+#include "Container/Set.h"
 
 class UStaticMeshComponent;
 class USceneComponent;
@@ -9,7 +10,9 @@ class PropertyEditorPanel : public UEditorPanel
 {
 public:
     virtual void Render() override;
-    void DrawSceneComponentTree(UActorComponent* Component, UActorComponent*& PickedComponent);
+    void DrawSceneComponentTree(USceneComponent* Component, UActorComponent*& PickedComponent);
+    void DrawSceneComponentTree(USceneComponent* Component, UActorComponent*& PickedComponent, AActor* Actor, const TSet<UActorComponent*>& AllComponents);
+
     virtual void OnResize(HWND hWnd) override;
 
 

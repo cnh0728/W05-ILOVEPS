@@ -13,6 +13,7 @@
 #include <Components/CubeComp.h>
 #include <Components/UParticleSubUVComp.h>
 #include "Components/ProjectileMovementComponent.h"
+#include "GameFramework/Actor.h"
 
 void PropertyEditorPanel::Render()
 {
@@ -47,26 +48,44 @@ void PropertyEditorPanel::Render()
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor)
     {
+        const TSet<UActorComponent*>& AllComponents = PickedActor->GetComponents();
         if (ImGui::TreeNodeEx("Components", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow))
         {
-            const TSet<UActorComponent*>& AllComponents = PickedActor->GetComponents();
+            // 먼저, SceneComponent(AttachParent가 없는 루트 컴포넌트)를 트리 구조로 출력
             for (UActorComponent* Component : AllComponents)
             {
                 if (USceneComponent* SceneComp = Cast<USceneComponent>(Component))
                 {
                     if (SceneComp->GetAttachParent() == nullptr)
                     {
-                        DrawSceneComponentTree(SceneComp, PickedComponent);
+                        DrawSceneComponentTree(SceneComp, PickedComponent, PickedActor, AllComponents);
                     }
                 }
             }
 
+            // 그리고, SceneComponent가 아닌 컴포넌트 중에 부착 정보가 없는 경우(예, 별도로 출력되어야 할 경우)는 리프 노드로 출력
+            for (UActorComponent* Component : AllComponents)
+            {
+                // UProjectileMovementComponent는 이미 위에서 Actor의 RootComponent에 부착된 것으로 출력되므로 건너뜁니다.
+                if (!Component->IsA<USceneComponent>() && !Component->IsA<UProjectileMovementComponent>())
+                {
+                    FString Label = *Component->GetName();
+                    bool bSelected = (PickedComponent == Component);
+                    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                    if (bSelected)
+                        nodeFlags |= ImGuiTreeNodeFlags_Selected;
+
+                    ImGui::TreeNodeEx(*Label, nodeFlags);
+                    if (ImGui::IsItemClicked())
+                        PickedComponent = Component;
+                }
+            }
+
+            // 컴포넌트 추가 버튼 및 팝업은 그대로 유지
             if (ImGui::Button("+", ImVec2(ImGui::GetWindowContentRegionMax().x * 0.9f, 32)))
             {
                 ImGui::OpenPopup("AddComponentPopup");
             }
-
-            // 팝업 메뉴
             if (ImGui::BeginPopup("AddComponentPopup"))
             {
                 if (ImGui::Selectable("TextComponent"))
@@ -77,7 +96,7 @@ void PropertyEditorPanel::Render()
                     TextComponent->SetRowColumnCount(106, 106);
                     TextComponent->SetText(L"안녕하세요 Jungle");
                 }
-                if (ImGui::Selectable("BillboardComponent"))    
+                if (ImGui::Selectable("BillboardComponent"))
                 {
                     UBillboardComponent* BillboardComponent = PickedActor->AddComponent<UBillboardComponent>();
                     PickedComponent = BillboardComponent;
@@ -112,16 +131,15 @@ void PropertyEditorPanel::Render()
                 }
                 if (ImGui::Selectable("ProjectileMovementComponent"))
                 {
+                    // 추가 시, UProjectileMovementComponent는 이후에 Actor의 RootComponent에 “부착”된 것으로 처리됩니다.
                     UProjectileMovementComponent* ProjectileMovementComponent = PickedActor->AddComponent<UProjectileMovementComponent>();
                     PickedComponent = ProjectileMovementComponent;
                 }
-
                 ImGui::EndPopup();
             }
             ImGui::TreePop();
         }
     }
-
 
 
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
@@ -377,7 +395,7 @@ void PropertyEditorPanel::Render()
 
 }
 
-void PropertyEditorPanel::DrawSceneComponentTree(UActorComponent* Component, UActorComponent*& PickedComponent)
+void PropertyEditorPanel::DrawSceneComponentTree(USceneComponent* Component, UActorComponent*& PickedComponent)
 {
     if (!Component) return;
 
@@ -397,17 +415,59 @@ void PropertyEditorPanel::DrawSceneComponentTree(UActorComponent* Component, UAc
        PickedComponent = Component;
    }
 
-   USceneComponent* TempComponent = Cast<USceneComponent>(Component);
-
    // 자식 재귀 호출
    if (bOpened)
    {
-       for (USceneComponent* Child : TempComponent->GetAttachChildren())
+       for (USceneComponent* Child : Component->GetAttachChildren())
        {
            DrawSceneComponentTree(Child, PickedComponent);
        }
        ImGui::TreePop();
    }
+}
+
+void PropertyEditorPanel::DrawSceneComponentTree(USceneComponent* Component, UActorComponent*& PickedComponent, AActor* Actor, const TSet<UActorComponent*>& AllComponents)
+{
+    // 현재 SceneComponent의 노드를 생성
+    FString Label = *Component->GetName();
+    bool bSelected = (PickedComponent == Component);
+    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
+    if (bSelected)
+        nodeFlags |= ImGuiTreeNodeFlags_Selected;
+    bool bOpened = ImGui::TreeNodeEx(*Label, nodeFlags);
+    if (ImGui::IsItemClicked())
+        PickedComponent = Component;
+
+    if (bOpened)
+    {
+        // 자식 SceneComponent 출력
+        for (USceneComponent* Child : Component->GetAttachChildren())
+        {
+            DrawSceneComponentTree(Child, PickedComponent, Actor, AllComponents);
+        }
+
+        // 추가: 현재 SceneComponent(예, Actor의 RootComponent)에 부착된 비씬 컴포넌트 출력
+        // 여기서는 UProjectileMovementComponent를 예로 들었음.
+        if (Actor && Actor->GetRootComponent() == Component)
+        {
+            for (UActorComponent* Comp : AllComponents)
+            {
+                if (Comp->IsA<UProjectileMovementComponent>())
+                {
+                    // Actor의 RootComponent에 “부착된” 것으로 간주하고 리프 노드로 출력
+                    FString Label2 = *Comp->GetName();
+                    bool bSelected2 = (PickedComponent == Comp);
+                    ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                    if (bSelected2)
+                        leafFlags |= ImGuiTreeNodeFlags_Selected;
+                    ImGui::TreeNodeEx(*Label2, leafFlags);
+                    if (ImGui::IsItemClicked())
+                        PickedComponent = Comp;
+                }
+            }
+        }
+        ImGui::TreePop();
+    }
 }
 
 void PropertyEditorPanel::RGBToHSV(float r, float g, float b, float& h, float& s, float& v) const
@@ -564,6 +624,7 @@ void PropertyEditorPanel::RenderForMaterial(UStaticMeshComponent* StaticMeshComp
         RenderCreateMaterialView();
     }
 }
+
 
 void PropertyEditorPanel::RenderMaterialView(UMaterial* Material)
 {

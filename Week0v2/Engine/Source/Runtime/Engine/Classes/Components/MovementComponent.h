@@ -18,6 +18,5 @@ public:
     virtual void PostDuplicate() override;
 
 protected:
-    FVector Velocity;
 };
 

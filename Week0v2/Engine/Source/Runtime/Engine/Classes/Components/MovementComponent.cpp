@@ -7,7 +7,7 @@
 
 #include "Launch/EditorEngine.h"
 
-UMovementComponent::UMovementComponent(const UMovementComponent& other) : Velocity(FVector(0.f, 0.f, 0.f))
+UMovementComponent::UMovementComponent(const UMovementComponent& other) 
 {
 }
 
@@ -18,7 +18,6 @@ UMovementComponent::~UMovementComponent()
 void UMovementComponent::InitializeComponent()
 {
     Super::InitializeComponent();
-    Velocity = FVector(0.f, 1.f, 0.f);
 }
 
 void UMovementComponent::TickComponent(float DeltaTime)
