@@ -43,6 +43,7 @@ public:
     ID3D11Buffer* FogConstantBuffer = nullptr;
     ID3D11Buffer* FullScreenConstantBuffer = nullptr;
     ID3D11Buffer* CameraPosConstantBuffer = nullptr;
+    ID3D11Buffer* PointLightConstantBuffer = nullptr;
     
     FLighting lightingData;
 

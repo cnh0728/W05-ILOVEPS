@@ -1,6 +1,8 @@
 #include "ConstantBufferUpdater.h"
 #include <Engine/Texture.h>
 
+#include "Components/FireballComponent.h"
+#include "Components/SceneComponent.h"
 #include "Components/FogComponent.h"
 #include "UnrealEd/EditorViewportClient.h"
 
@@ -138,6 +140,32 @@ void FConstantBufferUpdater::UpdateSubUVConstant(ID3D11Buffer* SubUVConstantBuff
             constants->indexV = _indexV;
         }
         DeviceContext->Unmap(SubUVConstantBuffer, 0);
+    }
+}
+
+void FConstantBufferUpdater::UpdatePointLightConstant(ID3D11Buffer* PointLightConstantBuffer, TArray<UFireBallComponent*> PointLights)
+{
+    if (PointLightConstantBuffer)
+    {
+        D3D11_MAPPED_SUBRESOURCE constantbufferMSR;
+
+        DeviceContext->Map(PointLightConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &constantbufferMSR);
+        FPointLightConstants* constants = (FPointLightConstants*)constantbufferMSR.pData;
+        {
+            int Index = 0;
+
+            for (UFireBallComponent* Comp : PointLights)
+            {
+                FVector4 Pos = {Comp->GetWorldLocation(), Comp->GetRadius()};
+                constants->PointLightPosition[Index] = Pos;
+                FVector4 TempColor = {Comp->GetColor(), Comp->GetIntensity()};
+                constants->Color[Index] = TempColor;
+                FVector4 TempFalloff = {Comp->GetRadiusFallOff(), 1.0}; //2번째꺼는 유효한건지 판단 기본이 0으로하고 0이면 유효데이터가 아님
+                constants->FallOff[Index] = TempFalloff;
+                Index++;
+            }
+        }
+        DeviceContext->Unmap(PointLightConstantBuffer, 0);
     }
 }
 

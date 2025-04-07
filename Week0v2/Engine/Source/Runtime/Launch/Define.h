@@ -328,6 +328,12 @@ struct alignas(16) FCameraPosConstants{
     float Padding;
 };
 
+struct FPointLightConstants{
+    FVector4 PointLightPosition[50]; //w값은 Radius
+    FVector4 Color[50]; //w값은 Intensity
+    FVector4 FallOff[50]; //x FallOff, y Light갯수
+};
+
 struct alignas(16) FFullScreenConstants{
     int bIsDepth; //bool 뭔가 이상해서 int로
 };

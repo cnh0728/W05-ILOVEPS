@@ -26,6 +26,7 @@ void UWorld::InitWorld()
     // TODO: Load Scene
     CreateBaseObject();
     Level = FObjectFactory::ConstructObject<ULevel>();
+    PointLights = {};
 }
 
 void UWorld::CreateBaseObject()

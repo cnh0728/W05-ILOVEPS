@@ -140,6 +140,7 @@ void FRenderer::PrepareFullScreenShader() const
         Graphics->DeviceContext->PSSetConstantBuffers(0, 1, &FullScreenConstantBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(1, 1, &CameraPosConstantBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(2, 1, &FogConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(3, 1, &PointLightConstantBuffer);
     }
 }
 
@@ -199,6 +200,7 @@ void FRenderer::CreateConstantBuffer()
     FogConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FFogConstants));
     FullScreenConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FFullScreenConstants));
     CameraPosConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FCameraPosConstants));
+    PointLightConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FPointLightConstants));
 }
 
 void FRenderer::ReleaseConstantBuffer()
@@ -215,6 +217,7 @@ void FRenderer::ReleaseConstantBuffer()
     RenderResourceManager.ReleaseBuffer(FogConstantBuffer);
     RenderResourceManager.ReleaseBuffer(FullScreenConstantBuffer);
     RenderResourceManager.ReleaseBuffer(CameraPosConstantBuffer);
+    RenderResourceManager.ReleaseBuffer(PointLightConstantBuffer);
 }
 #pragma endregion ConstantBuffer
 
@@ -286,6 +289,7 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
     Graphics->ChangeRasterizer(ActiveViewport->GetViewMode());
     ConstantBufferUpdater.UpdateLightConstant(LightingBuffer);
     ConstantBufferUpdater.UpdateFogConstant(FogConstantBuffer, World->GetFog()); //TODO: Fog Update시에만 업데이트
+    ConstantBufferUpdater.UpdatePointLightConstant(PointLightConstantBuffer, World->GetPointLights());
     ConstantBufferUpdater.UpdateCameraPosConstant(CameraPosConstantBuffer, ActiveViewport); //TODO: Camera Update시에만 업데이트
     ChangeViewMode(ActiveViewport->GetViewMode());
 

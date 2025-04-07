@@ -3,6 +3,7 @@
 #include "EngineBaseTypes.h"
 #include "EngineTypes.h"
 #include "Level.h"
+#include "Components/FireballComponent.h"
 #include "Components/FogComponent.h"
 #include "Container/Set.h"
 #include "UObject/ObjectFactory.h"
@@ -56,6 +57,7 @@ private:
     USceneComponent* pickingGizmo = nullptr;
     AEditorPlayer* EditorPlayer = nullptr;
     UFogComponent* FogComponent;
+    TArray<UFireBallComponent*> PointLights;
 public:
     EWorldType::Type WorldType = EWorldType::None;
     const TSet<AActor*>& GetActors() const { return Level->GetActors(); }
@@ -78,6 +80,10 @@ public:
         FogComponent = InFog;
     }
 
+    TArray<UFireBallComponent*> GetPointLights() const { return PointLights; }
+    void AddPointLights(UFireBallComponent* InPointLights){ PointLights.Add(InPointLights); }
+    void RemovePointLights(UFireBallComponent* InPointLights){PointLights.Remove(InPointLights);}
+    
     USceneComponent* GetPickingGizmo() const { return pickingGizmo; }
     void SetPickingGizmo(UObject* Object);
 
