@@ -194,6 +194,8 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Engine.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\Level.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\StaticMeshActor.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Fog\FogTypes.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Engine\Fog\UFogComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\ConstantBufferUpdater.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\World.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
@@ -343,6 +345,8 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Level.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\StaticMeshActor.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\World.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Fog\FogTypes.h" />
+    <ClInclude Include="Engine\Source\Runtime\Engine\Fog\UFogComponent.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\UnrealEngine.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\ViewportClient.h" />
     <ClInclude Include="Engine\Source\Editor\LevelEditor\SLevelEditor.h" />
@@ -448,7 +452,6 @@
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Components\UParticleSubUVComp.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Components\UText.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Components\UTextUUID.h" />
-    <ClInclude Include="Engine\Source\Runtime\Engine\World.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderResourceManager.h" />
     <ClInclude Include="UEditorStateManager.h" />
   </ItemGroup>

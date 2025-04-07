@@ -7,6 +7,7 @@
 #include "UObject/ObjectFactory.h"
 #include "UObject/ObjectMacros.h"
 
+class UFogComponent;
 class FObjectFactory;
 class AActor;
 class UObject;
@@ -54,6 +55,7 @@ private:
     AActor* SelectedActor = nullptr;
     USceneComponent* pickingGizmo = nullptr;
     AEditorPlayer* EditorPlayer = nullptr;
+    UFogComponent* FogComponent;
 public:
     EWorldType::Type WorldType = EWorldType::None;
     const TSet<AActor*>& GetActors() const { return Level->GetActors(); }
@@ -74,6 +76,8 @@ public:
     bool IsPIEWorld() const;
     void BeginPlay();
     static UWorld* DuplicateWorldForPIE(UWorld* world);
+    
+    UFogComponent* GetFogComponent() const { return FogComponent; }
 };
 // UWorld* GWorld = nullptr;
 

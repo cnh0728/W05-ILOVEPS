@@ -165,14 +165,3 @@ struct FMatrixConstants
     bool isSelected;
     FVector Padding;
 };
-
-struct FFogParams
-{
-    FVector CameraWorldPos;
-    float FogStart;
-    float FogEnd;
-    FVector Padding;
-    FVector4 FogColor;
-};
-
-

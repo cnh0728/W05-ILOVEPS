@@ -13,6 +13,7 @@
 #include "UObject/UObjectIterator.h"
 #include "Level.h"
 #include "Components/CubeComp.h"
+#include "Fog/UFogComponent.h"
 
 
 UWorld::UWorld(const UWorld& Other): UObject(Other)
@@ -30,6 +31,8 @@ void UWorld::InitWorld()
     FManagerOBJ::CreateStaticMesh("Assets/apple_mid.obj");
     CreateBaseObject();
     Level = FObjectFactory::ConstructObject<ULevel>();
+    FogComponent = new UFogComponent();
+    FogComponent->SetFogParams(20.0f,300.0f,0.0f,10.0f,FVector4(0.4f, 0.4f, 0.7f, 1.0f));
 }
 
 void UWorld::CreateBaseObject()

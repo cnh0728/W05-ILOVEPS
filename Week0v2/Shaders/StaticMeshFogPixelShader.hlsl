@@ -40,8 +40,11 @@ cbuffer TextureConstants : register(b5)
 cbuffer FogConstants : register(b6)
 {
     float3 CameraWorldPos;
-    float FogStart;
-    float FogEnd;
+    float LinearStart;
+    float LinearEnd;
+    float HeightStart;
+    float HeightEnd;
+    float FogPad0;
     float4 FogColor;
 };
 
@@ -83,16 +86,15 @@ float4 mainPS(PS_INPUT input) : SV_Target
     // ✅ Apply fog based on distance
     // 거리 기반
     float distance = length(input.worldPos - CameraWorldPos);
-    float fogFactorDist = saturate((distance - FogStart) / (FogEnd - FogStart));
+    float fogFactorDistance = saturate((distance - LinearStart) / (LinearEnd - LinearStart));
 
-    float fogHeightStart = 0.0f; // 바닥
-    float fogHeightEnd = 10.0f;  // 천장 가까이
-    float fogFactorHeight = saturate((fogHeightEnd - input.worldPos.z) / (fogHeightEnd - fogHeightStart));
+    float fogFactorHeight = saturate((HeightEnd - input.worldPos.z) / (HeightEnd - HeightStart));
 
-    // ⬇ 둘 중 강한 값을 쓰거나, 곱하거나
-    float fogFactor = max(fogFactorDist, fogFactorHeight);
-    // float fogFactor = fogFactorDist * fogFactorHeight;
-
+    // 혼합 방식 (둘 다 적용)
+    float fogFactor = max(fogFactorDistance, fogFactorHeight);
+    //fogFactor=fogFactorDistance;
+    // 최종 색상 보간
     baseColor = lerp(baseColor, FogColor.rgb, fogFactor);
+
     return float4(baseColor, TransparencyScalar);
 }

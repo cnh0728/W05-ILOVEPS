@@ -2,6 +2,7 @@
 #include <Engine/Texture.h>
 
 #include "Renderer.h"
+#include "Fog/FogTypes.h"
 
 void FConstantBufferUpdater::Initialize(ID3D11DeviceContext* InDeviceContext)
 {

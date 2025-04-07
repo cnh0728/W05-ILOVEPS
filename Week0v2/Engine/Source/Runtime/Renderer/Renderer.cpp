@@ -20,6 +20,7 @@
 #include "PropertyEditor/ShowFlags.h"
 #include "UObject/UObjectIterator.h"
 #include "Components/SkySphereComponent.h"
+#include "Fog/UFogComponent.h"
 
 
 void FRenderer::Initialize(FGraphicsDevice* graphics)
@@ -406,15 +407,9 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
 {
     PrepareFogShader(); // ✅ Fog 셰이더 준비
 
-    // Fog 파라미터 준비
-    FFogParams FogParams;
-    FogParams.CameraWorldPos = ActiveViewport->ViewTransformPerspective.GetLocation();
-    FogParams.FogStart = 20.0f;
-    FogParams.FogEnd = 300.0f;
-    FogParams.FogColor = FVector4(0.4f, 0.4f, 0.7f, 1.0f);
-    //FogParams.FogColor = FVector4(0.2f, 0.2f, 1.0f, 1.0f); // 연파랑 fog
-    //FogParams.FogColor = FVector4(0.0f, 0.0f, 0.0f, 1.0f); // pure black
-
+    UFogComponent* FogComponent = World->GetFogComponent();
+    FogComponent->SetCameraWorldPosition(ActiveViewport->ViewTransformPerspective.GetLocation());
+    const FFogParams& FogParams = FogComponent->GetFogParams();
 
     ID3D11DeviceContext* Context = Graphics->DeviceContext;
 
