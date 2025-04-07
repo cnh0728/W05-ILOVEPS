@@ -294,14 +294,17 @@ struct FMaterialConstants {
     float MaterialPad0;
 };
 
-struct FConstants {
-    FMatrix MVP;      // 모델
-    FMatrix ModelMatrixInverseTranspose; // normal 변환을 위한 행렬
-    FMatrix ModelMatrix;//fog에서 각 pixelpos->worldpos
-    FVector4 UUIDColor;
-    bool IsSelected;
-    FVector pad;
+struct FConstants
+{
+    FMatrix Model;                       // 월드 변환 행렬
+    FMatrix View;                        // 카메라 뷰 행렬
+    FMatrix Projection;                 // 투영 행렬
+    FMatrix ModelMatrixInverseTranspose; // 노멀 변환용 역전치 행렬
+    FVector4 UUIDColor;                 // 오브젝트 식별용 색상
+    bool IsSelected;                    // 선택 여부
+    FVector Padding;                   // bool 정렬을 맞추기 위한 패딩 (16바이트 정렬)
 };
+
 struct FLitUnlitConstants {
     int isLit; // 1 = Lit, 0 = Unlit 
     FVector pad;

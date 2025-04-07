@@ -40,9 +40,8 @@ void UPrimitiveBatch::RenderBatch(ID3D11Buffer* ConstantBuffer, const FMatrix& V
     InitializeVertexBuffer();
 
     FMatrix Model = FMatrix::Identity;
-    FMatrix MVP = Model * View * Projection;
     FMatrix NormalMatrix = FMatrix::Transpose(FMatrix::Inverse(Model));
-    UEditorEngine::renderer.GetConstantBufferUpdater().UpdateConstant(ConstantBuffer, MVP, NormalMatrix,Model, FVector4(0, 0, 0, 0), false);
+    UEditorEngine::renderer.GetConstantBufferUpdater().UpdateConstant(ConstantBuffer, Model,View,Projection, NormalMatrix, FVector4(0, 0, 0, 0), false);
     UEditorEngine::renderer.UpdateGridConstantBuffer(GridParam);
 
     UpdateBoundingBoxResources();

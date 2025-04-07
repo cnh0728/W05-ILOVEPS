@@ -54,7 +54,7 @@ void UWorld::CreateBaseObject()
     SpawnAppleGrid(this,2,2,100);
 
     // 방 구조체 배치 (중심: 0,0,0 / 크기: 500x500 / 높이: 300)
-    SpawnBoxStructure(this, FVector(0, 0, 0), FVector(500, 500, 0), 300.0f);
+    SpawnBoxStructure(this, FVector(0, 0, -1.5f), FVector(500, 500, 0), 300.0f);
 
 }
 

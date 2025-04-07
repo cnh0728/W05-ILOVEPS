@@ -1,12 +1,15 @@
 // MatrixBuffer: 변환 행렬 관리
 cbuffer MatrixConstants : register(b0)
 {
-    row_major float4x4 MVP;
-    row_major float4x4 MInverseTranspose;
+    row_major float4x4 Model;
+    row_major float4x4 View;
+    row_major float4x4 Projection;
+    row_major float4x4 ModelMatrixInverseTranspose;
     float4 UUID;
     bool isSelected;
     float3 MatrixPad0;
 };
+
 
 struct VS_INPUT
 {
@@ -34,7 +37,9 @@ PS_INPUT mainVS(VS_INPUT input)
     output.materialIndex = input.materialIndex;
     
     // 위치 변환
-    output.position = mul(input.position, MVP);
+    float4 worldPos = mul(input.position,Model);
+    float4 viewPos = mul(worldPos, View);
+    output.position = mul(viewPos, Projection);
     output.color = input.color;
     if (isSelected)
         output.color *= 0.5;
@@ -49,7 +54,7 @@ PS_INPUT mainVS(VS_INPUT input)
     else
     {
         //output.normal = normalize(input.normal);
-        output.normal = mul(input.normal, MInverseTranspose);
+        output.normal = mul(input.normal, ModelMatrixInverseTranspose);
         output.normalFlag = 1.0;
     }
     output.texcoord = input.texcoord;

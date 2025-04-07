@@ -1,7 +1,13 @@
 
-cbuffer MatrixBuffer : register(b0)
+cbuffer MatrixConstants : register(b0)
 {
-    row_major float4x4 MVP;
+    row_major float4x4 Model;
+    row_major float4x4 View;
+    row_major float4x4 Projection;
+    row_major float4x4 ModelMatrixInverseTranspose;
+    float4 UUID;
+    bool isSelected;
+    float3 MatrixPad0;
 };
 
 cbuffer GridParametersData : register(b1)
@@ -306,7 +312,10 @@ PS_INPUT mainVS(VS_INPUT input)
     }
 
     // 출력 변환
-    output.Position = mul(float4(pos, 1.0), MVP);
+    float4 worldPos = mul(float4(pos, 1.0f), Model);
+    float4 viewPos = mul(worldPos, View);
+    output.Position = mul(viewPos, Projection);
+    //output.Position = mul(float4(pos, 1.0), MVP);
     output.Color = color;
     return output;
 }

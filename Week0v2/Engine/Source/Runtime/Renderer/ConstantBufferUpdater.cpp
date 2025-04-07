@@ -9,24 +9,32 @@ void FConstantBufferUpdater::Initialize(ID3D11DeviceContext* InDeviceContext)
     DeviceContext = InDeviceContext;
 }
 
-void FConstantBufferUpdater::UpdateConstant(ID3D11Buffer* ConstantBuffer, const FMatrix& MVP, const FMatrix& NormalMatrix,const FMatrix& ModelMatrix, FVector4 UUIDColor, bool IsSelected) const
+void FConstantBufferUpdater::UpdateConstant(
+    ID3D11Buffer* ConstantBuffer,
+    const FMatrix& Model,
+    const FMatrix& View,
+    const FMatrix& Proj,
+    const FMatrix& NormalMatrix,
+    const FVector4& UUIDColor,
+    bool IsSelected) const
 {
     if (ConstantBuffer)
     {
         D3D11_MAPPED_SUBRESOURCE ConstantBufferMSR;
-
-        DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR); // update constant buffer every frame
+        DeviceContext->Map(ConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &ConstantBufferMSR);
         {
             FConstants* constants = static_cast<FConstants*>(ConstantBufferMSR.pData);
-            constants->MVP = MVP;
+            constants->Model = Model;
+            constants->View = View;
+            constants->Projection = Proj;
             constants->ModelMatrixInverseTranspose = NormalMatrix;
-            constants->ModelMatrix=ModelMatrix;
             constants->UUIDColor = UUIDColor;
             constants->IsSelected = IsSelected;
         }
         DeviceContext->Unmap(ConstantBuffer, 0);
     }
 }
+
 void FConstantBufferUpdater::UpdateFogConstant(ID3D11Buffer* FogConstantBuffer, const FFogParams& FogParams) const
 {
     if (FogConstantBuffer)
