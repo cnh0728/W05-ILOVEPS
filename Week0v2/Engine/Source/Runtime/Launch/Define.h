@@ -312,11 +312,15 @@ struct FLitUnlitConstants {
 struct alignas(16) FFogConstants 
 {
     FVector Color;
-    float Padding1;
     float Density;
     float FogStart;
     float FogEnd;
     int bIsFogOn; //bool 뭔가 이상해서 int로
+    float FogZPosition;
+    float FogBaseHeight;
+    float HeightFallOff;
+    int bIsHeightFog;
+    float Padding1;
 };
 
 struct alignas(16) FCameraPosConstants{

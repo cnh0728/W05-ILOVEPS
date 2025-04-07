@@ -10,11 +10,15 @@ cbuffer CameraConstant : register(b1){
 
 cbuffer FogConstant : register(b2){
     float3 FogColor;
-    float Padding1;
     float FogDensity;
     float FogStart;
     float FogEnd;
     int bIsFogOn;
+    float FogZPosition;
+    float FogBaseHeight;
+    float HeightFallOff;
+    int bIsHeightFog;
+    float Padding1;
 };
 
 Texture2D PositionTexture : register(t0); // Can be Depth
@@ -51,20 +55,46 @@ float4 mainPS(PSInput input) : SV_Target {
     // 3. 포그 효과 (수정된 공식)
     if (bIsFogOn)  
     {
-        if (all(worldPos == float3(0.025, 0.025, 0.025))) //배경(오브젝트가 아닐때)
-        {
-            litColor = FogColor;  
-        }else //오브젝트일 때
-        {
-            float3 cameraToWorld = worldPos - CameraPos;  
-            float dist = length(cameraToWorld);  
-            // 카메라-월드 거리 (월드 좌표계 기준)
 
-            // 지수 감쇠 + 선형 범위 제한  
-            float fogFactor = 1.0 - exp(-dist * FogDensity);
+        // 4. 포그 계산  
+        // 거리 기반 포그  
+        float dist = distance(worldPos, CameraPos);  
+        float distanceFog = 1.0 - exp(FogDensity * -dist);  
 
-            // 포그 색상 혼합  
-            litColor = lerp(litColor, FogColor, fogFactor);  
+        bool bIsInFog = true;
+        
+        // 높이 기반 포그  
+        float heightFog = 0.0;
+        float fogFactor = distanceFog;
+        if (bIsHeightFog)  
+        {  
+            // 기준 높이 아래로 갈수록 포그 증가  
+            float heightDelta = (FogZPosition + FogBaseHeight) - worldPos.z;  
+            heightFog = exp(-HeightFallOff * max(heightDelta, 0.0));  
+            heightFog = 1.0 - heightFog;
+
+            //HeightFog안이라면 
+            if (heightDelta > CameraPos.z)
+            {
+                fogFactor = max(distanceFog, heightFog);
+            }else
+            {
+                //밖이면 배경처리 안해주고 싶은데
+                bIsInFog = false;
+            }
+        }
+
+        // 포그 혼합 (거리 + 높이)  
+
+        if (bIsInFog)
+        {
+            if (all(worldPos == float3(0.025, 0.025, 0.025))) //배경(오브젝트가 아닐때)
+            {
+                litColor = FogColor;  
+            }else
+            {
+                litColor = lerp(litColor, FogColor, fogFactor);  
+            }
         }
     }  
 
