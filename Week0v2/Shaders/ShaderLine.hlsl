@@ -1,7 +1,9 @@
 
 cbuffer MatrixBuffer : register(b0)
 {
-    row_major float4x4 MVP;
+    row_major float4x4 Model;
+    row_major float4x4 View;
+    row_major float4x4 Projection;
 };
 
 cbuffer GridParametersData : register(b1)
@@ -305,6 +307,8 @@ PS_INPUT mainVS(VS_INPUT input)
         color = float4(0.4, 1.0, 0.4, 1.0); // 예시: 연두색
     }
 
+    row_major float4x4 MVP = mul(Model, View);
+    MVP = mul(MVP, Projection);
     // 출력 변환
     output.Position = mul(float4(pos, 1.0), MVP);
     output.Color = color;

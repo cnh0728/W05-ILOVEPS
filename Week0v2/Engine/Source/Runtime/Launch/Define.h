@@ -304,7 +304,9 @@ struct FMaterialConstants {
 };
 
 struct FConstants {
-    FMatrix MVP;      // 모델
+    FMatrix Model;
+    FMatrix View;
+    FMatrix Projection;
     FMatrix ModelMatrixInverseTranspose; // normal 변환을 위한 행렬
     FVector4 UUIDColor;
     int IsSelected;

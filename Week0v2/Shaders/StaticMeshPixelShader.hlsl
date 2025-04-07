@@ -3,7 +3,9 @@ SamplerState Sampler : register(s0);
 
 cbuffer MatrixConstants : register(b0)
 {
-    row_major float4x4 MVP;
+    row_major float4x4 Model;
+    row_major float4x4 View;
+    row_major float4x4 Projection;
     row_major float4x4 MInverseTranspose;
     float4 UUID;
     int isSelected;
