@@ -314,6 +314,7 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
         RenderBillboards(World, ActiveViewport);
     RenderLight(World, ActiveViewport);
 
+    Graphics->CopyDepthToSceneTexture();
     FogPostProcess->SetFogParams(World->GetFogComponent()->GetFogParams());
     FogPostProcess->Render(Graphics->DeviceContext,ActiveViewport);
     ID3D11ShaderResourceView* finalScene = FogPostProcess->GetOutputSRV();

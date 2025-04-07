@@ -84,7 +84,7 @@ void UEditorEngine::Render()
         renderer.Render(GWorld,LevelEditor->GetActiveViewportClient());
     }
 
-    graphicDevice.CopyDepthToSceneTexture();
+    //graphicDevice.CopyDepthToSceneTexture();
     if (renderer.bRenderDebugDepth)renderer.RenderDebugDepth();
 }
 
