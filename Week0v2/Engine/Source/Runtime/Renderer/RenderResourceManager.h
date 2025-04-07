@@ -11,7 +11,13 @@ class FRenderResourceManager {
 public:
     void Initialize(ID3D11Device* InDevice);
     void Release();
-
+    bool CreateRenderTarget(
+        ID3D11Texture2D*& outTexture,
+        ID3D11RenderTargetView*& outRTV,
+        ID3D11ShaderResourceView*& outSRV,
+        UINT width,
+        UINT height,
+        DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM);
     template<typename T>
     inline ID3D11Buffer* CreateBuffer(
         const T* data,

@@ -94,7 +94,7 @@ float4 mainPS(PS_INPUT input) : SV_Target
     float fogFactor = max(fogFactorDistance, fogFactorHeight);
     //fogFactor=fogFactorDistance;
     // 최종 색상 보간
-    baseColor = lerp(baseColor, FogColor.rgb, fogFactor);
-
+    //baseColor = lerp(baseColor, FogColor.rgb, fogFactor);
+    
     return float4(baseColor, TransparencyScalar);
 }

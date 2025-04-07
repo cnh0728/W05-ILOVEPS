@@ -12,6 +12,7 @@
 #include "ShaderManager.h"
 #include "ConstantBufferUpdater.h"
 
+class FFogPostProcess;
 class ULightComponentBase;
 class UWorld;
 class FGraphicsDevice;
@@ -44,7 +45,6 @@ public:
     FLighting lightingData;
 
     uint32 Stride;
-    uint32 Stride2;
 
 public:
     void Initialize(FGraphicsDevice* graphics);
@@ -150,7 +150,7 @@ private:
     ID3D11PixelShader* StaticMeshFogPixelShader = nullptr;
     ID3D11InputLayout* FogInputLayout = nullptr;
     UINT FogStride = 0;
-
+public:
     // Fog 상수 버퍼
     ID3D11Buffer* FogConstantBuffer = nullptr;
 
@@ -170,11 +170,17 @@ public:
     ID3D11VertexShader* DebugDepthVertexShader = nullptr;
     ID3D11PixelShader* DebugDepthPixelShader = nullptr;
     ID3D11InputLayout* DebugDepthInputLayout = nullptr;
+    ID3D11VertexShader* FullscreenVertexShader = nullptr;
+    ID3D11PixelShader* FullscreenPixelShader = nullptr;
+    ID3D11InputLayout* FullscreenInputLayout = nullptr;
 
     ID3D11Buffer* FullscreenVertexBuffer = nullptr;
     ID3D11SamplerState* LinearSampler = nullptr;
     UINT DebugDepthStride = 0;
+    UINT FullscreenStride = 0;
     bool bRenderDebugDepth = false;
+
+    FFogPostProcess* FogPostProcess = nullptr;
 };
 
 struct FMatrixConstants

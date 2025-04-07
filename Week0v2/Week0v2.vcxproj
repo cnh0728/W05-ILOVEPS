@@ -201,9 +201,12 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Fog\FogTypes.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Fog\UFogComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\ConstantBufferUpdater.cpp" />
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\World.cpp"/>
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\World.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\UnrealEngine.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Launch\LaunchEngineLoop.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\PostProcess\FogPostProcess.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\PostProcess\FPostProcessPass.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\Utils\FullscreenQuad.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Slate\Widgets\Layout\SSplitter.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\ResourceMgr.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\UnrealClient.cpp" />
@@ -305,8 +308,11 @@
     <ClInclude Include="Engine\Source\Runtime\Launch\EditorEngine.h" />
     <ClInclude Include="Engine\Source\Runtime\Launch\ImGuiManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\ConstantBufferUpdater.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\PostProcess\FogPostProcess.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\PostProcess\FPostProcessPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\ShaderManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Launch\LaunchEngineLoop.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\Utils\FullscreenQuad.h" />
     <ClInclude Include="Engine\Source\Runtime\SlateCore\Widgets\SWindow.h" />
     <ClInclude Include="Engine\Source\Runtime\Slate\Widgets\Layout\SSplitter.h" />
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -371,77 +377,87 @@
     <ClInclude Include="UEditorStateManager.h" />
   </ItemGroup>
   <ItemGroup>
-
-<FxCompile Include="Shaders\DebugSceneDepthShader.hlsl">
-  <ShaderType>Pixel</ShaderType>
-  <EntryPointName>mainPS</EntryPointName>
-  <ShaderModel>5.0</ShaderModel>
-</FxCompile>
-
-<FxCompile Include="Shaders\DebugSceneDepthShader.hlsl">
-  <ShaderType>Vertex</ShaderType>
-  <EntryPointName>mainVS</EntryPointName>
-  <ShaderModel>5.0</ShaderModel>
-</FxCompile>
-<FxCompile Include="Shaders\PixelTextureShader.hlsl">
-  <ExcludedFromBuild>true</ExcludedFromBuild>
-</FxCompile>
-<!-- Pixel Shader -->
-<FxCompile Include="Shaders\ShaderLine.hlsl">
-  <ShaderType>Pixel</ShaderType>
-  <EntryPointName>mainPS</EntryPointName>
-  <ShaderModel>5.0</ShaderModel>
-</FxCompile>
-
-<FxCompile Include="Shaders\ShaderLine.hlsl">
-  <ShaderType>Vertex</ShaderType>
-  <EntryPointName>mainVS</EntryPointName>
-  <ShaderModel>5.0</ShaderModel>
-</FxCompile>
-
-<FxCompile Include="Shaders\ShaderW0.hlsl">
-  <ShaderType>Pixel</ShaderType>
-  <EntryPointName>mainPS</EntryPointName>
-  <ShaderModel>5.0</ShaderModel>
-</FxCompile>
-
-<FxCompile Include="Shaders\ShaderW0.hlsl">
-  <ShaderType>Vertex</ShaderType>
-  <EntryPointName>mainVS</EntryPointName>
-  <ShaderModel>5.0</ShaderModel>
-</FxCompile>
-
-<FxCompile Include="Shaders\StaticMeshFogPixelShader.hlsl">
-  <ShaderType>Pixel</ShaderType>
-  <EntryPointName>mainPS</EntryPointName>
-  <ShaderModel>5.0</ShaderModel>
-</FxCompile>
-
-<FxCompile Include="Shaders\StaticMeshFogVertexShader.hlsl">
-  <ShaderType>Vertex</ShaderType>
-  <EntryPointName>mainVS</EntryPointName>
-  <ShaderModel>5.0</ShaderModel>
-</FxCompile>
-
-<FxCompile Include="Shaders\StaticMeshPixelShader.hlsl">
-  <ShaderType>Pixel</ShaderType>
-  <EntryPointName>mainPS</EntryPointName>
-  <ShaderModel>5.0</ShaderModel>
-</FxCompile>
-
-<FxCompile Include="Shaders\StaticMeshVertexShader.hlsl">
-  <ShaderType>Vertex</ShaderType>
-  <EntryPointName>mainVS</EntryPointName>
-  <ShaderModel>5.0</ShaderModel>
-</FxCompile>
-
-<FxCompile Include="Shaders\VertexTextureShader.hlsl">
-  <ShaderType>Vertex</ShaderType>
-  <EntryPointName>mainVS</EntryPointName>
-  <ShaderModel>5.0</ShaderModel>
-</FxCompile>
-
-
+    <FxCompile Include="Shaders\DebugSceneDepthShader.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\DebugSceneDepthShader.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <!-- DrawFullscreenTexture.hlsl (Vertex Shader) -->
+    <FxCompile Include="Shaders\DrawFullscreenTexture.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <!-- DrawFullscreenTexture.hlsl (Pixel Shader) -->
+    <FxCompile Include="Shaders\DrawFullscreenTexture.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\PixelTextureShader.hlsl">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\FogPostProcessPixelShader.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\FogPostProcessVertexShader.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <!-- Pixel Shader -->
+    <FxCompile Include="Shaders\ShaderLine.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\ShaderLine.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\ShaderW0.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\ShaderW0.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\StaticMeshFogPixelShader.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\StaticMeshFogVertexShader.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\StaticMeshPixelShader.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\StaticMeshVertexShader.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\VertexTextureShader.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Content Include=".editorconfig" />

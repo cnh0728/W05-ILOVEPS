@@ -3,6 +3,8 @@
 #include "HAL/PlatformType.h"
 #include "Math/Vector.h"
 #include "Math/Vector4.h"
+#include "Math/Matrix.h"
+
 //사용 X
 enum class EFogType : uint8
 {
@@ -15,6 +17,7 @@ enum class EFogType : uint8
 // Fog 파라미터 공통 구조체
 struct FFogParams
 {
+    FMatrix InvViewProj;
     FVector CameraWorldPos;  // 카메라 위치 (World 기준)
 
     float LinearStart = 20.0f;   // 거리 기반 Fog 시작 거리

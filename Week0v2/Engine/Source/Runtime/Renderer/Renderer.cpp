@@ -21,6 +21,8 @@
 #include "UObject/UObjectIterator.h"
 #include "Components/SkySphereComponent.h"
 #include "Fog/UFogComponent.h"
+#include "PostProcess/FogPostProcess.h"
+#include "Utils/FullscreenQuad.h"
 
 
 void FRenderer::Initialize(FGraphicsDevice* graphics)
@@ -33,8 +35,11 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
     CreateShader();
     CreateConstantBuffer();
     CreateFullscreenQuad();
+    FullscreenQuad::Get()->Initialize();
     CreateSampler();
     ConstantBufferUpdater.UpdateLitUnlitConstant(FlagBuffer, 1);
+    FogPostProcess = new FFogPostProcess();
+    FogPostProcess->Initialize(this);
 }
 
 void FRenderer::Release()
@@ -106,6 +111,14 @@ void FRenderer::CreateShader()
     ShaderManager.CreatePixelShader(
         L"Shaders/DebugSceneDepthShader.hlsl", "mainPS",
         DebugDepthPixelShader);
+
+    ShaderManager.CreateVertexShader(
+        L"Shaders/DrawFullscreenTexture.hlsl", "mainVS",
+        FullscreenVertexShader, inputLayoutDesc, ARRAYSIZE(inputLayoutDesc), &FullscreenInputLayout, &FullscreenStride, sizeof(FFullscreenVertex));
+
+    ShaderManager.CreatePixelShader(
+        L"Shaders/DrawFullscreenTexture.hlsl", "mainPS",
+        FullscreenPixelShader);
 }
 
 void FRenderer::ReleaseShader()
@@ -300,6 +313,13 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
     if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_BillboardText))
         RenderBillboards(World, ActiveViewport);
     RenderLight(World, ActiveViewport);
+
+    FogPostProcess->SetFogParams(World->GetFogComponent()->GetFogParams());
+    FogPostProcess->Render(Graphics->DeviceContext,ActiveViewport);
+    ID3D11ShaderResourceView* finalScene = FogPostProcess->GetOutputSRV();
+    //finalScene = Graphics->SceneColorSRV;
+    FullscreenQuad::Get()->DrawFullscreenTexture(this, finalScene, Graphics->FrameBufferRTV);
+
     ClearRenderArr();
 }
 

@@ -32,7 +32,7 @@ void UWorld::InitWorld()
     CreateBaseObject();
     Level = FObjectFactory::ConstructObject<ULevel>();
     FogComponent = new UFogComponent();
-    FogComponent->SetFogParams(20.0f,300.0f,0.0f,10.0f,FVector4(0.4f, 0.4f, 0.7f, 1.0f));
+    FogComponent->SetFogParams(5.0f,30.0f,0.0f,10.0f,FVector4(0.4f, 0.4f, 0.7f, 1.0f));
 }
 
 void UWorld::CreateBaseObject()

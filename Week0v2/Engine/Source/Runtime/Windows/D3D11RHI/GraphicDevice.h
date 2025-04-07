@@ -35,6 +35,9 @@ public:
     FLOAT ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f }; // 화면을 초기화(clear) 할 때 사용할 색상(RGBA)
 
     // Post Process용 Scene Depth
+    ID3D11Texture2D* SceneColorTexture = nullptr;
+    ID3D11RenderTargetView* SceneColorRTV = nullptr;
+    ID3D11ShaderResourceView* SceneColorSRV = nullptr;
     void CreateSceneDepthTexture();
     ID3D11Texture2D* SceneDepthTexture = nullptr;
     ID3D11DepthStencilView* SceneDepthDSV = nullptr;

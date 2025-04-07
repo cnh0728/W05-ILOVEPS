@@ -15,7 +15,10 @@ void UFogComponent::SetFogParams(
     FogParams.HeightEnd = heightEnd;
     FogParams.FogColor = fogColor;
 }
-
+void UFogComponent::SetInvViewProj(const FMatrix& InvViewProj)
+{
+    FogParams.InvViewProj = InvViewProj;
+}
 void UFogComponent::SetCameraWorldPosition(const FVector& inCameraPos)
 {
     FogParams.CameraWorldPos = inCameraPos;

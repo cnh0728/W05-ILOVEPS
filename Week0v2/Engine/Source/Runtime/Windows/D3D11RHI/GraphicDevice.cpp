@@ -184,7 +184,7 @@ void FGraphicsDevice::CreateFrameBuffer()
     framebufferRTVdesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D; // 2D 텍스처
 
     Device->CreateRenderTargetView(FrameBuffer, &framebufferRTVdesc, &FrameBufferRTV);
-    
+
     D3D11_TEXTURE2D_DESC textureDesc = {};
     textureDesc.Width = screenWidth;
     textureDesc.Height = screenHeight;
@@ -205,6 +205,20 @@ void FGraphicsDevice::CreateFrameBuffer()
 
     RTVs[0] = FrameBufferRTV;
     RTVs[1] = UUIDFrameBufferRTV;
+
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width = screenWidth;
+    desc.Height = screenHeight;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.SampleDesc.Count = 1;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+
+    Device->CreateTexture2D(&desc, nullptr, &SceneColorTexture);
+    Device->CreateRenderTargetView(SceneColorTexture, nullptr, &SceneColorRTV);
+    Device->CreateShaderResourceView(SceneColorTexture, nullptr, &SceneColorSRV);
 }
 
 void FGraphicsDevice::ReleaseFrameBuffer()
@@ -231,6 +245,11 @@ void FGraphicsDevice::ReleaseFrameBuffer()
     {
         UUIDFrameBufferRTV->Release();
         UUIDFrameBufferRTV = nullptr;
+    }
+    if (SceneColorSRV)
+    {
+        SceneColorSRV->Release();
+        SceneColorSRV = nullptr;
     }
 }
 
@@ -320,7 +339,11 @@ void FGraphicsDevice::Prepare()
     DeviceContext->OMSetDepthStencilState(DepthStencilState, 0);
 
     //DeviceContext->OMSetRenderTargets(2, RTVs, SceneDepthDSV);
-    DeviceContext->OMSetRenderTargets(2, RTVs, DepthStencilView); // 렌더 타겟 설정(백버퍼를 가르킴)
+    //DeviceContext->OMSetRenderTargets(2, RTVs, DepthStencilView); // 렌더 타겟 설정(백버퍼를 가르킴)
+    DeviceContext->OMSetRenderTargets(1, &SceneColorRTV, DepthStencilView); //SceneColorRTV 사용
+    DeviceContext->ClearRenderTargetView(SceneColorRTV, ClearColor);
+    //DeviceContext->ClearDepthStencilView(SceneDepthDSV, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0); // 깊이 버퍼 초기화 추가
+
     DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff); // 블렌뎅 상태 설정, 기본블렌딩 상태임
 }
 void FGraphicsDevice::CopyDepthToSceneTexture()

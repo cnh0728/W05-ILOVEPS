@@ -338,3 +338,6 @@ assert(expr);                                                                   
 }                                                                                    \
 } while (0)
 #endif
+#ifndef SAFE_RELEASE
+#define SAFE_RELEASE(x) { if(x) { x->Release(); x = nullptr; } }
+#endif
