@@ -15,7 +15,7 @@ class AActor : public UObject
     DECLARE_CLASS(AActor, UObject)
 
 public:
-    AActor() = default;
+    AActor();
     AActor(const AActor& Other);
     /** Actor가 게임에 배치되거나 스폰될 때 호출됩니다. */
     virtual void BeginPlay();

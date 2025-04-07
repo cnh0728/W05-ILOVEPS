@@ -12,6 +12,7 @@
 #include "UObject/ObjectFactory.h"
 #include <Components/CubeComp.h>
 #include <Components/UParticleSubUVComp.h>
+#include "Components/ProjectileMovementComponent.h"
 
 void PropertyEditorPanel::Render()
 {
@@ -24,10 +25,10 @@ void PropertyEditorPanel::Render()
 
     ImVec2 MinSize(140, 370);
     ImVec2 MaxSize(FLT_MAX, 900);
-    
+
     /* Min, Max Size */
     ImGui::SetNextWindowSizeConstraints(MinSize, MaxSize);
-    
+
     /* Panel Position */
     ImGui::SetNextWindowPos(ImVec2(PanelPosX, PanelPosY), ImGuiCond_Always);
 
@@ -39,7 +40,7 @@ void PropertyEditorPanel::Render()
 
     /* Render Start */
     ImGui::Begin("Detail", nullptr, PanelFlags);
-    
+
     AEditorPlayer* player = GEngine->GetWorld()->GetEditorPlayer();
     AActor* PickedActor = GEngine->GetWorld()->GetSelectedActor();
 
@@ -109,12 +110,19 @@ void PropertyEditorPanel::Render()
                     UCubeComp* CubeComponent = PickedActor->AddComponent<UCubeComp>();
                     PickedComponent = CubeComponent;
                 }
+                if (ImGui::Selectable("ProjectileMovementComponent"))
+                {
+                    UProjectileMovementComponent* ProjectileMovementComponent = PickedActor->AddComponent<UProjectileMovementComponent>();
+                    PickedComponent = ProjectileMovementComponent;
+                }
 
                 ImGui::EndPopup();
             }
             ImGui::TreePop();
         }
     }
+
+
 
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor && PickedComponent && PickedComponent->IsA<USceneComponent>())
@@ -280,6 +288,52 @@ void PropertyEditorPanel::Render()
         }
         ImGui::PopStyleColor();
     }
+    // test
+    if (PickedActor && PickedComponent && PickedComponent->IsA<UProjectileMovementComponent>())
+    {
+        UProjectileMovementComponent* projComp = Cast<UProjectileMovementComponent>(PickedComponent);
+        if (ImGui::TreeNodeEx("Projectile Movement Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            // Initial Speed 수정
+            float initialSpeed = projComp->GetInitialSpeed();
+            if (ImGui::DragFloat("Initial Speed", &initialSpeed, 0.1f, 0.0f, 1000.0f))
+            {
+                projComp->SetInitialSpeed(initialSpeed);
+            }
+
+            // Max Speed 수정
+            float maxSpeed = projComp->GetMaxSpeed();
+            if (ImGui::DragFloat("Max Speed", &maxSpeed, 0.1f, 0.0f, 1000.0f))
+            {
+                projComp->SetMaxSpeed(maxSpeed);
+            }
+
+            // Acceleration (FVector) 수정
+            FVector accel = projComp->GetAcceleration();
+            float acceleration[3] = { accel.x, accel.y, accel.z };
+            if (ImGui::DragFloat3("Acceleration", acceleration, 0.1f))
+            {
+                projComp->SetAcceleration(FVector(acceleration[0], acceleration[1], acceleration[2]));
+            }
+
+            // Gravity Scale 수정
+            float gravityScale = projComp->GetGravityScale();
+            if (ImGui::DragFloat("Gravity Scale", &gravityScale, 0.1f, 0.0f, 10.0f))
+            {
+                projComp->SetGravityScale(gravityScale);
+            }
+
+            // Velocity 수정 (필요에 따라 추가; 이미 계산된 값이므로 수정이 불필요할 수 있음)
+            FVector vel = projComp->GetVelocity();
+            float velocity[3] = { vel.x, vel.y, vel.z };
+            if (ImGui::DragFloat3("Velocity", velocity, 0.1f))
+            {
+                projComp->SetVelocity(FVector(velocity[0], velocity[1], velocity[2]));
+            }
+
+            ImGui::TreePop();
+        }
+    }
 
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor)
@@ -323,7 +377,7 @@ void PropertyEditorPanel::Render()
 
 }
 
-void PropertyEditorPanel::DrawSceneComponentTree(USceneComponent* Component, UActorComponent*& PickedComponent)
+void PropertyEditorPanel::DrawSceneComponentTree(UActorComponent* Component, UActorComponent*& PickedComponent)
 {
     if (!Component) return;
 
@@ -343,10 +397,12 @@ void PropertyEditorPanel::DrawSceneComponentTree(USceneComponent* Component, UAc
        PickedComponent = Component;
    }
 
+   USceneComponent* TempComponent = Cast<USceneComponent>(Component);
+
    // 자식 재귀 호출
    if (bOpened)
    {
-       for (USceneComponent* Child : Component->GetAttachChildren())
+       for (USceneComponent* Child : TempComponent->GetAttachChildren())
        {
            DrawSceneComponentTree(Child, PickedComponent);
        }

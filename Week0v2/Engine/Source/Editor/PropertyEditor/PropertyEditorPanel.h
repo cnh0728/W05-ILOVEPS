@@ -9,7 +9,7 @@ class PropertyEditorPanel : public UEditorPanel
 {
 public:
     virtual void Render() override;
-    void DrawSceneComponentTree(USceneComponent* Component, UActorComponent*& PickedComponent);
+    void DrawSceneComponentTree(UActorComponent* Component, UActorComponent*& PickedComponent);
     virtual void OnResize(HWND hWnd) override;
 
 
