@@ -171,6 +171,7 @@
   <ItemGroup>
     <ClCompile Include="Engine\Source\Editor\FSceneBuilder.cpp" />
     <ClCompile Include="Engine\Source\Editor\LevelEditor\SLevelEditor.cpp" />
+    <ClCompile Include="Engine\Source\Editor\PropertyEditor\ProfilingEditorPanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\ViewportTypePanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\UnrealEd\ImGuiWidget.cpp" />
     <ClCompile Include="Engine\Source\Editor\UnrealEd\UnrealEdEventRouter.cpp" />
@@ -178,6 +179,7 @@
     <ClCompile Include="Engine\Source\Runtime\CoreUObject\UObject\NameTypes.cpp" />
     <ClCompile Include="Engine\Source\Runtime\CoreUObject\UObject\UObjectArray.cpp" />
     <ClCompile Include="Engine\Source\Runtime\CoreUObject\UObject\UObjectHash.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Container\Array.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Container\String.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\ControlEditorPanel.cpp" />
     <ClCompile Include="Engine\Source\Editor\PropertyEditor\OutlinerEditorPanel.cpp" />
@@ -187,6 +189,8 @@
     <ClCompile Include="Engine\Source\Runtime\Core\HAL\PlatformMemory.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Math\JungleMath.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Core\Math\Vector.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Profiling\PlatformTime.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Core\Profiling\StatRegistry.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\ActorEditor.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Actors\Player.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Components\ActorComponent.cpp" />
@@ -197,99 +201,7 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Fog\FogTypes.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Fog\UFogComponent.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\ConstantBufferUpdater.cpp" />
-    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\World.cpp">
-      <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
-      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
-      <Optimization>Disabled</Optimization>
-      <SupportJustMyCode>true</SupportJustMyCode>
-      <AssemblerOutput>NoListing</AssemblerOutput>
-      <AssemblerListingLocation>C:\Users\Jungle\Documents\GitHub\W04-PIETime\Intermediate\Build\x64\Debug\</AssemblerListingLocation>
-      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
-      <BrowseInformation>false</BrowseInformation>
-      <BrowseInformationFile>C:\Users\Jungle\Documents\GitHub\W04-PIETime\Intermediate\Build\x64\Debug\</BrowseInformationFile>
-      <CompileAs>Default</CompileAs>
-      <ConformanceMode>true</ConformanceMode>
-      <DiagnosticsFormat>Column</DiagnosticsFormat>
-      <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <ErrorReporting>Prompt</ErrorReporting>
-      <ExpandAttributedSource>false</ExpandAttributedSource>
-      <ExceptionHandling>Sync</ExceptionHandling>
-      <EnableASAN>false</EnableASAN>
-      <EnableFuzzer>false</EnableFuzzer>
-      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
-      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
-      <FloatingPointModel>Precise</FloatingPointModel>
-      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
-      <GenerateModuleDependencies>false</GenerateModuleDependencies>
-      <GenerateSourceDependencies>false</GenerateSourceDependencies>
-      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
-      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <IntrinsicFunctions>false</IntrinsicFunctions>
-      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
-      <LanguageStandard>stdcpp20</LanguageStandard>
-      <LanguageStandard_C>Default</LanguageStandard_C>
-      <MinimalRebuild>false</MinimalRebuild>
-      <ModuleDependenciesFile>C:\Users\Jungle\Documents\GitHub\W04-PIETime\Intermediate\Build\x64\Debug\</ModuleDependenciesFile>
-      <ModuleOutputFile>C:\Users\Jungle\Documents\GitHub\W04-PIETime\Intermediate\Build\x64\Debug\</ModuleOutputFile>
-      <OmitDefaultLibName>false</OmitDefaultLibName>
-      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
-      <WholeProgramOptimization>false</WholeProgramOptimization>
-      <ObjectFileName>C:\Users\Jungle\Documents\GitHub\W04-PIETime\Intermediate\Build\x64\Debug\</ObjectFileName>
-      <CallingConvention>Cdecl</CallingConvention>
-      <ProgramDataBaseFileName>C:\Users\Jungle\Documents\GitHub\W04-PIETime\Intermediate\Build\x64\Debug\vc143.pdb</ProgramDataBaseFileName>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <PrecompiledHeaderOutputFile>C:\Users\Jungle\Documents\GitHub\W04-PIETime\Intermediate\Build\x64\Debug\Week4PIETime.pch</PrecompiledHeaderOutputFile>
-      <PreprocessToFile>false</PreprocessToFile>
-      <PreprocessKeepComments>false</PreprocessKeepComments>
-      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
-      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
-      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
-      <ShowIncludes>false</ShowIncludes>
-      <SourceDependenciesFile>C:\Users\Jungle\Documents\GitHub\W04-PIETime\Intermediate\Build\x64\Debug\</SourceDependenciesFile>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <BufferSecurityCheck>true</BufferSecurityCheck>
-      <SmallerTypeCheck>false</SmallerTypeCheck>
-      <SpectreMitigation>false</SpectreMitigation>
-      <StructMemberAlignment>Default</StructMemberAlignment>
-      <TrackerLogDirectory>C:\Users\Jungle\Documents\GitHub\W04-PIETime\Intermediate\Build\x64\Debug\Week4PIETime.tlog\</TrackerLogDirectory>
-      <TranslateIncludes>false</TranslateIncludes>
-      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
-      <TreatWarningAsError>false</TreatWarningAsError>
-      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
-      <UseFullPaths>true</UseFullPaths>
-      <WarningLevel>Level3</WarningLevel>
-      <XMLDocumentationFileName>C:\Users\Jungle\Documents\GitHub\W04-PIETime\Intermediate\Build\x64\Debug\</XMLDocumentationFileName>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <IntelJCCErratum>false</IntelJCCErratum>
-      <BuildStlModules>false</BuildStlModules>
-      <TreatAngleIncludeAsExternal>false</TreatAngleIncludeAsExternal>
-      <ExternalWarningLevel>InheritWarningLevel</ExternalWarningLevel>
-      <TreatExternalTemplatesAsInternal>true</TreatExternalTemplatesAsInternal>
-      <DisableAnalyzeExternal>false</DisableAnalyzeExternal>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;_UNICODE;UNICODE;</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
-<AdditionalIncludeDirectories>
-  $(ProjectDir)Engine\Source\ThirdParty\DirectXTK\Include;
-  $(ProjectDir)Shaders;
-  $(ProjectDir)Engine\Source\Runtime\InteractiveToolsFramework;
-  $(ProjectDir)Engine\Source\ThirdParty;
-  $(ProjectDir)Engine\Source\Runtime;
-  $(ProjectDir)Engine\Source\Runtime\Windows;
-  $(ProjectDir)Engine\Source\ThirdParty\include;
-  $(ProjectDir)Engine\Source\Editor;
-  $(ProjectDir)Engine\Source\Runtime\CoreUObject;
-  $(ProjectDir)Engine\Source\Runtime\Core;
-  $(ProjectDir)Engine\Source\Runtime\Launch;
-  $(ProjectDir)Engine\Source\Runtime\Engine;
-  $(ProjectDir)Engine\Source\Runtime\Engine\Classes;
-  $(ProjectDir)Engine\Source;
-  $(ProjectDir);
-</AdditionalIncludeDirectories>
-      <AdditionalOptions>/utf-8 </AdditionalOptions>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LinkCompiled>true</LinkCompiled>
-    </ClCompile>
+    <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\World.cpp"/>
     <ClCompile Include="Engine\Source\Runtime\Engine\UnrealEngine.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Launch\LaunchEngineLoop.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Slate\Widgets\Layout\SSplitter.cpp" />
@@ -339,8 +251,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\Editor\FSceneBuilder.h" />
+    <ClInclude Include="Engine\Source\Editor\PropertyEditor\ProfilingEditorPanel.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Delegates\Delegate.h" />
     <ClInclude Include="Engine\Source\Runtime\Core\Delegates\DelegateCombination.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Profiling\PlatformTime.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Profiling\StatRegistry.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Engine.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\Level.h" />
     <ClInclude Include="Engine\Source\Runtime\Engine\Classes\Engine\StaticMeshActor.h" />
@@ -456,70 +371,77 @@
     <ClInclude Include="UEditorStateManager.h" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\StaticMeshFogPixelShader.hlsl">
-      <ObjectFileOutput>C:\Users\Jungle\Documents\GitHub\W05-ILOVEPS\Binaries\x64\Debug\%(Filename).cso</ObjectFileOutput>
-      <TrackerLogDirectory>C:\Users\Jungle\Documents\GitHub\W05-ILOVEPS\Intermediate\Build\x64\Debug\Week4PIETime.tlog\</TrackerLogDirectory>
-      <EntryPointName>mainPS</EntryPointName>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <ShaderModel>5.0</ShaderModel>
-      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
-      <DisableOptimizations>true</DisableOptimizations>
-      <EnableDebuggingInformation>true</EnableDebuggingInformation>
-      <ShaderType>Pixel</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\StaticMeshFogVertexShader.hlsl">
-      <ObjectFileOutput>C:\Users\Jungle\Documents\GitHub\W05-ILOVEPS\Binaries\x64\Debug\%(Filename).cso</ObjectFileOutput>
-      <TrackerLogDirectory>C:\Users\Jungle\Documents\GitHub\W05-ILOVEPS\Intermediate\Build\x64\Debug\Week4PIETime.tlog\</TrackerLogDirectory>
-      <EntryPointName>mainVS</EntryPointName>
-      <SuppressStartupBanner>true</SuppressStartupBanner>
-      <ShaderModel>5.0</ShaderModel>
-      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
-      <DisableOptimizations>true</DisableOptimizations>
-      <EnableDebuggingInformation>true</EnableDebuggingInformation>
-      <ShaderType>Vertex</ShaderType>
-    </FxCompile>
-    <FxCompile Include="Shaders\StaticMeshPixelShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Pixel</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Pixel</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">mainPS</EntryPointName>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">mainPS</EntryPointName>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-    </FxCompile>
-    <FxCompile Include="Shaders\PixelTextureShader.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="Shaders\ShaderLine.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="Shaders\ShaderW0.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="Shaders\StaticMeshVertexShader.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">mainVS</EntryPointName>
-      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.0</ShaderModel>
-      <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">mainVS</EntryPointName>
-    </FxCompile>
-    <FxCompile Include="Shaders\VertexTextureShader.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-    </FxCompile>
+
+<FxCompile Include="Shaders\DebugSceneDepthShader.hlsl">
+  <ShaderType>Pixel</ShaderType>
+  <EntryPointName>mainPS</EntryPointName>
+  <ShaderModel>5.0</ShaderModel>
+</FxCompile>
+
+<FxCompile Include="Shaders\DebugSceneDepthShader.hlsl">
+  <ShaderType>Vertex</ShaderType>
+  <EntryPointName>mainVS</EntryPointName>
+  <ShaderModel>5.0</ShaderModel>
+</FxCompile>
+<FxCompile Include="Shaders\PixelTextureShader.hlsl">
+  <ExcludedFromBuild>true</ExcludedFromBuild>
+</FxCompile>
+<!-- Pixel Shader -->
+<FxCompile Include="Shaders\ShaderLine.hlsl">
+  <ShaderType>Pixel</ShaderType>
+  <EntryPointName>mainPS</EntryPointName>
+  <ShaderModel>5.0</ShaderModel>
+</FxCompile>
+
+<FxCompile Include="Shaders\ShaderLine.hlsl">
+  <ShaderType>Vertex</ShaderType>
+  <EntryPointName>mainVS</EntryPointName>
+  <ShaderModel>5.0</ShaderModel>
+</FxCompile>
+
+<FxCompile Include="Shaders\ShaderW0.hlsl">
+  <ShaderType>Pixel</ShaderType>
+  <EntryPointName>mainPS</EntryPointName>
+  <ShaderModel>5.0</ShaderModel>
+</FxCompile>
+
+<FxCompile Include="Shaders\ShaderW0.hlsl">
+  <ShaderType>Vertex</ShaderType>
+  <EntryPointName>mainVS</EntryPointName>
+  <ShaderModel>5.0</ShaderModel>
+</FxCompile>
+
+<FxCompile Include="Shaders\StaticMeshFogPixelShader.hlsl">
+  <ShaderType>Pixel</ShaderType>
+  <EntryPointName>mainPS</EntryPointName>
+  <ShaderModel>5.0</ShaderModel>
+</FxCompile>
+
+<FxCompile Include="Shaders\StaticMeshFogVertexShader.hlsl">
+  <ShaderType>Vertex</ShaderType>
+  <EntryPointName>mainVS</EntryPointName>
+  <ShaderModel>5.0</ShaderModel>
+</FxCompile>
+
+<FxCompile Include="Shaders\StaticMeshPixelShader.hlsl">
+  <ShaderType>Pixel</ShaderType>
+  <EntryPointName>mainPS</EntryPointName>
+  <ShaderModel>5.0</ShaderModel>
+</FxCompile>
+
+<FxCompile Include="Shaders\StaticMeshVertexShader.hlsl">
+  <ShaderType>Vertex</ShaderType>
+  <EntryPointName>mainVS</EntryPointName>
+  <ShaderModel>5.0</ShaderModel>
+</FxCompile>
+
+<FxCompile Include="Shaders\VertexTextureShader.hlsl">
+  <ShaderType>Vertex</ShaderType>
+  <EntryPointName>mainVS</EntryPointName>
+  <ShaderModel>5.0</ShaderModel>
+</FxCompile>
+
+
   </ItemGroup>
   <ItemGroup>
     <Content Include=".editorconfig" />

@@ -34,6 +34,12 @@ public:
     ID3D11DepthStencilState* DepthStencilState = nullptr;
     FLOAT ClearColor[4] = { 0.025f, 0.025f, 0.025f, 1.0f }; // 화면을 초기화(clear) 할 때 사용할 색상(RGBA)
 
+    // Post Process용 Scene Depth
+    void CreateSceneDepthTexture();
+    ID3D11Texture2D* SceneDepthTexture = nullptr;
+    ID3D11DepthStencilView* SceneDepthDSV = nullptr;
+    ID3D11ShaderResourceView* SceneDepthSRV = nullptr;
+    
     ID3D11DepthStencilState* DepthStateDisable = nullptr;
 
     void Initialize(HWND hWindow);
@@ -46,10 +52,12 @@ public:
     void ReleaseFrameBuffer();
     void ReleaseRasterizerState();
     void ReleaseDepthStencilResources();
+    void ReleaseSceneDepthResources();
     void Release();
     void SwapBuffer();
     void Prepare();
     void Prepare(D3D11_VIEWPORT* viewport);
+    void CopyDepthToSceneTexture();
     void OnResize(HWND hWindow);
     ID3D11RasterizerState* GetCurrentRasterizer() { return CurrentRasterizer; }
     void ChangeRasterizer(EViewModeIndex evi);

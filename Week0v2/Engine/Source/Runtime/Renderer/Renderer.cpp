@@ -32,6 +32,8 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
 
     CreateShader();
     CreateConstantBuffer();
+    CreateFullscreenQuad();
+    CreateSampler();
     ConstantBufferUpdater.UpdateLitUnlitConstant(FlagBuffer, 1);
 }
 
@@ -85,13 +87,25 @@ void FRenderer::CreateShader()
         PixelLineShader);
 
     ShaderManager.CreateVertexShader(
-    L"Shaders/StaticMeshFogVertexShader.hlsl", "mainVS",
-    StaticMeshFogVertexShader, layout, ARRAYSIZE(layout), &FogInputLayout, &FogStride, sizeof(FVertexSimple));
+        L"Shaders/StaticMeshFogVertexShader.hlsl", "mainVS",
+        StaticMeshFogVertexShader, layout, ARRAYSIZE(layout), &FogInputLayout, &FogStride, sizeof(FVertexSimple));
 
     ShaderManager.CreatePixelShader(
         L"Shaders/StaticMeshFogPixelShader.hlsl", "mainPS",
         StaticMeshFogPixelShader);
+    
+    D3D11_INPUT_ELEMENT_DESC inputLayoutDesc[] =
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,                            D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT,    0, sizeof(FVector),            D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
+    ShaderManager.CreateVertexShader(
+        L"Shaders/DebugSceneDepthShader.hlsl", "mainVS",
+        DebugDepthVertexShader, inputLayoutDesc, ARRAYSIZE(inputLayoutDesc), &DebugDepthInputLayout, &DebugDepthStride, sizeof(FFullscreenVertex));
 
+    ShaderManager.CreatePixelShader(
+        L"Shaders/DebugSceneDepthShader.hlsl", "mainPS",
+        DebugDepthPixelShader);
 }
 
 void FRenderer::ReleaseShader()
@@ -100,7 +114,6 @@ void FRenderer::ReleaseShader()
     ShaderManager.ReleaseShader(TextureInputLayout, VertexTextureShader, PixelTextureShader);
     ShaderManager.ReleaseShader(nullptr, VertexLineShader, PixelLineShader);
     ShaderManager.ReleaseShader(FogInputLayout, StaticMeshFogVertexShader, StaticMeshFogPixelShader);
-
 }
 
 
@@ -122,6 +135,7 @@ void FRenderer::PrepareShader() const
         Graphics->DeviceContext->PSSetConstantBuffers(5, 1, &TextureConstantBufer);
     }
 }
+
 void FRenderer::PrepareFogShader() const
 {
     Graphics->DeviceContext->VSSetShader(StaticMeshFogVertexShader, nullptr, 0);
@@ -169,7 +183,7 @@ void FRenderer::PrepareLineShader() const
 
     if (ConstantBuffer && GridConstantBuffer)
     {
-        Graphics->DeviceContext->VSSetConstantBuffers(0, 1, &ConstantBuffer);     // MatrixBuffer (b0)
+        Graphics->DeviceContext->VSSetConstantBuffers(0, 1, &ConstantBuffer); // MatrixBuffer (b0)
         Graphics->DeviceContext->VSSetConstantBuffers(1, 1, &GridConstantBuffer); // GridParameters (b1)
         Graphics->DeviceContext->PSSetConstantBuffers(1, 1, &GridConstantBuffer);
         Graphics->DeviceContext->VSSetConstantBuffers(3, 1, &LinePrimitiveBuffer);
@@ -195,7 +209,6 @@ void FRenderer::CreateConstantBuffer()
     LightingBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FLighting));
     FlagBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FLitUnlitConstants));
     FogConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FFogParams));
-
 }
 
 void FRenderer::ReleaseConstantBuffer()
@@ -228,24 +241,24 @@ void FRenderer::PrepareRender()
     {
         for (const auto iter : TObjectRange<USceneComponent>())
         {
-                UE_LOG(LogLevel::Display, "%d", GUObjectArray.GetObjectItemArrayUnsafe().Num());
-                if (UStaticMeshComponent* pStaticMeshComp = Cast<UStaticMeshComponent>(iter))
-                {
-                    if (!Cast<UGizmoBaseComponent>(iter))
-                        StaticMeshObjs.Add(pStaticMeshComp);
-                }
-                if (UGizmoBaseComponent* pGizmoComp = Cast<UGizmoBaseComponent>(iter))
-                {
-                    GizmoObjs.Add(pGizmoComp);
-                }
-                if (UBillboardComponent* pBillboardComp = Cast<UBillboardComponent>(iter))
-                {
-                    BillboardObjs.Add(pBillboardComp);
-                }
-                if (ULightComponentBase* pLightComp = Cast<ULightComponentBase>(iter))
-                {
-                    LightObjs.Add(pLightComp);
-                }
+            UE_LOG(LogLevel::Display, "%d", GUObjectArray.GetObjectItemArrayUnsafe().Num());
+            if (UStaticMeshComponent* pStaticMeshComp = Cast<UStaticMeshComponent>(iter))
+            {
+                if (!Cast<UGizmoBaseComponent>(iter))
+                    StaticMeshObjs.Add(pStaticMeshComp);
+            }
+            if (UGizmoBaseComponent* pGizmoComp = Cast<UGizmoBaseComponent>(iter))
+            {
+                GizmoObjs.Add(pGizmoComp);
+            }
+            if (UBillboardComponent* pBillboardComp = Cast<UBillboardComponent>(iter))
+            {
+                BillboardObjs.Add(pBillboardComp);
+            }
+            if (ULightComponentBase* pLightComp = Cast<ULightComponentBase>(iter))
+            {
+                LightObjs.Add(pLightComp);
+            }
         }
     }
     else if (GEngine->GetWorld()->WorldType == EWorldType::PIE)
@@ -253,7 +266,6 @@ void FRenderer::PrepareRender()
         // UE_LOG(LogLevel::Display, "%d", GEngine->GetWorld()->GetActors().Num() );
         for (const auto iter : GEngine->GetWorld()->GetActors())
         {
-            
             for (const auto iter2 : iter->GetComponents())
             {
                 if (UStaticMeshComponent* pStaticMeshComp = Cast<UStaticMeshComponent>(iter2))
@@ -288,7 +300,6 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
     if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_BillboardText))
         RenderBillboards(World, ActiveViewport);
     RenderLight(World, ActiveViewport);
-
     ClearRenderArr();
 }
 
@@ -308,7 +319,8 @@ void FRenderer::RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT numVertices, I
     Graphics->DeviceContext->DrawIndexed(numIndices, 0, 0);
 }
 
-void FRenderer::RenderPrimitive(OBJ::FStaticMeshRenderData* renderData, TArray<FStaticMaterial*> materials, TArray<UMaterial*> overrideMaterial, int selectedSubMeshIndex = -1) const
+void FRenderer::RenderPrimitive(OBJ::FStaticMeshRenderData* renderData, TArray<FStaticMaterial*> materials, TArray<UMaterial*> overrideMaterial,
+                                int selectedSubMeshIndex = -1) const
 {
     UINT offset = 0;
     Graphics->DeviceContext->IASetVertexBuffers(0, 1, &renderData->VertexBuffer, &Stride, &offset);
@@ -326,10 +338,13 @@ void FRenderer::RenderPrimitive(OBJ::FStaticMeshRenderData* renderData, TArray<F
     {
         int materialIndex = renderData->MaterialSubsets[subMeshIndex].MaterialIndex;
 
-        subMeshIndex == selectedSubMeshIndex ? ConstantBufferUpdater.UpdateSubMeshConstant(SubMeshConstantBuffer, true) : ConstantBufferUpdater.UpdateSubMeshConstant(SubMeshConstantBuffer, false);
+        subMeshIndex == selectedSubMeshIndex
+            ? ConstantBufferUpdater.UpdateSubMeshConstant(SubMeshConstantBuffer, true)
+            : ConstantBufferUpdater.UpdateSubMeshConstant(SubMeshConstantBuffer, false);
 
-        overrideMaterial[materialIndex] != nullptr ?
-            UpdateMaterial(overrideMaterial[materialIndex]->GetMaterialInfo()) : UpdateMaterial(materials[materialIndex]->Material->GetMaterialInfo());
+        overrideMaterial[materialIndex] != nullptr
+            ? UpdateMaterial(overrideMaterial[materialIndex]->GetMaterialInfo())
+            : UpdateMaterial(materials[materialIndex]->Material->GetMaterialInfo());
 
         if (renderData->IndexBuffer)
         {
@@ -462,10 +477,10 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
         Context->PSSetConstantBuffers(6, 1, &FogConstantBuffer);
 
         // 렌더링 (Fog 셰이더 포함)
-        RenderPrimitive(renderData, StaticMeshComp->GetStaticMesh()->GetMaterials(), StaticMeshComp->GetOverrideMaterials(), StaticMeshComp->GetselectedSubMeshIndex());
+        RenderPrimitive(renderData, StaticMeshComp->GetStaticMesh()->GetMaterials(), StaticMeshComp->GetOverrideMaterials(),
+                        StaticMeshComp->GetselectedSubMeshIndex());
     }
 }
-
 
 
 void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport)
@@ -487,25 +502,24 @@ void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorV
 
     for (auto GizmoComp : GizmoObjs)
     {
-
         if ((GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowX ||
-            GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowY ||
-            GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowZ)
+                GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowY ||
+                GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowZ)
             && World->GetEditorPlayer()->GetControlMode() != CM_TRANSLATION)
             continue;
         else if ((GizmoComp->GetGizmoType() == UGizmoBaseComponent::ScaleX ||
-            GizmoComp->GetGizmoType() == UGizmoBaseComponent::ScaleY ||
-            GizmoComp->GetGizmoType() == UGizmoBaseComponent::ScaleZ)
+                GizmoComp->GetGizmoType() == UGizmoBaseComponent::ScaleY ||
+                GizmoComp->GetGizmoType() == UGizmoBaseComponent::ScaleZ)
             && World->GetEditorPlayer()->GetControlMode() != CM_SCALE)
             continue;
         else if ((GizmoComp->GetGizmoType() == UGizmoBaseComponent::CircleX ||
-            GizmoComp->GetGizmoType() == UGizmoBaseComponent::CircleY ||
-            GizmoComp->GetGizmoType() == UGizmoBaseComponent::CircleZ)
+                GizmoComp->GetGizmoType() == UGizmoBaseComponent::CircleY ||
+                GizmoComp->GetGizmoType() == UGizmoBaseComponent::CircleZ)
             && World->GetEditorPlayer()->GetControlMode() != CM_ROTATION)
             continue;
         FMatrix Model = JungleMath::CreateModelMatrix(GizmoComp->GetWorldLocation(),
-            GizmoComp->GetWorldRotation(),
-            GizmoComp->GetWorldScale()
+                                                      GizmoComp->GetWorldRotation(),
+                                                      GizmoComp->GetWorldScale()
         );
         FMatrix NormalMatrix = FMatrix::Transpose(FMatrix::Inverse(Model));
         FVector4 UUIDColor = GizmoComp->EncodeUUID() / 255.0f;
@@ -513,9 +527,9 @@ void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorV
         //FMatrix MVP = Model * ActiveViewport->GetViewMatrix() * ActiveViewport->GetProjectionMatrix();
 
         if (GizmoComp == World->GetPickingGizmo())
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model,View,Proj, NormalMatrix, UUIDColor, true);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, View, Proj, NormalMatrix, UUIDColor, true);
         else
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model,View,Proj, NormalMatrix, UUIDColor, false);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, View, Proj, NormalMatrix, UUIDColor, false);
 
         if (!GizmoComp->GetStaticMesh()) continue;
 
@@ -550,9 +564,9 @@ void FRenderer::RenderBillboards(UWorld* World, std::shared_ptr<FEditorViewportC
         FMatrix NormalMatrix = FMatrix::Transpose(FMatrix::Inverse(Model));
         FVector4 UUIDColor = BillboardComp->EncodeUUID() / 255.0f;
         if (BillboardComp == World->GetPickingGizmo())
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model,View,Proj, NormalMatrix, UUIDColor, true);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, View, Proj, NormalMatrix, UUIDColor, true);
         else
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model,View,Proj, NormalMatrix, UUIDColor, false);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, View, Proj, NormalMatrix, UUIDColor, false);
 
         if (UParticleSubUVComp* SubUVParticle = Cast<UParticleSubUVComp>(BillboardComp))
         {
@@ -584,7 +598,7 @@ void FRenderer::RenderLight(UWorld* World, std::shared_ptr<FEditorViewportClient
 {
     for (auto Light : LightObjs)
     {
-        FMatrix Model = JungleMath::CreateModelMatrix(Light->GetWorldLocation(), Light->GetWorldRotation(), { 1, 1, 1 });
+        FMatrix Model = JungleMath::CreateModelMatrix(Light->GetWorldLocation(), Light->GetWorldRotation(), {1, 1, 1});
         UPrimitiveBatch::GetInstance().AddCone(Light->GetWorldLocation(), Light->GetRadius(), 15, 140, Light->GetColor(), Model);
         UPrimitiveBatch::GetInstance().RenderOBB(Light->GetBoundingBox(), Light->GetWorldLocation(), Model);
     }
@@ -641,7 +655,6 @@ void FRenderer::UpdateMaterial(const FObjMaterialInfo& MaterialInfo) const
 }
 
 
-
 ID3D11ShaderResourceView* FRenderer::CreateBoundingBoxSRV(ID3D11Buffer* pBoundingBoxBuffer, UINT numBoundingBoxes)
 {
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
@@ -669,7 +682,7 @@ ID3D11ShaderResourceView* FRenderer::CreateOBBSRV(ID3D11Buffer* pBoundingBoxBuff
 ID3D11ShaderResourceView* FRenderer::CreateConeSRV(ID3D11Buffer* pConeBuffer, UINT numCones)
 {
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc;
-    srvDesc.Format = DXGI_FORMAT_UNKNOWN; 
+    srvDesc.Format = DXGI_FORMAT_UNKNOWN;
     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
     srvDesc.Buffer.ElementOffset = 0;
     srvDesc.Buffer.NumElements = numCones;
@@ -741,4 +754,74 @@ void FRenderer::UpdateLinePrimitveCountBuffer(int numBoundingBoxes, int numCones
     pData->BoundingBoxCount = numBoundingBoxes;
     pData->ConeCount = numCones;
     Graphics->DeviceContext->Unmap(LinePrimitiveBuffer, 0);
+}
+
+void FRenderer::RenderDebugDepth()
+{
+    ID3D11DeviceContext* Context = Graphics->DeviceContext;
+
+    Context->VSSetShader(DebugDepthVertexShader, nullptr, 0);
+    Context->PSSetShader(DebugDepthPixelShader, nullptr, 0);
+
+    Context->IASetInputLayout(DebugDepthInputLayout);
+    Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    UINT stride = sizeof(FFullscreenVertex);
+    UINT offset = 0;
+    Context->IASetVertexBuffers(0, 1, &FullscreenVertexBuffer, &stride, &offset);
+
+    Context->PSSetShaderResources(0, 1, &Graphics->SceneDepthSRV);
+    Context->PSSetSamplers(0, 1, &LinearSampler); // bilinear 샘플러
+
+    Context->Draw(6, 0); // 풀스크린 쿼드
+}
+void FRenderer::CreateSampler()
+{
+    D3D11_SAMPLER_DESC samplerDesc = {};
+    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+    samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
+    /*samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;*/
+    samplerDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    samplerDesc.MinLOD = 0;
+    samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+    Graphics->Device->CreateSamplerState(&samplerDesc, &LinearSampler);
+}
+// FRenderer.cpp
+
+void FRenderer::CreateFullscreenQuad()
+{
+    struct FVertexUV
+    {
+        float x, y, z;
+        float u, v;
+    };
+
+    FVertexUV QuadVertices[6] =
+    {
+        // Triangle 1
+        { -1.f,  1.f, 0.f, 0.f, 0.f }, // Top-left
+        {  1.f,  1.f, 0.f, 1.f, 0.f }, // Top-right
+        { -1.f, -1.f, 0.f, 0.f, 1.f }, // Bottom-left
+
+        // Triangle 2
+        { -1.f, -1.f, 0.f, 0.f, 1.f }, // Bottom-left
+        {  1.f,  1.f, 0.f, 1.f, 0.f }, // Top-right
+        {  1.f, -1.f, 0.f, 1.f, 1.f }, // Bottom-right
+    };
+
+    D3D11_BUFFER_DESC desc = {};
+    desc.ByteWidth = sizeof(QuadVertices);
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+    D3D11_SUBRESOURCE_DATA initData = {};
+    initData.pSysMem = QuadVertices;
+
+    HRESULT hr = Graphics->Device->CreateBuffer(&desc, &initData, &FullscreenVertexBuffer);
+    //check(SUCCEEDED(hr));
 }

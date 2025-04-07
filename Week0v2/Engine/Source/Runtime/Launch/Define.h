@@ -327,3 +327,14 @@ struct FSubUVConstant
     float indexU;
     float indexV;
 };
+#ifndef check
+#define check(expr)                                                                          \
+do                                                                                       \
+{                                                                                        \
+if (!(expr))                                                                         \
+{                                                                                    \
+std::cerr << "Check failed: " << #expr << " at " << __FILE__ << ":" << __LINE__ << std::endl; \
+assert(expr);                                                                    \
+}                                                                                    \
+} while (0)
+#endif

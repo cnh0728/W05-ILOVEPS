@@ -3,6 +3,8 @@
 #include "EditorEngine.h"
 #include "Engine/Engine.h"
 #include "LevelEditor/SLevelEditor.h"
+#include "Profiling/PlatformTime.h"
+#include "Profiling/StatRegistry.h"
 #include "PropertyEditor/ViewportTypePanel.h"
 #include "UnrealEd/UnrealEd.h"
 #include "UObject/ObjectFactory.h"
@@ -126,9 +128,10 @@ void FEngineLoop::Tick()
 
     LARGE_INTEGER startTime, endTime;
     float deltaSeconds = 1.0f;
-
+    FStatRegistry::SetMainFrameStat("MainFrame"); // 앱 시작 시 1회만 호출
     while (bIsExit == false)
     {
+		FScopeCycleCounter Timer("MainFrame");
         QueryPerformanceCounter(&startTime);
 
         MSG msg;
@@ -152,6 +155,7 @@ void FEngineLoop::Tick()
             deltaSeconds = (endTime.QuadPart - startTime.QuadPart) * 1000.0 / frequency.QuadPart;
         }
         while (deltaSeconds < targetFrameTime);
+		FStatRegistry::RegisterResult(Timer);
     }
 }
 

@@ -72,6 +72,7 @@ public:
 
 	/** 특정 위치에 있는 요소를 제거합니다. */
     void RemoveAt(SizeType Index);
+	void RemoveAt(SizeType Index, SizeType Count);
 
 	/** Predicate에 부합하는 모든 요소를 제거합니다. */
     template <typename Predicate>
@@ -114,6 +115,31 @@ public:
 
         return true;
     }
+    void Append(const TArray& OtherArray);
+    void ShrinkToFit();
+    /** 마지막 요소를 반환합니다. 비어 있으면 assert 발생 */
+    T& Last();
+    const T& Last() const;
+
+    /** 마지막 요소를 제거하고 반환합니다. */
+    bool Pop(T& OutItem);
+    T Pop();
+
+    /** 요소를 마지막에 추가합니다. */
+    void Push(const T& Item);
+    void Push(T&& Item);
+
+    /** 마지막 요소를 참조로 반환합니다. */
+    T& Top();
+    const T& Top() const;
+
+    /** 첫 요소를 제거하고 반환합니다. */
+    T Dequeue();
+
+    /** 첫 요소로 추가합니다 (Queue용) */
+    void Enqueue(const T& Item);
+    void Enqueue(T&& Item);
+
 };
 
 
@@ -255,7 +281,14 @@ void TArray<T, Allocator>::RemoveAt(SizeType Index)
         ContainerPrivate.erase(ContainerPrivate.begin() + Index);
     }
 }
-
+template <typename T, typename Allocator>
+void TArray<T, Allocator>::RemoveAt(SizeType Index, SizeType Count)
+{
+    if (Index >= 0 && static_cast<SizeType>(Index + Count) <= ContainerPrivate.size())
+    {
+        ContainerPrivate.erase(ContainerPrivate.begin() + Index, ContainerPrivate.begin() + Index + Count);
+    }
+}
 template <typename T, typename Allocator>
 template <typename Predicate>
     requires std::is_invocable_r_v<bool, Predicate, const T&>
@@ -344,3 +377,28 @@ void TArray<T, Allocator>::Sort(const Compare& CompFn)
 }
 
 template <typename T, typename Allocator = FDefaultAllocator<T>> class TArray;
+template <typename T, typename Allocator>
+void TArray<T, Allocator>::Append(const TArray& OtherArray)
+{
+    ContainerPrivate.insert(ContainerPrivate.end(), OtherArray.begin(), OtherArray.end());
+}
+template <typename T, typename Allocator>
+void TArray<T, Allocator>::ShrinkToFit()
+{
+    ContainerPrivate.shrink_to_fit();
+}
+template <typename T>
+TArray<T> Slice(const TArray<T>& InArray, int32 StartIndex, int32 Count)
+{
+    TArray<T> Result;
+    if (StartIndex < 0 || Count <= 0 || StartIndex >= InArray.Num())
+        return Result;
+
+    int32 MaxCount = std::min(Count, InArray.Num() - StartIndex);
+    Result.Reserve(MaxCount);
+    for (int32 i = 0; i < MaxCount; ++i)
+    {
+        Result.Add(InArray[StartIndex + i]);
+    }
+    return Result;
+}

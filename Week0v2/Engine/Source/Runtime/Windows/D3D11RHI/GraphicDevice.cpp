@@ -5,6 +5,7 @@ void FGraphicsDevice::Initialize(HWND hWindow) {
     CreateFrameBuffer();
     CreateDepthStencilBuffer(hWindow);
     CreateDepthStencilState();
+    CreateSceneDepthTexture();
     CreateRasterizerState();
     CurrentRasterizer = RasterizerStateSOLID;
 }
@@ -270,6 +271,26 @@ void FGraphicsDevice::ReleaseDepthStencilResources()
         DepthStateDisable = nullptr;
     }
 }
+void FGraphicsDevice::ReleaseSceneDepthResources()
+{
+    if (SceneDepthSRV)
+    {
+        SceneDepthSRV->Release();
+        SceneDepthSRV = nullptr;
+    }
+
+    if (SceneDepthDSV)
+    {
+        SceneDepthDSV->Release();
+        SceneDepthDSV = nullptr;
+    }
+
+    if (SceneDepthTexture)
+    {
+        SceneDepthTexture->Release();
+        SceneDepthTexture = nullptr;
+    }
+}
 
 void FGraphicsDevice::Release() 
 {
@@ -278,6 +299,7 @@ void FGraphicsDevice::Release()
 
     ReleaseFrameBuffer();
     ReleaseDepthStencilResources();
+    ReleaseSceneDepthResources();
     ReleaseDeviceAndSwapChain();
 }
 
@@ -297,10 +319,16 @@ void FGraphicsDevice::Prepare()
 
     DeviceContext->OMSetDepthStencilState(DepthStencilState, 0);
 
+    //DeviceContext->OMSetRenderTargets(2, RTVs, SceneDepthDSV);
     DeviceContext->OMSetRenderTargets(2, RTVs, DepthStencilView); // 렌더 타겟 설정(백버퍼를 가르킴)
     DeviceContext->OMSetBlendState(nullptr, nullptr, 0xffffffff); // 블렌뎅 상태 설정, 기본블렌딩 상태임
 }
-
+void FGraphicsDevice::CopyDepthToSceneTexture()
+{
+    //깊이 데이터를 SceneDepthTexture로 복사
+    DeviceContext->OMSetRenderTargets(2, RTVs, nullptr);
+    DeviceContext->CopyResource(SceneDepthTexture, DepthStencilBuffer);
+}
 void FGraphicsDevice::Prepare(D3D11_VIEWPORT* viewport)
 {
     DeviceContext->ClearRenderTargetView(FrameBufferRTV, ClearColor); // 렌더 타겟 뷰에 저장된 이전 프레임 데이터를 삭제
@@ -331,9 +359,9 @@ void FGraphicsDevice::OnResize(HWND hWindow) {
         DepthStencilView->Release();
         DepthStencilView = nullptr;
     }
-
+    
     ReleaseFrameBuffer();
-
+    ReleaseSceneDepthResources();
 
 
     if (screenWidth == 0 || screenHeight == 0) {
@@ -355,7 +383,7 @@ void FGraphicsDevice::OnResize(HWND hWindow) {
 
     CreateFrameBuffer();
     CreateDepthStencilBuffer(hWindow);
-
+    CreateSceneDepthTexture();
 
 
 }
@@ -467,4 +495,55 @@ uint32 FGraphicsDevice::DecodeUUIDColor(FVector4 UUIDColor) {
     uint32_t X = static_cast<uint32_t>(UUIDColor.x);
 
     return W | Z | Y | X;
+}
+void FGraphicsDevice::CreateSceneDepthTexture()
+{
+    // 1. SceneDepthTexture 생성 (깊이만, Shader에서 읽기 가능하게)
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width = screenWidth;
+    desc.Height = screenHeight;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+
+    desc.Format = DXGI_FORMAT_R24G8_TYPELESS;
+    //desc.Format = DXGI_FORMAT_R32_TYPELESS; // typeless로 만들어야 뷰들에서 각기 다른 포맷 사용 가능
+    desc.SampleDesc.Count = 1;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_DEPTH_STENCIL;
+
+    HRESULT hr = Device->CreateTexture2D(&desc, nullptr, &SceneDepthTexture);
+    if (FAILED(hr))
+    {
+        MessageBox(nullptr, L"Failed to create SceneDepthTexture!", L"Error", MB_ICONERROR | MB_OK);
+        return;
+    }
+
+    // 2. DSV (뷰포트 렌더링용이 아님, 복사용이므로 생략 가능)
+    D3D11_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+    //dsvDesc.Format = DXGI_FORMAT_D32_FLOAT;
+    dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    dsvDesc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
+    dsvDesc.Texture2D.MipSlice = 0;
+
+    hr = Device->CreateDepthStencilView(SceneDepthTexture, &dsvDesc, &SceneDepthDSV);
+    if (FAILED(hr))
+    {
+        MessageBox(nullptr, L"Failed to create SceneDepthDSV!", L"Error", MB_ICONERROR | MB_OK);
+        return;
+    }
+
+    // 3. SRV (포스트 프로세싱용)
+    D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    //srvDesc.Format = DXGI_FORMAT_R32_FLOAT; // float으로 샘플링
+    
+    srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+    srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = 1;
+
+    hr = Device->CreateShaderResourceView(SceneDepthTexture, &srvDesc, &SceneDepthSRV);
+    if (FAILED(hr))
+    {
+        MessageBox(nullptr, L"Failed to create SceneDepthSRV!", L"Error", MB_ICONERROR | MB_OK);
+        return;
+    }
 }

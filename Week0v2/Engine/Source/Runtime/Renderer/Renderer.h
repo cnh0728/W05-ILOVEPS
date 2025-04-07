@@ -23,11 +23,12 @@ class UBillboardComponent;
 class UStaticMeshComponent;
 class UGizmoBaseComponent;
 class FRenderResourceManager;
-class FRenderer 
-{
 
+class FRenderer
+{
 private:
     float litFlag = 0;
+
 public:
     FGraphicsDevice* Graphics;
     ID3D11VertexShader* VertexShader = nullptr;
@@ -47,62 +48,65 @@ public:
 
 public:
     void Initialize(FGraphicsDevice* graphics);
-   
+
     void PrepareShader() const;
     void PrepareFogShader() const;
 
     //Render
     void RenderPrimitive(ID3D11Buffer* pBuffer, UINT numVertices) const;
     void RenderPrimitive(ID3D11Buffer* pVertexBuffer, UINT numVertices, ID3D11Buffer* pIndexBuffer, UINT numIndices) const;
-    void RenderPrimitive(OBJ::FStaticMeshRenderData* renderData, TArray<FStaticMaterial*> materials, TArray<UMaterial*> overrideMaterial, int selectedSubMeshIndex) const;
-   
-    void RenderTexturedModelPrimitive(ID3D11Buffer* pVertexBuffer, UINT numVertices, ID3D11Buffer* pIndexBuffer, UINT numIndices, ID3D11ShaderResourceView* InTextureSRV, ID3D11SamplerState* InSamplerState) const;
+    void RenderPrimitive(OBJ::FStaticMeshRenderData* renderData, TArray<FStaticMaterial*> materials, TArray<UMaterial*> overrideMaterial,
+                         int selectedSubMeshIndex) const;
+
+    void RenderTexturedModelPrimitive(ID3D11Buffer* pVertexBuffer, UINT numVertices, ID3D11Buffer* pIndexBuffer, UINT numIndices,
+                                      ID3D11ShaderResourceView* InTextureSRV, ID3D11SamplerState* InSamplerState) const;
     //Release
     void Release();
     void ReleaseShader();
     void ReleaseConstantBuffer();
 
     void CreateShader();
-    
+
     void ChangeViewMode(EViewModeIndex evi) const;
-    
+
     // CreateBuffer
     void CreateConstantBuffer();
 
     // update
     void UpdateMaterial(const FObjMaterialInfo& MaterialInfo) const;
 
-
-public://텍스쳐용 기능 추가
+public: //텍스쳐용 기능 추가
     ID3D11VertexShader* VertexTextureShader = nullptr;
     ID3D11PixelShader* PixelTextureShader = nullptr;
     ID3D11InputLayout* TextureInputLayout = nullptr;
 
     uint32 TextureStride;
+
     struct FSubUVConstant
     {
         float indexU;
         float indexV;
     };
+
     ID3D11Buffer* SubUVConstantBuffer = nullptr;
 
 public:
     void PrepareTextureShader() const;
 
     void RenderTexturePrimitive(ID3D11Buffer* pVertexBuffer, UINT numVertices,
-        ID3D11Buffer* pIndexBuffer, UINT numIndices,
-        ID3D11ShaderResourceView* _TextureSRV,
-        ID3D11SamplerState* _SamplerState) const;
+                                ID3D11Buffer* pIndexBuffer, UINT numIndices,
+                                ID3D11ShaderResourceView* _TextureSRV,
+                                ID3D11SamplerState* _SamplerState) const;
     void RenderTextPrimitive(ID3D11Buffer* pVertexBuffer, UINT numVertices,
-        ID3D11ShaderResourceView* _TextureSRV,
-        ID3D11SamplerState* _SamplerState) const;
+                             ID3D11ShaderResourceView* _TextureSRV,
+                             ID3D11SamplerState* _SamplerState) const;
 
     void PrepareSubUVConstant() const;
 
-
 public: // line shader
     void PrepareLineShader() const;
-    void RenderBatch(const FGridParameters& gridParam, ID3D11Buffer* pVertexBuffer, int boundingBoxCount, int coneCount, int coneSegmentCount, int obbCount) const;
+    void RenderBatch(const FGridParameters& gridParam, ID3D11Buffer* pVertexBuffer, int boundingBoxCount, int coneCount, int coneSegmentCount,
+                     int obbCount) const;
     void UpdateGridConstantBuffer(const FGridParameters& gridParams) const;
     void UpdateLinePrimitveCountBuffer(int numBoundingBoxes, int numCones) const;
 
@@ -121,7 +125,10 @@ public: // line shader
     void RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport);
     void RenderLight(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
-    void RenderBillboards(UWorld* World,std::shared_ptr<FEditorViewportClient> ActiveViewport);
+    void RenderBillboards(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
+
+    void RenderDebugDepth();
+
 private:
     TArray<UStaticMeshComponent*> StaticMeshObjs;
     TArray<UGizmoBaseComponent*> GizmoObjs;
@@ -146,6 +153,7 @@ private:
 
     // Fog 상수 버퍼
     ID3D11Buffer* FogConstantBuffer = nullptr;
+
 public:
     FRenderResourceManager& GetResourceManager() { return RenderResourceManager; }
     FShaderManager& GetShaderManager() { return ShaderManager; }
@@ -155,8 +163,20 @@ private:
     FRenderResourceManager RenderResourceManager;
     FShaderManager ShaderManager;
     FConstantBufferUpdater ConstantBufferUpdater;
-    
+
+public:
+    void CreateFullscreenQuad();
+    void CreateSampler();
+    ID3D11VertexShader* DebugDepthVertexShader = nullptr;
+    ID3D11PixelShader* DebugDepthPixelShader = nullptr;
+    ID3D11InputLayout* DebugDepthInputLayout = nullptr;
+
+    ID3D11Buffer* FullscreenVertexBuffer = nullptr;
+    ID3D11SamplerState* LinearSampler = nullptr;
+    UINT DebugDepthStride = 0;
+    bool bRenderDebugDepth = false;
 };
+
 struct FMatrixConstants
 {
     FMatrix MVP;
@@ -164,4 +184,10 @@ struct FMatrixConstants
     FVector4 UUID;
     bool isSelected;
     FVector Padding;
+};
+
+struct FFullscreenVertex
+{
+    FVector position;
+    FVector2D uv;
 };
