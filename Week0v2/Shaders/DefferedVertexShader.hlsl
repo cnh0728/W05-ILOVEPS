@@ -3,7 +3,7 @@ cbuffer MatrixConstants : register(b0)
 {
     row_major float4x4 M;
     row_major float4x4 VP;
-    row_major float4x4 MInverseTranspose;
+    row_major float4x4 MInverse;
     float4 UUID;
     bool isSelected;
     float3 MatrixPad0;
@@ -45,7 +45,7 @@ PS_INPUT mainVS(VS_INPUT input)
     // 입력 normal 값의 길이 확인
     if (length(input.normal) > 0.001)
     {
-        output.normal = normalize(mul(input.normal, MInverseTranspose));
+        output.normal = normalize(mul(input.normal, MInverse));
         output.normalFlag = true; 
     }
     else

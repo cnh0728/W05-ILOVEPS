@@ -48,25 +48,24 @@ float4 mainPS(PSInput input) : SV_Target {
     float diff = max(dot(normal, lightDir), 0.0);  
     float3 litColor = albedo * diff * float3(1,1,1);  
 
-    float3 cameraToWorld = worldPos - CameraPos;  
-    float dist = length(cameraToWorld);    
-    // 거리 값 확인 (빨강: 먼 물체, 파랑: 가까운 물체)  
-    float distVisual = saturate(dist / 100.0);  
-    return float4(distVisual, 0, 1-distVisual, 1);  
-    
-    // 3. 포그 효과 (수정된 공식)  
+    // 3. 포그 효과 (수정된 공식)
     if (bIsFogOn)  
-    {  
-        // 카메라-월드 거리 (월드 좌표계 기준)  
-        float3 cameraToWorld = worldPos - CameraPos;  
-        float dist = length(cameraToWorld);  
+    {
+        if (all(worldPos == float3(0.025, 0.025, 0.025))) //배경(오브젝트가 아닐때)
+        {
+            litColor = FogColor;  
+        }else //오브젝트일 때
+        {
+            float3 cameraToWorld = worldPos - CameraPos;  
+            float dist = length(cameraToWorld);  
+            // 카메라-월드 거리 (월드 좌표계 기준)
 
-        // 지수 감쇠 + 선형 범위 제한  
-        float fogFactor = 1.0 - exp(-dist * FogDensity);  
-        fogFactor = saturate((FogEnd - dist) / (FogEnd - FogStart));  
+            // 지수 감쇠 + 선형 범위 제한  
+            float fogFactor = 1.0 - exp(-dist * FogDensity);
 
-        // 포그 색상 혼합  
-        litColor = lerp(litColor, FogColor, fogFactor);  
+            // 포그 색상 혼합  
+            litColor = lerp(litColor, FogColor, fogFactor);  
+        }
     }  
 
     return float4(litColor, 1.0);  

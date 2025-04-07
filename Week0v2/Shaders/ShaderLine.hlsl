@@ -1,15 +1,18 @@
 
 cbuffer MatrixBuffer : register(b0)
 {
-    row_major float4x4 MVP;
+    row_major float4x4 M;
+    row_major float4x4 VP;
 };
 
 cbuffer GridParametersData : register(b1)
 {
+    float3 GridOrigin; // Grid의 중심
+    float gridpad1;
     float GridSpacing;
     int GridCount; // 총 grid 라인 수
-    float3 GridOrigin; // Grid의 중심
-    float Padding;
+    float gridpad2;
+    float gridpad3;
 };
 cbuffer PrimitiveCounts : register(b3)
 {
@@ -70,7 +73,16 @@ struct VS_INPUT
 struct PS_INPUT
 {
     float4 Position : SV_Position;
+    float3 WorldPosition : TEXCOORD0;
     float4 Color : COLOR;
+};
+
+struct PS_OUTPUT
+{
+    float4 position : SV_Target0;  // 월드 좌표 (R32G32B32A32_FLOAT)  
+    float4 normal   : SV_Target1;  // 정규화 노멀 (R16G16B16A16_FLOAT)  
+    float4 albedo   : SV_Target2;  // 선형 공간 Albedo (R8G8B8A8_UNORM_SRGB)  
+    float4 material : SV_Target3;  // 메탈릭/러프니스 (R8G8B8A8_UNORM)  
 };
 
 /////////////////////////////////////////////////////////////////////////
@@ -292,8 +304,6 @@ PS_INPUT mainVS(VS_INPUT input)
         uint coneIndex = coneInstanceID / (2 * N);
         
         color = g_ConeData[coneIndex].Color;
-   
-        
     }
     else
     {
@@ -304,14 +314,20 @@ PS_INPUT mainVS(VS_INPUT input)
         pos = ComputeOrientedBoxPosition(obbIndex, edgeIndex, input.vertexID);
         color = float4(0.4, 1.0, 0.4, 1.0); // 예시: 연두색
     }
-
+    
     // 출력 변환
-    output.Position = mul(float4(pos, 1.0), MVP);
+    float4 worldPos = mul(float4(pos, 1.0), M);
+    output.WorldPosition = worldPos.xyz;
+    output.Position = mul(worldPos, VP);
     output.Color = color;
     return output;
 }
 
-float4 mainPS(PS_INPUT input) : SV_Target
+PS_OUTPUT mainPS(PS_INPUT input) : SV_Target
 {
-    return input.Color;
+    PS_OUTPUT output;
+    output.position = float4(input.WorldPosition, 1.0);
+    output.albedo = input.Color;
+    
+    return output;
 }

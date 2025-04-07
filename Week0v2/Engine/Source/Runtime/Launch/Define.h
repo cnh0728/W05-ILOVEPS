@@ -136,12 +136,14 @@ struct FVertexTexture
 	float x, y, z;    // Position
 	float u, v; // Texture
 };
-struct FGridParameters
+struct alignas(16) FGridParameters
 {
+	FVector gridOrigin;
+	float pad1;
 	float gridSpacing;
 	int   numGridLines;
-	FVector gridOrigin;
-	float pad;
+    float pad2;
+    float pad3;
 };
 struct FSimpleVertex
 {

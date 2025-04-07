@@ -5,7 +5,7 @@ cbuffer MatrixConstants : register(b0)
 {
     row_major float4x4 M;
     row_major float4x4 VP;
-    row_major float4x4 MInverseTranspose;
+    row_major float4x4 MInverse;
     float4 UUID;
     bool isSelected;
     float3 MatrixPad0;
@@ -160,19 +160,4 @@ PS_OUTPUT mainPS(PS_INPUT input)
         output.albedo.rgb = ambient + (diffuseLight * linearColor) + specularLight + Material.EmissiveColor;
     }
     return output;
-
-    // if(!Lit) // unlit 상태일 때 PaperTexture 효과 적용 -> Composite 패스에서 별도 적용
-    // {
-    //     if (!input.normalFlag)
-    //     {
-    //         output.albedo = float4(linearColor, Material.TransparencyScalar);
-    //         return output;
-    //     }
-    //     
-    //     output.albedo = float4(linearColor, 1);
-    //     // 투명도 적용
-    //     output.albedo.a = Material.TransparencyScalar;
-    //         
-    //     return output;
-    // }
 }

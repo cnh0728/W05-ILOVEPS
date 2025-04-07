@@ -131,6 +131,7 @@ void FRenderer::PrepareFullScreenShader() const
     Graphics->DeviceContext->IASetInputLayout(TextureInputLayout);
     
     //밑에는 렌더구간
+    Graphics->DeviceContext->RSSetState(UEditorEngine::graphicDevice.RasterizerStateSOLID);
     Graphics->DeviceContext->OMSetDepthStencilState(nullptr, 0);
     Graphics->DeviceContext->OMSetRenderTargets(1, &Graphics->FrameBufferRTV, nullptr); // 렌더 타겟 설정(백버퍼를 가르킴)
     
@@ -339,6 +340,7 @@ void FRenderer::OrganizeFullScreen()
 {
     Graphics->DeviceContext->OMSetRenderTargets(1, &Graphics->FrameBufferRTV, Graphics->DepthStencilView); // 렌더 타겟 설정(백버퍼를 가르킴)
     Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStencilState, 0);
+    Graphics->DeviceContext->RSSetState(Graphics->GetCurrentRasterizer());
 
     Graphics->DeviceContext->VSSetShader(UEditorEngine::renderer.VertexShader, nullptr, 0);
     Graphics->DeviceContext->PSSetShader(UEditorEngine::renderer.PixelShader, nullptr, 0);
@@ -469,7 +471,7 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
         // 최종 MVP 행렬
         FMatrix VP = ActiveViewport->GetViewMatrix() * ActiveViewport->GetProjectionMatrix();
         // 노말 회전시 필요 행렬
-        FMatrix NormalMatrix = FMatrix::FMatrix::Inverse(Model);
+        FMatrix NormalMatrix = FMatrix::Inverse(Model);
         FVector4 UUIDColor = StaticMeshComp->EncodeUUID() / 255.0f;
         if (World->GetSelectedActor() == StaticMeshComp->GetOwner())
         {
@@ -514,8 +516,7 @@ void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorV
     }
 
 #pragma region GizmoDepth
-    ID3D11DepthStencilState* DepthStateDisable = Graphics->DepthStateDisable;
-    Graphics->DeviceContext->OMSetDepthStencilState(DepthStateDisable, 0);
+    Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStateDisable, 0);
 #pragma endregion GizmoDepth
 
     //  fill solid,  Wirframe 에서도 제대로 렌더링되기 위함
