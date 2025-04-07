@@ -11,6 +11,9 @@ UHeightFogComponent::UHeightFogComponent()
 {
     SetType(StaticClass()->GetName());
 }
+UHeightFogComponent::~UHeightFogComponent()
+{
+}
 
 void UHeightFogComponent::InitializeComponent()
 {
