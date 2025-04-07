@@ -14,6 +14,7 @@
 #include <Components/UParticleSubUVComp.h>
 #include "Components/ProjectileMovementComponent.h"
 #include "GameFramework/Actor.h"
+#include "Components/RotationMovementComponent.h"
 
 void PropertyEditorPanel::Render()
 {
@@ -134,6 +135,12 @@ void PropertyEditorPanel::Render()
                     // 추가 시, UProjectileMovementComponent는 이후에 Actor의 RootComponent에 “부착”된 것으로 처리됩니다.
                     UProjectileMovementComponent* ProjectileMovementComponent = PickedActor->AddComponent<UProjectileMovementComponent>();
                     PickedComponent = ProjectileMovementComponent;
+                }
+                if (ImGui::Selectable("RotationMovementComponent"))
+                {
+                    // 추가 시, UProjectileMovementComponent는 이후에 Actor의 RootComponent에 “부착”된 것으로 처리됩니다.
+                    URotationMovementComponent* RotationMovementComponent = PickedActor->AddComponent<URotationMovementComponent>();
+                    PickedComponent = RotationMovementComponent;
                 }
                 ImGui::EndPopup();
             }
@@ -353,6 +360,28 @@ void PropertyEditorPanel::Render()
         }
     }
 
+    if (PickedActor && PickedComponent && PickedComponent->IsA<URotationMovementComponent>())
+    {
+        URotationMovementComponent* rotComp = Cast<URotationMovementComponent>(PickedComponent);
+        if (ImGui::TreeNodeEx("Rotation Movement Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            // Initial Speed 수정
+            float initialSpeed = rotComp->GetInitialSpeed();
+            if (ImGui::DragFloat("Initial Speed", &initialSpeed, 0.1f, 0.0f, 1000.0f))
+            {
+                rotComp->SetInitialSpeed(initialSpeed);
+            }
+
+            bool bisCounterClockwise = rotComp->IsCounterClockwise();
+            if (ImGui::Checkbox("Counter Clockwise", &bisCounterClockwise))
+            {
+                rotComp->SetCounterClockwise(bisCounterClockwise);
+            }
+
+            ImGui::TreePop();
+        }
+
+    }
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor)
     if (UStaticMeshComponent* StaticMeshComponent = PickedActor->GetComponentByClass<UStaticMeshComponent>())
