@@ -425,6 +425,7 @@
     <ClInclude Include="Engine\Source\Runtime\Renderer\ShaderManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Launch\LaunchEngineLoop.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\RenderResourceManager.h" />
+    <ClInclude Include="Engine\Source\Runtime\Core\Math\Color.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
