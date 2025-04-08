@@ -34,7 +34,7 @@ float4 mainPS(PS_INPUT input) : SV_Target
     // NDC → Clip
     float2 ndc = input.TexCoord * 2.0f - 1.0f;
     float4 clipPos = float4(ndc, depth, 1.0f);
-
+    clipPos.y = -clipPos.y; // Y축 반전
     // 복원된 World Position
     float4 worldPos = mul(clipPos, InvViewProj);
     worldPos /= worldPos.w;

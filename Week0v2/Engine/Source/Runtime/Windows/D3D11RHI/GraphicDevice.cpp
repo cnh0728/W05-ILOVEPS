@@ -2,6 +2,7 @@
 #include <wchar.h>
 
 #include "Renderer/PostProcess/FogPostProcess.h"
+#include "Renderer/PostProcess/LightPostProcess.h"
 
 void FGraphicsDevice::Initialize(HWND hWindow) {
     CreateDeviceAndSwapChain(hWindow);
@@ -414,6 +415,10 @@ void FGraphicsDevice::OnResize(HWND hWindow) {
     if (FogPostProcess)
     {
         FogPostProcess->Resize();
+    }
+    if (LightPostProcess)
+    {
+        LightPostProcess->Resize();
     }
 }
 

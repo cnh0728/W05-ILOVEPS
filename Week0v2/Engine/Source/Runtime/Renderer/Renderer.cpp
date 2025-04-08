@@ -47,7 +47,7 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
     FinalComposite = new FCompositePostProcess();
     FinalComposite->Initialize(this);
 
-    Graphics->SetPostProcess(FogPostProcess);
+    Graphics->SetPostProcess(FogPostProcess, LightPostProcess);
 }
 
 void FRenderer::Release()
