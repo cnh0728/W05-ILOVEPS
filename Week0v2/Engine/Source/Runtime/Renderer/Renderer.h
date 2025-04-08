@@ -12,6 +12,7 @@
 #include "ShaderManager.h"
 #include "ConstantBufferUpdater.h"
 
+class FCompositePostProcess;
 class FFogPostProcess;
 class ULightComponentBase;
 class UWorld;
@@ -181,6 +182,7 @@ public:
     bool bRenderDebugDepth = false;
 
     FFogPostProcess* FogPostProcess = nullptr;
+    FCompositePostProcess* FinalComposite = nullptr;
 };
 
 struct FMatrixConstants

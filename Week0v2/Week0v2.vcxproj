@@ -204,6 +204,7 @@
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\World.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\UnrealEngine.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Launch\LaunchEngineLoop.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\PostProcess\CompositePostProcess.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\PostProcess\FogPostProcess.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\PostProcess\FPostProcessPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\Utils\FullscreenQuad.cpp" />
@@ -308,6 +309,7 @@
     <ClInclude Include="Engine\Source\Runtime\Launch\EditorEngine.h" />
     <ClInclude Include="Engine\Source\Runtime\Launch\ImGuiManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\ConstantBufferUpdater.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\PostProcess\CompositePostProcess.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\PostProcess\FogPostProcess.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\PostProcess\FPostProcessPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\ShaderManager.h" />
@@ -402,6 +404,16 @@
     <FxCompile Include="Shaders\PixelTextureShader.hlsl">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </FxCompile>
+  <FxCompile Include="Shaders\PostProcess\CompositePostProcess.hlsl">
+    <ShaderType>Vertex</ShaderType>
+    <EntryPointName>mainVS</EntryPointName>
+    <ShaderModel>5.0</ShaderModel>
+  </FxCompile>
+  <FxCompile Include="Shaders\PostProcess\CompositePostProcess.hlsl">
+    <ShaderType>Pixel</ShaderType>
+    <EntryPointName>mainPS</EntryPointName>
+    <ShaderModel>5.0</ShaderModel>
+  </FxCompile>
     <FxCompile Include="Shaders\PostProcess\FogPostProcessPixelShader.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>mainPS</EntryPointName>
@@ -412,7 +424,6 @@
       <EntryPointName>mainVS</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
-    <!-- Pixel Shader -->
     <FxCompile Include="Shaders\ShaderLine.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>mainPS</EntryPointName>

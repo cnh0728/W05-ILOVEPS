@@ -37,6 +37,9 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
     float fogFactor = saturate((distance - LinearStart) / (LinearEnd - LinearStart));
     fogFactor = pow(fogFactor, 1.5);
 
+    float3 fog = FogColor.rgb * fogFactor;
+    return float4(fog, fogFactor); // alpha도 fogFactor로 넘겨주면 후처리에 도움
+    //SceneColor 포함된 버전
     float3 finalColor = lerp(sceneColor.rgb, FogColor.rgb, fogFactor);
     return float4(finalColor, sceneColor.a);
 }

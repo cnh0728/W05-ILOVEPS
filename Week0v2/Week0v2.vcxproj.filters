@@ -431,6 +431,7 @@
     <ClInclude Include="Engine\Source\Runtime\Renderer\PostProcess\FogPostProcess.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\PostProcess\FPostProcessPass.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\Utils\FullscreenQuad.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\PostProcess\CompositePostProcess.h" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Engine\Source\ThirdParty\DirectXTK\Include\DDSTextureLoader.h" />
@@ -535,6 +536,13 @@
     <FxCompile Include="Shaders\ShaderW0.hlsl" />
     <FxCompile Include="Shaders\PostProcess\FogPostProcessVertexShader.hlsl" />
     <FxCompile Include="Shaders\PostProcess\FogPostProcessPixelShader.hlsl" />
+    <FxCompile Include="Shaders\DebugSceneDepthShader.hlsl" />
+    <FxCompile Include="Shaders\DrawFullscreenTexture.hlsl" />
+    <FxCompile Include="Shaders\ShaderLine.hlsl" />
+    <FxCompile Include="Shaders\ShaderW0.hlsl" />
+    <FxCompile Include="Shaders\PostProcess\CompositePostProcess.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Week0v2.natvis" />
@@ -560,5 +568,6 @@
     <ClCompile Include="Engine\Source\Runtime\Renderer\PostProcess\FogPostProcess.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\PostProcess\FPostProcessPass.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\Utils\FullscreenQuad.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\PostProcess\CompositePostProcess.cpp" />
   </ItemGroup>
 </Project>
