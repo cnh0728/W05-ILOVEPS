@@ -43,15 +43,6 @@ float4 mainPS(PS_INPUT input) : SV_TARGET
     float3 finalColor = lerp(sceneColor.rgb, FogColor.rgb, fogFactor);
     return float4(finalColor, sceneColor.a);
 }
-/*float4 mainPS(PS_INPUT input) : SV_TARGET
-{
-    float4 sceneColor = SceneColor.Sample(BilinearSampler, input.TexCoord);
-    float distance = length(input.WorldPosition - CameraWorldPos);
-    float fogFactor = saturate((distance - LinearStart) / (LinearEnd - LinearStart));
-    fogFactor = pow(fogFactor, 1.5);
-    float3 finalColor = lerp(sceneColor.rgb, FogColor.rgb, fogFactor);
-    return float4(finalColor, sceneColor.a);
-}*/
 
 float LinearizeDepth(float depth)
 {
@@ -59,17 +50,3 @@ float LinearizeDepth(float depth)
     float zFar = 1000.0f;
     return zNear * zFar / (zFar + depth * (zNear - zFar));
 }
-/*
-float4 mainPS(PS_INPUT input) : SV_TARGET
-{
-    float4 sceneColor = SceneColor.Sample(BilinearSampler, input.TexCoord);
-    float depth = SceneDepth.Sample(BilinearSampler, input.TexCoord).r;
-    float linearDepth = LinearizeDepth(depth);
-
-    float fogFactor = saturate((linearDepth - LinearStart) / (LinearEnd - LinearStart));
-    fogFactor = pow(fogFactor, 1.5); // 곡선으로 부드럽게
-
-    float3 finalColor = lerp(sceneColor.rgb, FogColor.rgb, fogFactor);
-    return float4(finalColor, sceneColor.a);
-}
-*/

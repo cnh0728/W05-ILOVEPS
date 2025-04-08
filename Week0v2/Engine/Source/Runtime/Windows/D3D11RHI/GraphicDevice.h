@@ -11,6 +11,8 @@
 #include "Core/HAL/PlatformType.h"
 #include "Core/Math/Vector4.h"
 
+class FFogPostProcess;
+
 class FGraphicsDevice {
 public:
     ID3D11Device* Device = nullptr;
@@ -68,6 +70,9 @@ public:
 
     uint32 GetPixelUUID(POINT pt);
     uint32 DecodeUUIDColor(FVector4 UUIDColor);
+
+    FFogPostProcess* FogPostProcess = nullptr;
+    void SetPostProcess(FFogPostProcess* Ptr) { FogPostProcess = Ptr; }
 private:
     ID3D11RasterizerState* CurrentRasterizer = nullptr;
 };

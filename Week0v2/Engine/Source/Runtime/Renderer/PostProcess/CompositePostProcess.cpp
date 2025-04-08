@@ -62,7 +62,6 @@ void FCompositePostProcess::Render(ID3D11DeviceContext* context)
 
     FullscreenQuad::Get()->Draw(context);
 }
-
 void FCompositePostProcess::Release()
 {
     SAFE_RELEASE(VertexShader);

@@ -12,6 +12,7 @@ public:
     void Release() override;
 
     void SetFogParams(const FFogParams& params);
+    void Resize();
 
     ID3D11RenderTargetView* GetOutputRTV() const override { return FoggedSceneRTV; }
     ID3D11ShaderResourceView* GetOutputSRV() const override { return FoggedSceneSRV; }
@@ -31,8 +32,8 @@ private:
 
     FFogParams FogParams;
 
-    void CreateOutputRenderTarget(); // ▶ Renderer를 통해 RTV 생성
     void UpdateConstants(ID3D11DeviceContext* context, std::shared_ptr<FEditorViewportClient> ActiveViewport);
+    void CreateOutputRenderTarget(); // ▶ Renderer를 통해 RTV 생성
 
     //void CreateConstantBuffers();
 };

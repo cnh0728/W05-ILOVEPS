@@ -1,5 +1,8 @@
 #include "GraphicDevice.h"
 #include <wchar.h>
+
+#include "Renderer/PostProcess/FogPostProcess.h"
+
 void FGraphicsDevice::Initialize(HWND hWindow) {
     CreateDeviceAndSwapChain(hWindow);
     CreateFrameBuffer();
@@ -408,7 +411,10 @@ void FGraphicsDevice::OnResize(HWND hWindow) {
     CreateDepthStencilBuffer(hWindow);
     CreateSceneDepthTexture();
 
-
+    if (FogPostProcess)
+    {
+        FogPostProcess->Resize();
+    }
 }
 
 
