@@ -19,7 +19,7 @@ public:
     ID3D11Texture2D* FrameBuffer = nullptr;
     ID3D11Texture2D* UUIDFrameBuffer = nullptr;
     ID3D11RenderTargetView* RTVs[2];
-    ID3D11RenderTargetView* DefferedRTVs[4];
+    ID3D11RenderTargetView* DefferedRTVs[7];
     ID3D11RenderTargetView* FrameBufferRTV = nullptr;
     ID3D11RenderTargetView* UUIDFrameBufferRTV = nullptr;
     ID3D11RasterizerState* RasterizerStateSOLID = nullptr;
@@ -31,22 +31,31 @@ public:
     ID3D11Texture2D* NormalFrameBuffer = nullptr;
     ID3D11Texture2D* AlbedoFrameBuffer = nullptr;
     ID3D11Texture2D* MaterialFrameBuffer = nullptr;
+    ID3D11Texture2D* SpecularFrameBuffer = nullptr;
+    ID3D11Texture2D* EmissiveFrameBuffer = nullptr;
+    ID3D11Texture2D* AmbientFrameBuffer = nullptr;
     
     ID3D11RenderTargetView* PositionFrameBufferRTV = nullptr;
     ID3D11RenderTargetView* NormalFrameBufferRTV = nullptr;
     ID3D11RenderTargetView* AlbedoFrameBufferRTV = nullptr;
     ID3D11RenderTargetView* MaterialFrameBufferRTV = nullptr;
+    ID3D11RenderTargetView* SpecularFrameBufferRTV = nullptr;
+    ID3D11RenderTargetView* EmissiveFrameBufferRTV = nullptr;
+    ID3D11RenderTargetView* AmbientFrameBufferRTV = nullptr;
 
     ID3D11ShaderResourceView* PositionResourceView = nullptr;
     ID3D11ShaderResourceView* NormalResourceView = nullptr;
     ID3D11ShaderResourceView* AlbedoResourceView = nullptr;
     ID3D11ShaderResourceView* MaterialResourceView = nullptr;
-    ID3D11ShaderResourceView* DeferredSRVs[4];
+    ID3D11ShaderResourceView* SpecularResourceView = nullptr;
+    ID3D11ShaderResourceView* EmissiveResourceView = nullptr;
+    ID3D11ShaderResourceView* AmbientResourceView = nullptr;
+    ID3D11ShaderResourceView* DeferredSRVs[7];
 //depth 렌더링 변수
     ID3D11Texture2D* DepthStencilResourceBuffer = nullptr;
     ID3D11ShaderResourceView* DepthStencilResourceView = nullptr;
     
-    ID3D11ShaderResourceView* FullScreenResourceView[4];
+    ID3D11ShaderResourceView* FullScreenResourceView[7];
     UINT RenderResourceTextureCount = 1;
     
     UINT screenWidth = 0;

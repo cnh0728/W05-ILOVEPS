@@ -117,10 +117,9 @@ void FRenderer::PrepareShader() const
         Graphics->DeviceContext->VSSetConstantBuffers(0, 1, &ConstantBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(0, 1, &ConstantBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(1, 1, &MaterialConstantBuffer);
-        Graphics->DeviceContext->PSSetConstantBuffers(2, 1, &LightingBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(2, 1, &TextureConstantBufer);
         Graphics->DeviceContext->PSSetConstantBuffers(3, 1, &FlagBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(4, 1, &SubMeshConstantBuffer);
-        Graphics->DeviceContext->PSSetConstantBuffers(5, 1, &TextureConstantBufer);
     }
 }
 
@@ -141,6 +140,7 @@ void FRenderer::PrepareFullScreenShader() const
         Graphics->DeviceContext->PSSetConstantBuffers(1, 1, &CameraPosConstantBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(2, 1, &FogConstantBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(3, 1, &PointLightConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(4, 1, &DirectionalLightBuffer);
     }
 }
 
@@ -195,7 +195,7 @@ void FRenderer::CreateConstantBuffer()
     MaterialConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FMaterialConstants));
     SubMeshConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FSubMeshConstants));
     TextureConstantBufer = RenderResourceManager.CreateConstantBuffer(sizeof(FTextureConstants));
-    LightingBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FLighting));
+    DirectionalLightBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FDirectionalLight));
     FlagBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FLitUnlitConstants));
     FogConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FFogConstants));
     FullScreenConstantBuffer = RenderResourceManager.CreateConstantBuffer(sizeof(FFullScreenConstants));
@@ -212,7 +212,7 @@ void FRenderer::ReleaseConstantBuffer()
     RenderResourceManager.ReleaseBuffer(MaterialConstantBuffer);
     RenderResourceManager.ReleaseBuffer(SubMeshConstantBuffer);
     RenderResourceManager.ReleaseBuffer(TextureConstantBufer);
-    RenderResourceManager.ReleaseBuffer(LightingBuffer);
+    RenderResourceManager.ReleaseBuffer(DirectionalLightBuffer);
     RenderResourceManager.ReleaseBuffer(FlagBuffer);
     RenderResourceManager.ReleaseBuffer(FogConstantBuffer);
     RenderResourceManager.ReleaseBuffer(FullScreenConstantBuffer);
@@ -287,7 +287,7 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
 {
     Graphics->DeviceContext->RSSetViewports(1, &ActiveViewport->GetD3DViewport());
     Graphics->ChangeRasterizer(ActiveViewport->GetViewMode());
-    ConstantBufferUpdater.UpdateLightConstant(LightingBuffer);
+    ConstantBufferUpdater.UpdateDirectionalLightConstant(DirectionalLightBuffer);
     ConstantBufferUpdater.UpdateFogConstant(FogConstantBuffer, World->GetFog()); //TODO: Fog Update시에만 업데이트
     ConstantBufferUpdater.UpdatePointLightConstant(PointLightConstantBuffer, World->GetPointLights());
     ConstantBufferUpdater.UpdateCameraPosConstant(CameraPosConstantBuffer, ActiveViewport); //TODO: Camera Update시에만 업데이트
@@ -532,7 +532,7 @@ void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorV
         Graphics->DeviceContext->VSSetConstantBuffers(0, 1, &ConstantBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(0, 1, &ConstantBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(1, 1, &MaterialConstantBuffer);
-        Graphics->DeviceContext->PSSetConstantBuffers(2, 1, &LightingBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(2, 1, &DirectionalLightBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(3, 1, &FlagBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(4, 1, &SubMeshConstantBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(5, 1, &TextureConstantBufer);
@@ -676,7 +676,7 @@ void FRenderer::ChangeViewMode(EViewModeIndex evi) const
     }else
     {
         ConstantBufferUpdater.UpdateFullScreenConstant(FullScreenConstantBuffer, false);
-        Graphics->RenderResourceTextureCount = 4;
+        Graphics->RenderResourceTextureCount = ARRAYSIZE(Graphics->DeferredSRVs);
         for (int i=0;i<Graphics->RenderResourceTextureCount;i++)
         {
             Graphics->FullScreenResourceView[i] = Graphics->DeferredSRVs[i];

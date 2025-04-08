@@ -29,15 +29,11 @@ cbuffer MaterialConstants : register(b1)
     FMaterial Material;
 }
 
-cbuffer LightingConstants : register(b2)
+cbuffer TextureConstants : register(b2)
 {
-    float3 LightDirection; // 조명 방향 (단위 벡터; 빛이 들어오는 방향의 반대 사용)
-    float LightPad0; // 16바이트 정렬용 패딩
-    float3 LightColor; // 조명 색상 (예: (1, 1, 1))
-    float LightPad1; // 16바이트 정렬용 패딩
-    float AmbientFactor; // ambient 계수 (예: 0.1)
-    float3 LightPad2; // 16바이트 정렬 맞춤 추가 패딩
-};
+    float2 UVOffset;
+    float2 TexturePad0;
+}
 
 cbuffer FlagConstants : register(b3)
 {
@@ -49,12 +45,6 @@ cbuffer SubMeshConstants : register(b4)
 {
     bool IsSelectedSubMesh;
     float3 SubMeshPad0;
-}
-
-cbuffer TextureConstants : register(b5)
-{
-    float2 UVOffset;
-    float2 TexturePad0;
 }
 
 struct PS_INPUT
@@ -74,7 +64,10 @@ struct PS_OUTPUT
     float4 position : SV_Target0;  // 월드 좌표 (R32G32B32A32_FLOAT)  
     float4 normal   : SV_Target1;  // 정규화 노멀 (R16G16B16A16_FLOAT)  
     float4 albedo   : SV_Target2;  // 선형 공간 Albedo (R8G8B8A8_UNORM_SRGB)  
-    float4 material : SV_Target3;  // 메탈릭/러프니스 (R8G8B8A8_UNORM)  
+    float4 material : SV_Target3;  // 메탈릭/러프니스 (R8G8B8A8_UNORM)
+    float4 specular : SV_Target4; 
+    float4 emissive  : SV_Target5;
+    float4 ambient   : SV_Target6;
 };
 
 float noise(float3 p)
@@ -131,35 +124,15 @@ PS_OUTPUT mainPS(PS_INPUT input)
     
     // sRGB → Linear 변환  
     float3 linearColor = pow(baseColor, 2.2);
-    output.albedo = float4(linearColor, Material.TransparencyScalar);
 
     // 4. Material 버퍼 (Metallic/Roughness)
     // 현재 Material 구조에 Metallic/Roughness가 없으므로 임시값 사용
     output.material = float4(0.0, 0.5, 0.0, 1.0); //R:Metallic, G:Roughness
 
-    // 5. 라이팅 계산 (조명 영향 적용)
-
-    if (input.normalFlag)
-    {
-        float3 N = normalize(input.normal);
-        float3 L = normalize(LightDirection);
-        float3 V = normalize(float3(0, 0, 1) - input.worldPos);
-        
-        // 기본 디퓨즈 계산
-        float diffuse = saturate(dot(N, L));
-        
-        // 스페큘러 계산 (간단한 Blinn-Phong)
-        float3 H = normalize(L + V);
-        float specular = pow(saturate(dot(N, H)), Material.SpecularScalar * 32) * Material.SpecularScalar;
-        
-        // 라이느 누적
-        float3 ambient = Material.AmbientColor * AmbientFactor;
-        float3 diffuseLight = diffuse * LightColor;
-        float3 specularLight = specular * Material.SpecularColor * LightColor;
-
-        //Albedo에 라이팅 적용
-        output.albedo.rgb = ambient + (diffuseLight * linearColor) + specularLight + Material.EmissiveColor;
-    }
+    output.albedo = float4(Material.DiffuseColor + linearColor, Material.TransparencyScalar);       // Diffuse Color
+    output.specular = float4(Material.SpecularColor, Material.SpecularScalar);     // Specular Intensity
+    output.emissive = float4(Material.EmissiveColor, 1.0);      // Emissive Color
+    output.ambient = float4(Material.AmbientColor, 1.0);        // Ambient Color
 
     if (isGizmo > 0.5)
     {

@@ -22,7 +22,7 @@ void FConstantBufferUpdater::UpdateConstant(ID3D11Buffer* ConstantBuffer, const 
             FConstants* constants = static_cast<FConstants*>(ConstantBufferMSR.pData);
             constants->M = M;
             constants->VP = VP;
-            constants->ModelMatrixInverseTranspose = NormalMatrix;
+            constants->ModelMatrixInverse = NormalMatrix;
             constants->UUIDColor = UUIDColor;
             constants->IsSelected = IsSelected;
             constants->IsGizmo = bIsGizmo;
@@ -52,13 +52,13 @@ void FConstantBufferUpdater::UpdateMaterialConstant(ID3D11Buffer* MaterialConsta
     }
 }
 
-void FConstantBufferUpdater::UpdateLightConstant(ID3D11Buffer* LightingBuffer) const
+void FConstantBufferUpdater::UpdateDirectionalLightConstant(ID3D11Buffer* DirectionalLightBuffer) const
 {
-    if (!LightingBuffer) return;
+    if (!DirectionalLightBuffer) return;
     D3D11_MAPPED_SUBRESOURCE mappedResource;
-    DeviceContext->Map(LightingBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+    DeviceContext->Map(DirectionalLightBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
     {
-        FLighting* constants = static_cast<FLighting*>(mappedResource.pData);
+        FDirectionalLight* constants = static_cast<FDirectionalLight*>(mappedResource.pData);
         constants->lightDirX = 1.0f;
         constants->lightDirY = 1.0f;
         constants->lightDirZ = 1.0f;
@@ -67,7 +67,7 @@ void FConstantBufferUpdater::UpdateLightConstant(ID3D11Buffer* LightingBuffer) c
         constants->lightColorZ = 1.0f;
         constants->AmbientFactor = 0.06f;
     }
-    DeviceContext->Unmap(LightingBuffer, 0);
+    DeviceContext->Unmap(DirectionalLightBuffer, 0);
 }
 
 
