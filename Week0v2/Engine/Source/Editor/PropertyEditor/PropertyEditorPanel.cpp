@@ -15,6 +15,7 @@
 #include "Components/ProjectileMovementComponent.h"
 #include "GameFramework/Actor.h"
 #include "Components/RotationMovementComponent.h"
+#include "Components/FireballComponent.h"
 
 void PropertyEditorPanel::Render()
 {
@@ -404,7 +405,7 @@ void PropertyEditorPanel::Render()
             float g = Color.y;
             float b = Color.z;
             float lightColor[3] = { r, g, b };
-            // Fog Color
+
             if (ImGui::ColorPicker4("##Fog Color", lightColor,
                 ImGuiColorEditFlags_DisplayRGB |
                 ImGuiColorEditFlags_NoSidePreview |
@@ -416,7 +417,7 @@ void PropertyEditorPanel::Render()
                 b = lightColor[2];
                 fogComp->SetColor(FVector(r, g, b));
             }
-            // Fog Color
+
             ImGui::PushItemWidth(50.0f);
             if (ImGui::DragFloat("R##R", &r, 0.001f, 0.f, 1.f)) fogComp->SetColor(FVector(r, g, b));
             ImGui::SameLine();
@@ -458,13 +459,64 @@ void PropertyEditorPanel::Render()
             bool bIsHeight = fogComp->GetIsHeightFog();
             if (ImGui::Checkbox("bIsHeight", &bIsHeight))
             {
-                fogComp->SetHeightFallOff(bIsHeight);
+                fogComp->SetIsHeightFog(bIsHeight);
             }
 
             ImGui::TreePop();
         }
 
 
+    }
+
+    if (PickedActor && PickedComponent && PickedComponent->IsA<UFireBallComponent>())
+    {
+        UFireBallComponent* fireBallComp = Cast<UFireBallComponent>(PickedComponent);
+        if (ImGui::TreeNodeEx("Rotation Movement Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            FVector Color = fireBallComp->GetColor();
+            float r = Color.x;
+            float g = Color.y;
+            float b = Color.z;
+            float lightColor[3] = { r, g, b };
+
+            if (ImGui::ColorPicker4("##FireBall Color", lightColor,
+                ImGuiColorEditFlags_DisplayRGB |
+                ImGuiColorEditFlags_NoSidePreview |
+                ImGuiColorEditFlags_NoInputs |
+                ImGuiColorEditFlags_Float))
+            {
+                r = lightColor[0];
+                g = lightColor[1];
+                b = lightColor[2];
+                fireBallComp->SetColor(FVector(r, g, b));
+            }
+
+            ImGui::PushItemWidth(50.0f);
+            if (ImGui::DragFloat("R##R", &r, 0.001f, 0.f, 1.f)) fireBallComp->SetColor(FVector(r, g, b));
+            ImGui::SameLine();
+            if (ImGui::DragFloat("G##G", &g, 0.001f, 0.f, 1.f)) fireBallComp->SetColor(FVector(r, g, b));
+            ImGui::SameLine();
+            if (ImGui::DragFloat("B##B", &b, 0.001f, 0.f, 1.f)) fireBallComp->SetColor(FVector(r, g, b));
+            ImGui::PopItemWidth();
+            ImGui::Spacing();
+
+            float Intensity = fireBallComp->GetIntensity();
+            if (ImGui::DragFloat("Intensity", &Intensity, 0.1f, 0.f, 1000.f))
+            {
+                fireBallComp->SetIntensity(Intensity);
+            }
+            float Radius = fireBallComp->GetRadius();
+            if (ImGui::DragFloat("Radius", &Radius, 0.1f, 0.f, 1000.f))
+            {
+                fireBallComp->SetRadius(Radius);
+            }
+            float RadiusFallOff = fireBallComp->GetRadiusFallOff();
+            if (ImGui::DragFloat("RadiusFallOff", &RadiusFallOff, 0.1f, 0.f, 1000.f))
+            {
+                fireBallComp->SetRadiusFallOff(RadiusFallOff);
+            }
+            ImGui::TreePop();
+        }
     }
 
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
