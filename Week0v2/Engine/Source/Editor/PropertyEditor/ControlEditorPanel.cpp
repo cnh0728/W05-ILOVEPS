@@ -24,8 +24,8 @@ void ControlEditorPanel::Render()
     /* Pre Setup */
     ImGuiIO& io = ImGui::GetIO();
     ImFont* IconFont = io.Fonts->Fonts[FEATHER_FONT];
-    ImVec2 IconSize = ImVec2(32, 32);
-    
+    auto IconSize = ImVec2(32, 32);
+
     float PanelWidth = (Width) * 0.8f;
     float PanelHeight = 45.0f;
 
@@ -34,10 +34,10 @@ void ControlEditorPanel::Render()
 
     ImVec2 MinSize(300, 50);
     ImVec2 MaxSize(FLT_MAX, 50);
-    
+
     /* Min, Max Size */
     ImGui::SetNextWindowSizeConstraints(MinSize, MaxSize);
-    
+
     /* Panel Position */
     ImGui::SetNextWindowPos(ImVec2(PanelPosX, PanelPosY), ImGuiCond_Always);
 
@@ -46,23 +46,23 @@ void ControlEditorPanel::Render()
 
     /* Panel Flags */
     ImGuiWindowFlags PanelFlags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoBackground;
-    
+
     /* Render Start */
     ImGui::Begin("Control Panel", nullptr, PanelFlags);
-    
+
     CreateMenuButton(IconSize, IconFont);
-    
+
     ImGui::SameLine();
-    
+
     CreateFlagButton();
-    
+
     ImGui::SameLine();
 
     CreateModifyButton(IconSize, IconFont);
 
     ImGui::SameLine();
 
-    ImVec2 PIEIconSize = ImVec2(IconSize.x + 8, IconSize.y);
+    auto PIEIconSize = ImVec2(IconSize.x + 8, IconSize.y);
     ImGui::PushFont(IconFont);
     CreatePIEButton(PIEIconSize);
     ImGui::PopFont();
@@ -74,11 +74,11 @@ void ControlEditorPanel::Render()
 
     /* Move Cursor X Position */
     ImGui::SetCursorPosX(ContentWidth - (IconSize.x * 3.0f + 16.0f));
-    
+
     ImGui::PushFont(IconFont);
     CreateSRTButton(IconSize);
     ImGui::PopFont();
-    
+
     ImGui::End();
 }
 
@@ -90,16 +90,16 @@ void ControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFont)
         bOpenMenu = !bOpenMenu;
     }
     ImGui::PopFont();
-    
+
     if (bOpenMenu)
     {
         //std::unique_ptr<FSceneMgr> SceneMgr = std::make_unique<FSceneMgr>();
-        FSceneMgr* SceneMgr=GEngine->GetSceneManager();
+        FSceneMgr* SceneMgr = GEngine->GetSceneManager();
         ImGui::SetNextWindowPos(ImVec2(10, 55), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(135, 170), ImGuiCond_Always);
-        
+
         ImGui::Begin("Menu", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-        
+
         if (ImGui::MenuItem("New Scene"))
         {
             // TODO: New Scene
@@ -107,8 +107,8 @@ void ControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFont)
 
         if (ImGui::MenuItem("Load Scene"))
         {
-            char const * lFilterPatterns[1]={"*.scene"};
-            const char* FileName =  tinyfd_openFileDialog("Open Scene File", "", 1, lFilterPatterns,"Scene(.scene) file", 0);
+            const char* lFilterPatterns[1] = {"*.scene"};
+            const char* FileName = tinyfd_openFileDialog("Open Scene File", "", 1, lFilterPatterns, "Scene(.scene) file", 0);
 
             if (FileName == nullptr)
             {
@@ -120,11 +120,11 @@ void ControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFont)
         }
 
         ImGui::Separator();
-        
+
         if (ImGui::MenuItem("Save Scene"))
         {
-            char const * lFilterPatterns[1]={"*.scene"};
-            const char* FileName =  tinyfd_saveFileDialog("Save Scene File", "", 1, lFilterPatterns,"Scene(.scene) file");
+            const char* lFilterPatterns[1] = {"*.scene"};
+            const char* FileName = tinyfd_saveFileDialog("Save Scene File", "", 1, lFilterPatterns, "Scene(.scene) file");
 
             if (FileName == nullptr)
             {
@@ -138,13 +138,13 @@ void ControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFont)
         }
 
         ImGui::Separator();
-        
+
         if (ImGui::BeginMenu("Import"))
         {
             if (ImGui::MenuItem("Wavefront (.obj)"))
             {
-                char const * lFilterPatterns[1]={"*.obj"};
-                const char* FileName =  tinyfd_openFileDialog("Open OBJ File", "", 1, lFilterPatterns,"Wavefront(.obj) file", 0);
+                const char* lFilterPatterns[1] = {"*.obj"};
+                const char* FileName = tinyfd_openFileDialog("Open OBJ File", "", 1, lFilterPatterns, "Wavefront(.obj) file", 0);
 
                 if (FileName != nullptr)
                 {
@@ -156,7 +156,7 @@ void ControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFont)
                     }
                 }
             }
-            
+
             ImGui::EndMenu();
         }
 
@@ -164,13 +164,13 @@ void ControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFont)
 
         if (ImGui::MenuItem("Quit"))
         {
-            ImGui::OpenPopup("프로그램 종료");   
+            ImGui::OpenPopup("프로그램 종료");
         }
 
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 
-        if (ImGui::BeginPopupModal("프로그램 종료", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+        if (ImGui::BeginPopupModal("프로그램 종료", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
             ImGui::Text("정말 프로그램을 종료하시겠습니까?");
             ImGui::Separator();
@@ -179,23 +179,23 @@ void ControlEditorPanel::CreateMenuButton(ImVec2 ButtonSize, ImFont* IconFont)
 
             /* Move Cursor X Position */
             ImGui::SetCursorPosX(ContentWidth - (160.f + 10.0f));
-            
+
             if (ImGui::Button("OK", ImVec2(80, 0))) { PostQuitMessage(0); }
 
             ImGui::SameLine();
-            
+
             ImGui::SetItemDefaultFocus();
             ImGui::PushID("CancelButtonWithQuitWindow");
-            ImGui::PushStyleColor(ImGuiCol_Button, (ImVec4)ImColor::HSV(0.0f, 1.0f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, (ImVec4)ImColor::HSV(0.0f, 0.9f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, (ImVec4)ImColor::HSV(0.0f, 1.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_Button, static_cast<ImVec4>(ImColor::HSV(0.0f, 1.0f, 1.0f)));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, static_cast<ImVec4>(ImColor::HSV(0.0f, 0.9f, 1.0f)));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, static_cast<ImVec4>(ImColor::HSV(0.0f, 1.0f, 1.0f)));
             if (ImGui::Button("Cancel", ImVec2(80, 0))) { ImGui::CloseCurrentPopup(); }
             ImGui::PopStyleColor(3);
             ImGui::PopID();
 
             ImGui::EndPopup();
         }
-        
+
         ImGui::End();
     }
 }
@@ -226,7 +226,6 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
         if (ImGui::DragFloat("##Fov", FOV, 0.1f, 30.0f, 120.0f, "%.1f"))
         {
             //GEngineLoop.GetWorld()->GetCamera()->SetFOV(FOV);
-            
         }
         ImGui::Spacing();
 
@@ -237,12 +236,12 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
         {
             GEngine->GetLevelEditor()->GetActiveViewportClient()->SetCameraSpeedScalar(CameraSpeed);
         }
-        
+
         ImGui::EndPopup();
     }
 
     ImGui::SameLine();
-    
+
     ImGui::PushFont(IconFont);
     if (ImGui::Button("\ue9c8", ButtonSize))
     {
@@ -252,18 +251,20 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
 
     if (ImGui::BeginPopup("PrimitiveControl"))
     {
-        struct Primitive {
+        struct Primitive
+        {
             const char* label;
             int obj;
         };
 
         static const Primitive primitives[] = {
-            { .label= "Cube",      .obj= OBJ_CUBE },
-            { .label= "Sphere",    .obj= OBJ_SPHERE },
-            { .label= "SpotLight", .obj= OBJ_SpotLight },
-            { .label= "Particle",  .obj= OBJ_PARTICLE },
-            { .label= "Text",      .obj= OBJ_Text },
-            {.label="Fog",       .obj= OBJ_Fog },
+            {.label = "Cube", .obj = OBJ_CUBE},
+            {.label = "Sphere", .obj = OBJ_SPHERE},
+            {.label = "SpotLight", .obj = OBJ_SpotLight},
+            {.label = "Particle", .obj = OBJ_PARTICLE},
+            {.label = "Text", .obj = OBJ_Text},
+            {.label = "Fog", .obj = OBJ_Fog},
+            {.label = "FireBall", .obj = OBJ_FireBall},
         };
 
         for (const auto& primitive : primitives)
@@ -276,71 +277,81 @@ void ControlEditorPanel::CreateModifyButton(ImVec2 ButtonSize, ImFont* IconFont)
                 switch (static_cast<OBJECTS>(primitive.obj))
                 {
                 case OBJ_SPHERE:
-                {
-                    SpawnedActor = World->SpawnActor<AActor>();
-                    SpawnedActor->SetActorLabel(TEXT("OBJ_SPHERE"));
-                    SpawnedActor->AddComponent<USphereComp>();
-                    break;
-                }
-                case OBJ_CUBE:
-                {
-                    AStaticMeshActor* TempActor = World->SpawnActor<AStaticMeshActor>();
-                    TempActor->SetActorLabel(TEXT("OBJ_CUBE"));
-                    UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
-                    FManagerOBJ::CreateStaticMesh("Assets/apple_mid.obj");
-                    MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"apple_mid.obj"));
-                    break;
-                }
-                case OBJ_SpotLight:
-                {
-                    SpawnedActor = World->SpawnActor<AActor>();
-                    SpawnedActor->SetActorLabel(TEXT("OBJ_SpotLight"));
-                    SpawnedActor->AddComponent<ULightComponentBase>();
-                    UBillboardComponent* BillboardComponent = SpawnedActor->AddComponent<UBillboardComponent>();
-                    BillboardComponent->SetTexture(L"Assets/Texture/spotLight.png");
-                    break;
-                }
-                case OBJ_PARTICLE:
-                {
-                    SpawnedActor = World->SpawnActor<AActor>();
-                    SpawnedActor->SetActorLabel(TEXT("OBJ_PARTICLE"));
-                    UParticleSubUVComp* ParticleComponent = SpawnedActor->AddComponent<UParticleSubUVComp>();
-                    ParticleComponent->SetTexture(L"Assets/Texture/T_Explosion_SubUV.png");
-                    ParticleComponent->SetRowColumnCount(6, 6);
-                    ParticleComponent->SetScale(FVector(10.0f, 10.0f, 1.0f));
-                    ParticleComponent->Activate();
-                    break;
-                }
-                case OBJ_Text:
-                {
-                    SpawnedActor = World->SpawnActor<AActor>();
-                    SpawnedActor->SetActorLabel(TEXT("OBJ_Text"));
-                    UText* TextComponent = SpawnedActor->AddComponent<UText>();
-                    TextComponent->SetTexture(L"Assets/Texture/font.png");
-                    TextComponent->SetRowColumnCount(106, 106);
-                    TextComponent->SetText(L"안녕하세요 Jungle 1");
-                    break;
-                }
-                case OBJ_Fog:
-                {
-                    UFogComponent* FogComponent = World->GetFog();
-                    if (FogComponent == nullptr)
                     {
                         SpawnedActor = World->SpawnActor<AActor>();
-                        SpawnedActor->SetActorLabel(TEXT("OBJ_Fog"));
-                        FogComponent = SpawnedActor->AddComponent<UFogComponent>();
-                        World->SetFog(FogComponent);
+                        SpawnedActor->SetActorLabel(TEXT("OBJ_SPHERE"));
+                        SpawnedActor->AddComponent<USphereComp>();
+                        break;
                     }
-                    break;
-                }
-                    
+                case OBJ_CUBE:
+                    {
+                        AStaticMeshActor* TempActor = World->SpawnActor<AStaticMeshActor>();
+                        TempActor->SetActorLabel(TEXT("OBJ_CUBE"));
+                        UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
+                        FManagerOBJ::CreateStaticMesh("Assets/apple_mid.obj");
+                        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"apple_mid.obj"));
+                        break;
+                    }
+                case OBJ_SpotLight:
+                    {
+                        SpawnedActor = World->SpawnActor<AActor>();
+                        SpawnedActor->SetActorLabel(TEXT("OBJ_SpotLight"));
+                        SpawnedActor->AddComponent<ULightComponentBase>();
+                        UBillboardComponent* BillboardComponent = SpawnedActor->AddComponent<UBillboardComponent>();
+                        BillboardComponent->SetTexture(L"Assets/Texture/spotLight.png");
+                        break;
+                    }
+                case OBJ_PARTICLE:
+                    {
+                        SpawnedActor = World->SpawnActor<AActor>();
+                        SpawnedActor->SetActorLabel(TEXT("OBJ_PARTICLE"));
+                        UParticleSubUVComp* ParticleComponent = SpawnedActor->AddComponent<UParticleSubUVComp>();
+                        ParticleComponent->SetTexture(L"Assets/Texture/T_Explosion_SubUV.png");
+                        ParticleComponent->SetRowColumnCount(6, 6);
+                        ParticleComponent->SetScale(FVector(10.0f, 10.0f, 1.0f));
+                        ParticleComponent->Activate();
+                        break;
+                    }
+                case OBJ_Text:
+                    {
+                        SpawnedActor = World->SpawnActor<AActor>();
+                        SpawnedActor->SetActorLabel(TEXT("OBJ_Text"));
+                        UText* TextComponent = SpawnedActor->AddComponent<UText>();
+                        TextComponent->SetTexture(L"Assets/Texture/font.png");
+                        TextComponent->SetRowColumnCount(106, 106);
+                        TextComponent->SetText(L"안녕하세요 Jungle 1");
+                        break;
+                    }
+                case OBJ_Fog:
+                    {
+                        UFogComponent* FogComponent = World->GetFog();
+                        if (FogComponent == nullptr)
+                        {
+                            SpawnedActor = World->SpawnActor<AActor>();
+                            SpawnedActor->SetActorLabel(TEXT("OBJ_Fog"));
+                            FogComponent = SpawnedActor->AddComponent<UFogComponent>();
+                            World->SetFog(FogComponent);
+                        }
+                        break;
+                    }
+                    case OBJ_FireBall:
+                    {
+                        AStaticMeshActor* TempActor = World->SpawnActor<AStaticMeshActor>();
+                        TempActor->SetActorLabel(TEXT("OBJ_FireBall"));
+                        UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
+                        FManagerOBJ::CreateStaticMesh("Assets/apple_mid.obj");
+                        MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"apple_mid.obj"));
+                        UFireBallComponent* FireBallComp = TempActor->AddComponent<UFireBallComponent>();
+                        break;
+                    }
+
                 case OBJ_TRIANGLE:
                 case OBJ_CAMERA:
                 case OBJ_PLAYER:
                 case OBJ_END:
                     break;
                 }
-        
+
                 if (SpawnedActor)
                 {
                     World->SetPickedActor(SpawnedActor);
@@ -355,10 +366,10 @@ void ControlEditorPanel::CreateFlagButton() const
 {
     auto ActiveViewport = GEngine->GetLevelEditor()->GetActiveViewportClient();
 
-    const char* ViewTypeNames[] = { "Perspective", "Top", "Bottom", "Left", "Right", "Front", "Back" };
+    const char* ViewTypeNames[] = {"Perspective", "Top", "Bottom", "Left", "Right", "Front", "Back"};
     ELevelViewportType ActiveViewType = ActiveViewport->GetViewportType();
     FString TextViewType = ViewTypeNames[ActiveViewType];
-    
+
     if (ImGui::Button(GetData(TextViewType), ImVec2(120, 32)))
     {
         // toggleViewState = !toggleViewState;
@@ -369,10 +380,10 @@ void ControlEditorPanel::CreateFlagButton() const
     {
         for (int i = 0; i < IM_ARRAYSIZE(ViewTypeNames); i++)
         {
-            bool bIsSelected = ((int)ActiveViewport->GetViewportType() == i);
+            bool bIsSelected = (static_cast<int>(ActiveViewport->GetViewportType()) == i);
             if (ImGui::Selectable(ViewTypeNames[i], bIsSelected))
             {
-                ActiveViewport->SetViewportType((ELevelViewportType)i);
+                ActiveViewport->SetViewportType(static_cast<ELevelViewportType>(i));
             }
 
             if (bIsSelected)
@@ -384,11 +395,11 @@ void ControlEditorPanel::CreateFlagButton() const
     }
 
     ImGui::SameLine();
-    
-    const char* ViewModeNames[] = { "Lit", "Unlit", "Wireframe", "DepthView" };
-    FString SelectLightControl = ViewModeNames[(int)ActiveViewport->GetViewMode()];
+
+    const char* ViewModeNames[] = {"Lit", "Unlit", "Wireframe", "DepthView"};
+    FString SelectLightControl = ViewModeNames[static_cast<int>(ActiveViewport->GetViewMode())];
     ImVec2 LightTextSize = ImGui::CalcTextSize(GetData(SelectLightControl));
-    
+
     if (ImGui::Button(GetData(SelectLightControl), ImVec2(30 + LightTextSize.x, 32)))
     {
         ImGui::OpenPopup("LightControl");
@@ -398,10 +409,10 @@ void ControlEditorPanel::CreateFlagButton() const
     {
         for (int i = 0; i < IM_ARRAYSIZE(ViewModeNames); i++)
         {
-            bool bIsSelected = ((int)ActiveViewport->GetViewMode() == i);
+            bool bIsSelected = (static_cast<int>(ActiveViewport->GetViewMode()) == i);
             if (ImGui::Selectable(ViewModeNames[i], bIsSelected))
             {
-                ActiveViewport->SetViewMode((EViewModeIndex)i);
+                ActiveViewport->SetViewMode(static_cast<EViewModeIndex>(i));
             }
 
             if (bIsSelected)
@@ -413,13 +424,13 @@ void ControlEditorPanel::CreateFlagButton() const
     }
 
     ImGui::SameLine();
-    
+
     if (ImGui::Button("Show", ImVec2(60, 32)))
     {
         ImGui::OpenPopup("ShowControl");
     }
-    
-    const char* items[] = { "AABB", "Primitive", "BillBoard", "UUID"};
+
+    const char* items[] = {"AABB", "Primitive", "BillBoard", "UUID"};
     uint64 ActiveViewportFlags = ActiveViewport->GetShowFlag();
 
     if (ImGui::BeginPopup("ShowControl"))
@@ -430,8 +441,8 @@ void ControlEditorPanel::CreateFlagButton() const
             (ActiveViewportFlags & static_cast<uint64>(EEngineShowFlags::SF_Primitives)) != 0,
             (ActiveViewportFlags & static_cast<uint64>(EEngineShowFlags::SF_BillboardText)) != 0,
             (ActiveViewportFlags & static_cast<uint64>(EEngineShowFlags::SF_UUIDText)) != 0
-        };  // 각 항목의 체크 상태 저장
-        
+        }; // 각 항목의 체크 상태 저장
+
         for (int i = 0; i < IM_ARRAYSIZE(items); i++)
         {
             ImGui::Checkbox(items[i], &selected[i]);
@@ -482,8 +493,8 @@ void ControlEditorPanel::CreateSRTButton(ImVec2 ButtonSize) const
 {
     AEditorPlayer* Player = GEngine->GetWorld()->GetEditorPlayer();
 
-    ImVec4 ActiveColor = ImVec4(0.00f, 0.00f, 0.85f, 1.0f);
-    
+    auto ActiveColor = ImVec4(0.00f, 0.00f, 0.85f, 1.0f);
+
     ControlMode ControlMode = Player->GetControlMode();
 
     if (ControlMode == CM_TRANSLATION)
@@ -498,7 +509,7 @@ void ControlEditorPanel::CreateSRTButton(ImVec2 ButtonSize) const
     {
         ImGui::PopStyleColor();
     }
-	
+
     ImGui::SameLine();
 
     if (ControlMode == CM_ROTATION)
@@ -513,7 +524,7 @@ void ControlEditorPanel::CreateSRTButton(ImVec2 ButtonSize) const
     {
         ImGui::PopStyleColor();
     }
-	
+
     ImGui::SameLine();
 
     if (ControlMode == CM_SCALE)
@@ -532,7 +543,7 @@ void ControlEditorPanel::CreateSRTButton(ImVec2 ButtonSize) const
 
 uint64 ControlEditorPanel::ConvertSelectionToFlags(const bool selected[]) const
 {
-    uint64 flags = static_cast<uint64>(EEngineShowFlags::None);
+    uint64 flags = EEngineShowFlags::None;
 
     if (selected[0])
         flags |= static_cast<uint64>(EEngineShowFlags::SF_AABB);

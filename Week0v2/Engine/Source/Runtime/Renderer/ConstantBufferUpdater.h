@@ -6,6 +6,7 @@
 #include "Components/FogComponent.h"
 
 class FEditorViewportClient;
+class UFireBallComponent;
 
 class FConstantBufferUpdater
 {
@@ -21,9 +22,9 @@ public:
     void UpdateSubMeshConstant(ID3D11Buffer* SubMeshConstantBuffer, bool isSelected) const;
     void UpdateTextureConstant(ID3D11Buffer* TextureConstantBufer, float UOffset, float VOffset);
     void UpdateSubUVConstant(ID3D11Buffer* SubUVConstantBuffer, float _indexU, float _indexV) const;
-    void UpdateCameraPosConstant(ID3D11Buffer* CameraPosConstantBuffer,
-                                 std::shared_ptr<FEditorViewportClient> ActiveViewPort);
+    void UpdateCameraPosConstant(ID3D11Buffer* CameraPosConstantBuffer, std::shared_ptr<FEditorViewportClient> ActiveViewPort);
     void UpdateFogConstant(ID3D11Buffer* FogConstantBuffer, UFogComponent* FogComp);
+    void UpdatePointLightConstant(ID3D11Buffer* PointLightConstantBuffer, TArray<UFireBallComponent*> PointLights);
 
 private:
     ID3D11DeviceContext* DeviceContext = nullptr;
