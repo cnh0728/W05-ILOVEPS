@@ -93,6 +93,22 @@ void FRenderer::CreateShader()
     ShaderManager.CreatePixelShader(
         L"Shaders/FullScreenPixelShader.hlsl", "mainPS",
         FullScreenPixelShader);
+
+    ShaderManager.CreateVertexShader(
+        L"Shaders/LightVertexShader.hlsl", "mainVS",
+        LightVertexShader, textureLayout, ARRAYSIZE(textureLayout), &TextureInputLayout, &TextureStride, sizeof(FVertexTexture));
+
+    ShaderManager.CreatePixelShader(
+        L"Shaders/LightPixelShader.hlsl", "mainPS",
+        LightPixelShader);
+
+    ShaderManager.CreateVertexShader(
+        L"Shaders/FogVertexShader.hlsl", "mainVS",
+        FogVertexShader, textureLayout, ARRAYSIZE(textureLayout), &TextureInputLayout, &TextureStride, sizeof(FVertexTexture));
+
+    ShaderManager.CreatePixelShader(
+        L"Shaders/FogPixelShader.hlsl", "mainPS",
+        FogPixelShader);
 }
 
 void FRenderer::ReleaseShader()
@@ -102,6 +118,8 @@ void FRenderer::ReleaseShader()
     ShaderManager.ReleaseShader(nullptr, VertexLineShader, PixelLineShader);
 
     ShaderManager.ReleaseShader(nullptr, FullScreenVertexShader, FullScreenPixelShader);
+    ShaderManager.ReleaseShader(nullptr, LightVertexShader, LightPixelShader);
+    ShaderManager.ReleaseShader(nullptr, FogVertexShader, FogPixelShader);    
 }
 
 
@@ -123,6 +141,43 @@ void FRenderer::PrepareShader() const
     }
 }
 
+void FRenderer::PrepareLightProcessShader() const
+{
+    Graphics->DeviceContext->VSSetShader(LightVertexShader, nullptr, 0);
+    Graphics->DeviceContext->PSSetShader(LightPixelShader, nullptr, 0);
+    Graphics->DeviceContext->IASetInputLayout(TextureInputLayout);
+    
+    //밑에는 렌더구간
+    Graphics->DeviceContext->RSSetState(UEditorEngine::graphicDevice.RasterizerStateSOLID);
+    Graphics->DeviceContext->OMSetDepthStencilState(nullptr, 0);
+    Graphics->DeviceContext->OMSetRenderTargets(1, &Graphics->LightFrameBufferRTV, nullptr); // 렌더 타겟 설정(백버퍼를 가르킴)
+    
+    if (PointLightConstantBuffer)
+    {
+        Graphics->DeviceContext->PSSetConstantBuffers(0, 1, &CameraPosConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(1, 1, &PointLightConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(2, 1, &DirectionalLightBuffer);
+    }
+}
+
+void FRenderer::PrepareFogProcessShader() const
+{
+    Graphics->DeviceContext->VSSetShader(FogVertexShader, nullptr, 0);
+    Graphics->DeviceContext->PSSetShader(FogPixelShader, nullptr, 0);
+    Graphics->DeviceContext->IASetInputLayout(TextureInputLayout);
+    
+    //밑에는 렌더구간
+    Graphics->DeviceContext->RSSetState(UEditorEngine::graphicDevice.RasterizerStateSOLID);
+    Graphics->DeviceContext->OMSetDepthStencilState(nullptr, 0);
+    Graphics->DeviceContext->OMSetRenderTargets(1, &Graphics->FogFrameBufferRTV, nullptr); // 마지막이라서 바로 최종에 그림
+    
+    if (FullScreenConstantBuffer)
+    {
+        Graphics->DeviceContext->PSSetConstantBuffers(0, 1, &CameraPosConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(1, 1, &FogConstantBuffer);
+    }
+}
+
 void FRenderer::PrepareFullScreenShader() const
 {
     Graphics->DeviceContext->VSSetShader(FullScreenVertexShader, nullptr, 0);
@@ -138,9 +193,6 @@ void FRenderer::PrepareFullScreenShader() const
     {
         Graphics->DeviceContext->PSSetConstantBuffers(0, 1, &FullScreenConstantBuffer);
         Graphics->DeviceContext->PSSetConstantBuffers(1, 1, &CameraPosConstantBuffer);
-        Graphics->DeviceContext->PSSetConstantBuffers(2, 1, &FogConstantBuffer);
-        Graphics->DeviceContext->PSSetConstantBuffers(3, 1, &PointLightConstantBuffer);
-        Graphics->DeviceContext->PSSetConstantBuffers(4, 1, &DirectionalLightBuffer);
     }
 }
 
@@ -300,12 +352,75 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
     if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_BillboardText))
         RenderBillboards(World, ActiveViewport);
     RenderLight(World, ActiveViewport);
+
+#pragma region postProcessing
+
+    ProcessLightScreen();
+    ProcessFogScreen();
+    RenderPostProcess();
     
-    RenderFullScreen();
+#pragma endregion
+    
 
     RenderGizmos(World, ActiveViewport);
     
     ClearRenderArr();
+}
+
+void FRenderer::ProcessLightScreen()
+{
+    PrepareLightProcessShader();
+    
+    UINT offset = 0;
+    Graphics->DeviceContext->IASetVertexBuffers(0, 1, &FullScreenVertexBuffer, &TextureStride, &offset);
+    Graphics->DeviceContext->IASetIndexBuffer(FullScreenIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    Graphics->DeviceContext->PSSetShaderResources(0, Graphics->RenderResourceTextureCount, Graphics->FullScreenResourceView); //최초의 Process라서 GBuffer만
+    Graphics->DeviceContext->PSSetSamplers(0, 1, &FullScreenSamplerState);
+    Graphics->DeviceContext->DrawIndexed(FullScreenIndexCount, 0, 0);
+}
+
+void FRenderer::ProcessFogScreen()
+{
+    PrepareFogProcessShader();
+
+    ID3D11ShaderResourceView* FogSRV[8];
+    for (int i=0;i<ARRAYSIZE(Graphics->FullScreenResourceView); i++)
+    {
+        FogSRV[i] = Graphics->FullScreenResourceView[i];
+    }
+    FogSRV[7] = Graphics->LightResourceView; //이거 전이 Light라서
+    
+    UINT offset = 0;
+    Graphics->DeviceContext->IASetVertexBuffers(0, 1, &FullScreenVertexBuffer, &TextureStride, &offset);
+    Graphics->DeviceContext->IASetIndexBuffer(FullScreenIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    Graphics->DeviceContext->PSSetShaderResources(0, Graphics->RenderResourceTextureCount+1, FogSRV); //이거 전이 Light라서
+    Graphics->DeviceContext->PSSetSamplers(0, 1, &FullScreenSamplerState);
+    Graphics->DeviceContext->DrawIndexed(FullScreenIndexCount, 0, 0);
+}
+
+void FRenderer::RenderPostProcess()
+{
+    PrepareFullScreenShader();
+
+    ID3D11ShaderResourceView* PostProcessSRV[8];
+    for (int i=0;i<ARRAYSIZE(Graphics->FullScreenResourceView); i++)
+    {
+        PostProcessSRV[i] = Graphics->FullScreenResourceView[i];
+    }
+    PostProcessSRV[7] = Graphics->FogResourceView;
+    
+    UINT offset = 0;
+    Graphics->DeviceContext->IASetVertexBuffers(0, 1, &FullScreenVertexBuffer, &TextureStride, &offset);
+    Graphics->DeviceContext->IASetIndexBuffer(FullScreenIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    
+    Graphics->DeviceContext->PSSetShaderResources(0, Graphics->RenderResourceTextureCount+1, PostProcessSRV);
+    Graphics->DeviceContext->PSSetSamplers(0, 1, &FullScreenSamplerState);
+    Graphics->DeviceContext->DrawIndexed(FullScreenIndexCount, 0, 0);
+    
+    OrganizeFullScreen();
 }
 
 void FRenderer::CreateScreenBuffer()
@@ -325,20 +440,6 @@ void FRenderer::CreateScreenBuffer()
     Graphics->Device->CreateSamplerState(&SamplerDesc, &FullScreenSamplerState);
 }
 
-void FRenderer::RenderFullScreen()
-{
-    PrepareFullScreenShader();
-    
-    UINT offset = 0;
-    Graphics->DeviceContext->IASetVertexBuffers(0, 1, &FullScreenVertexBuffer, &TextureStride, &offset);
-    Graphics->DeviceContext->IASetIndexBuffer(FullScreenIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
-    Graphics->DeviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-    Graphics->DeviceContext->PSSetShaderResources(0, Graphics->RenderResourceTextureCount, Graphics->FullScreenResourceView);
-    Graphics->DeviceContext->PSSetSamplers(0, 1, &FullScreenSamplerState);
-    Graphics->DeviceContext->DrawIndexed(FullScreenIndexCount, 0, 0);
-    
-    OrganizeFullScreen();
-}
 
 void FRenderer::OrganizeFullScreen()
 {
@@ -346,8 +447,8 @@ void FRenderer::OrganizeFullScreen()
     Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStencilState, 0);
     Graphics->DeviceContext->RSSetState(Graphics->GetCurrentRasterizer());
 
-    Graphics->DeviceContext->VSSetShader(UEditorEngine::renderer.VertexShader, nullptr, 0);
-    Graphics->DeviceContext->PSSetShader(UEditorEngine::renderer.PixelShader, nullptr, 0);
+    Graphics->DeviceContext->VSSetShader(UEditorEngine::renderer.VertexShader, nullptr, 0); //TODO: FullscreenShader로 바꿔주기
+    Graphics->DeviceContext->PSSetShader(UEditorEngine::renderer.PixelShader, nullptr, 0); //TODO: FullscreenShader로 바꿔주기
     Graphics->DeviceContext->IASetInputLayout(UEditorEngine::renderer.InputLayout);
 }
 

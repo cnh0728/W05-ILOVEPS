@@ -213,6 +213,9 @@ void FConstantBufferUpdater::UpdateFogConstant(ID3D11Buffer* FogConstantBuffer, 
                 constants->HeightFallOff = FogComp->GetHeightFallOff();
                 constants->FogBaseHeight = FogComp->GetBaseHeight();
                 constants->bIsHeightFog = FogComp->GetIsHeightFog();
+
+                constants->ScatteringIntensity = FogComp->GetScatteringIntensity();
+                constants->LightShaftDensity = FogComp->GetLightShaftDensity();
             }
         }
         DeviceContext->Unmap(FogConstantBuffer, 0);
