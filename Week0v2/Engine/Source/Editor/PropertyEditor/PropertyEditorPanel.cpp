@@ -392,8 +392,81 @@ void PropertyEditorPanel::Render()
 
             ImGui::TreePop();
         }
+    }
+
+    if (PickedActor && PickedComponent && PickedComponent->IsA<UFogComponent>())
+    {
+        UFogComponent* fogComp = Cast<UFogComponent>(PickedComponent);
+        if (ImGui::TreeNodeEx("Rotation Movement Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            FVector Color = fogComp->GetColor();
+            float r = Color.x;
+            float g = Color.y;
+            float b = Color.z;
+            float lightColor[3] = { r, g, b };
+            // Fog Color
+            if (ImGui::ColorPicker4("##Fog Color", lightColor,
+                ImGuiColorEditFlags_DisplayRGB |
+                ImGuiColorEditFlags_NoSidePreview |
+                ImGuiColorEditFlags_NoInputs |
+                ImGuiColorEditFlags_Float))
+            {
+                r = lightColor[0];
+                g = lightColor[1];
+                b = lightColor[2];
+                fogComp->SetColor(FVector(r, g, b));
+            }
+            // Fog Color
+            ImGui::PushItemWidth(50.0f);
+            if (ImGui::DragFloat("R##R", &r, 0.001f, 0.f, 1.f)) fogComp->SetColor(FVector(r, g, b));
+            ImGui::SameLine();
+            if (ImGui::DragFloat("G##G", &g, 0.001f, 0.f, 1.f)) fogComp->SetColor(FVector(r, g, b));
+            ImGui::SameLine();
+            if (ImGui::DragFloat("B##B", &b, 0.001f, 0.f, 1.f)) fogComp->SetColor(FVector(r, g, b));
+            ImGui::PopItemWidth();
+            ImGui::Spacing();
+
+            float Start = fogComp->GetStart();
+            if (ImGui::DragFloat("Start", &Start, 0.1f, 0.f, 1000.f))
+            {
+                fogComp->SetStartEnd(Start);
+            }
+            float End = fogComp->GetEnd();
+            if (ImGui::DragFloat("End", &End, 0.1f, 0.f, 1000.f))
+            {
+                fogComp->SetEnd(End);
+            }
+
+            float Density = fogComp->GetDensity();
+            if (ImGui::DragFloat("Density", &Density, 0.1f, 0.f, 1000.f))
+            {
+                fogComp->SetDensity(Density);
+            }
+
+            float HeightFallOff = fogComp->GetHeightFallOff();
+            if (ImGui::DragFloat("HeightFallOff", &HeightFallOff, 0.1f, 0.f, 1000.f))
+            {
+                fogComp->SetHeightFallOff(HeightFallOff);
+            }
+
+            float BaseHeight = fogComp->GetBaseHeight();
+            if (ImGui::DragFloat("BaseHeight", &BaseHeight, 0.1f, 0.f, 1000.f))
+            {
+                fogComp->SetBaseHeight(BaseHeight);
+            }
+
+            bool bIsHeight = fogComp->GetIsHeightFog();
+            if (ImGui::Checkbox("bIsHeight", &bIsHeight))
+            {
+                fogComp->SetHeightFallOff(bIsHeight);
+            }
+
+            ImGui::TreePop();
+        }
+
 
     }
+
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor)
     if (UStaticMeshComponent* StaticMeshComponent = PickedActor->GetComponentByClass<UStaticMeshComponent>())
