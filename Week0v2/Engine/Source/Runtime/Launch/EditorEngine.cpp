@@ -85,7 +85,7 @@ void UEditorEngine::Render()
     }
 
     //graphicDevice.CopyDepthToSceneTexture();
-    if (renderer.bRenderDebugDepth)renderer.RenderDebugDepth();
+    //if (renderer.bRenderDebugDepth)renderer.RenderDebugDepth();
 }
 
 void UEditorEngine::Tick(float deltaSeconds)

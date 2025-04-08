@@ -51,12 +51,26 @@ void FCompositePostProcess::Render(ID3D11DeviceContext* context)
     context->IASetInputLayout(InputLayout);
     context->VSSetShader(VertexShader, nullptr, 0);
     context->PSSetShader(PixelShader, nullptr, 0);
+    const int maxSlots = 4;
 
-    for (size_t i = 0; i < Inputs.size(); ++i)
+    ID3D11ShaderResourceView* nullSRV[maxSlots] = {};
+    context->PSSetShaderResources(0, maxSlots, nullSRV); // 이전 프레임 남은 것 해제
+
+    if (ViewMode == EPostProcessViewMode::FogOnly && Inputs.size() >= 2)
     {
-        context->PSSetShaderResources((UINT)i, 1, &Inputs[i].SRV);
+        context->PSSetShaderResources(0, 1, &Inputs[1].SRV);
+    }else if (ViewMode == EPostProcessViewMode::DepthOnly)
+    {
+        Renderer->RenderDebugDepth();
+        return;
     }
-
+    else
+    {
+        for (size_t i = 0; i < Inputs.size(); ++i)
+        {
+            context->PSSetShaderResources((UINT)i, 1, &Inputs[i].SRV);
+        }
+    }
     ID3D11SamplerState* sampler = Renderer->LinearSampler;
     context->PSSetSamplers(0, 1, &sampler);
 

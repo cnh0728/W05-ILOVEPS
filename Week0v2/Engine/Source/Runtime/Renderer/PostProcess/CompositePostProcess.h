@@ -8,7 +8,12 @@ struct FCompositeInput
     ID3D11ShaderResourceView* SRV = nullptr;
     float Weight = 1.0f; // 각 입력에 가중치를 줄 수도 있음
 };
-
+enum class EPostProcessViewMode
+{
+    Composite,
+    FogOnly,
+    DepthOnly
+};
 class FCompositePostProcess
 {
 public:
@@ -18,6 +23,7 @@ public:
 
     void SetOutput(ID3D11RenderTargetView* OutputRTV);
     void SetInputs(const std::vector<FCompositeInput>& InInputs);
+    void SetViewMode(EPostProcessViewMode InMode) { ViewMode = InMode; }
 
 private:
     FRenderer* Renderer = nullptr;
@@ -29,5 +35,6 @@ private:
     ID3D11RenderTargetView* OutputRTV = nullptr;
     std::vector<FCompositeInput> Inputs;
 
+    EPostProcessViewMode ViewMode = EPostProcessViewMode::Composite;
     void LoadShaders();
 };

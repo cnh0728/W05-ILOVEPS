@@ -35,7 +35,7 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
 
     CreateShader();
     CreateConstantBuffer();
-    CreateFullscreenQuad();
+    //CreateFullscreenQuad();
     FullscreenQuad::Get()->Initialize();
     CreateSampler();
     ConstantBufferUpdater.UpdateLitUnlitConstant(FlagBuffer, 1);
@@ -121,13 +121,13 @@ void FRenderer::CreateShader()
         L"Shaders/DebugSceneDepthShader.hlsl", "mainPS",
         DebugDepthPixelShader);
 
-    ShaderManager.CreateVertexShader(
+    /*ShaderManager.CreateVertexShader(
         L"Shaders/DrawFullscreenTexture.hlsl", "mainVS",
         FullscreenVertexShader, inputLayoutDesc, ARRAYSIZE(inputLayoutDesc), &FullscreenInputLayout, &FullscreenStride, sizeof(FFullscreenVertex));
 
     ShaderManager.CreatePixelShader(
         L"Shaders/DrawFullscreenTexture.hlsl", "mainPS",
-        FullscreenPixelShader);
+        FullscreenPixelShader);*/
 }
 
 void FRenderer::ReleaseShader()
@@ -329,10 +329,12 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
     //ID3D11ShaderResourceView* finalScene = FogPostProcess->GetOutputSRV();
     //finalScene = Graphics->SceneColorSRV;
     //FullscreenQuad::Get()->DrawFullscreenTexture(this, finalScene, Graphics->FrameBufferRTV);
+
     FinalComposite->SetOutput(Graphics->FrameBufferRTV); // 최종 출력
     FinalComposite->SetInputs({
         { Graphics->SceneColorSRV, 1.0f }, // 원본 SceneColor
         { FogPostProcess->GetOutputSRV(), 1.0f }, // Fog 결과
+        {nullptr,0.0f},//나중에 Light 추가 가능
         // { LightPostProcess->GetOutputSRV(), 0.5f } // 나중에 Light 추가 가능
         });
     FinalComposite->Render(Graphics->DeviceContext);
@@ -801,15 +803,17 @@ void FRenderer::RenderDebugDepth()
 
     Context->IASetInputLayout(DebugDepthInputLayout);
     Context->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+    Context->PSSetShaderResources(0, 1, &Graphics->SceneDepthSRV);
+    Context->PSSetSamplers(0, 1, &LinearSampler); // bilinear 샘플러
+    FullscreenQuad::Get()->Draw(Context);
 
+    /*
     UINT stride = sizeof(FFullscreenVertex);
     UINT offset = 0;
     Context->IASetVertexBuffers(0, 1, &FullscreenVertexBuffer, &stride, &offset);
 
-    Context->PSSetShaderResources(0, 1, &Graphics->SceneDepthSRV);
-    Context->PSSetSamplers(0, 1, &LinearSampler); // bilinear 샘플러
 
-    Context->Draw(6, 0); // 풀스크린 쿼드
+    Context->Draw(6, 0); // 풀스크린 쿼드*/
 }
 void FRenderer::CreateSampler()
 {
@@ -827,8 +831,8 @@ void FRenderer::CreateSampler()
 
     Graphics->Device->CreateSamplerState(&samplerDesc, &LinearSampler);
 }
-// FRenderer.cpp
 
+/*
 void FRenderer::CreateFullscreenQuad()
 {
     struct FVertexUV
@@ -861,3 +865,4 @@ void FRenderer::CreateFullscreenQuad()
     HRESULT hr = Graphics->Device->CreateBuffer(&desc, &initData, &FullscreenVertexBuffer);
     //check(SUCCEEDED(hr));
 }
+*/

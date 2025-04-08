@@ -5,6 +5,7 @@
 #include "LaunchEngineLoop.h"
 #include "Profiling/PlatformTime.h"
 #include "Profiling/StatRegistry.h"
+#include "Renderer/PostProcess/CompositePostProcess.h"
 
 void ProfilingEditorPanel::Render()
 {
@@ -30,7 +31,12 @@ void ProfilingEditorPanel::Render()
         //ImGui::Text("Picking Time %.4fms\nNum Attempts: %d\nAccumulated Time %.2fms",FStatRegistry::GetLastMilliseconds("Picking"),FStatRegistry::TotalPickCount,FStatRegistry::TotalPickTime);
         ImGui::Text("FPS (1s): %.2f", Stats.FPS_1Sec);
         ImGui::Text("FPS (5s): %.2f", Stats.FPS_5Sec);
-        ImGui::Checkbox("RenderDebugDepth", &UEditorEngine::renderer.bRenderDebugDepth);
+        const char* modeNames[] = { "Composite", "FogOnly", "DepthOnly" };
+        static int selectedMode = static_cast<int>(EPostProcessViewMode::Composite);
+        if (ImGui::Combo("Post Process View Mode", &selectedMode, modeNames, IM_ARRAYSIZE(modeNames)))
+        {
+            UEditorEngine::renderer.FinalComposite->SetViewMode(static_cast<EPostProcessViewMode>(selectedMode));
+        }
         // 드롭다운으로 StatMap 표시
         if (ImGui::CollapsingHeader("Stat Timings (ms)", ImGuiTreeNodeFlags_DefaultOpen))
         {

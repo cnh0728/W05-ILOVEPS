@@ -166,11 +166,12 @@ private:
     FConstantBufferUpdater ConstantBufferUpdater;
 
 public:
-    void CreateFullscreenQuad();
+    //void CreateFullscreenQuad();
     void CreateSampler();
     ID3D11VertexShader* DebugDepthVertexShader = nullptr;
     ID3D11PixelShader* DebugDepthPixelShader = nullptr;
     ID3D11InputLayout* DebugDepthInputLayout = nullptr;
+
     ID3D11VertexShader* FullscreenVertexShader = nullptr;
     ID3D11PixelShader* FullscreenPixelShader = nullptr;
     ID3D11InputLayout* FullscreenInputLayout = nullptr;
@@ -179,7 +180,6 @@ public:
     ID3D11SamplerState* LinearSampler = nullptr;
     UINT DebugDepthStride = 0;
     UINT FullscreenStride = 0;
-    bool bRenderDebugDepth = false;
 
     FFogPostProcess* FogPostProcess = nullptr;
     FCompositePostProcess* FinalComposite = nullptr;
