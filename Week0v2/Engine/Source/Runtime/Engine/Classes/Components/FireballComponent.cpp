@@ -3,7 +3,7 @@
 #include "Engine/World.h"
 
 UFireBallComponent::UFireBallComponent()
-{   
+{
     GEngine->GetWorld()->AddPointLights(this);
 }
 
@@ -41,4 +41,5 @@ void UFireBallComponent::DuplicateSubObjects(const UObject* Source)
     UStaticMeshComponent::DuplicateSubObjects(Source);
 }
 
-void UFireBallComponent::PostDuplicate() {}
+void UFireBallComponent::PostDuplicate() {
+}

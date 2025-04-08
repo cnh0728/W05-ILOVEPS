@@ -68,6 +68,7 @@ public:
     
     EFrameMode GetFrameMode() { return FrameMode; }
     UWorld* GetWorld() const { return GWorld; }
+    void SetWorld(UWorld* NewWorld) { GWorld = NewWorld; }
     SLevelEditor* GetLevelEditor() const { return LevelEditor; }
     UnrealEd* GetUnrealEditor() const { return UnrealEditor; }
     FSceneMgr* GetSceneManager() const { return SceneMgr; }

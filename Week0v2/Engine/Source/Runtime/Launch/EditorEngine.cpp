@@ -157,7 +157,7 @@ void UEditorEngine::PreparePIE()
 {
     // 1. World 복제
     worldContexts[1].thisCurrentWorld = Cast<UWorld>(GWorld->Duplicate());
-    GWorld = worldContexts[1].thisCurrentWorld;
+    //GWorld = worldContexts[1].thisCurrentWorld;
     GWorld->WorldType = EWorldType::PIE;
     levelType = LEVELTICK_All;
     

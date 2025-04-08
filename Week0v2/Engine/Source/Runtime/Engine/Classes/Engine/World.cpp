@@ -117,6 +117,7 @@ void UWorld::ClearScene()
 UObject* UWorld::Duplicate() const
 {
     UWorld* CloneWorld = FObjectFactory::ConstructObjectFrom<UWorld>(this);
+    GEngine->SetWorld(CloneWorld);
     CloneWorld->DuplicateSubObjects(this);
     CloneWorld->PostDuplicate();
     return CloneWorld;
@@ -128,6 +129,7 @@ void UWorld::DuplicateSubObjects(const UObject* SourceObj)
     Level = Cast<ULevel>(Level->Duplicate());
     EditorPlayer = FObjectFactory::ConstructObject<AEditorPlayer>();
 
+    /*
     // 애초에 여기 들어왔을때, PointLights가 없음.
     TArray<UFireBallComponent*> DuplicatedPointLights;
     for (UFireBallComponent* OriginalComponent : PointLights)
@@ -139,12 +141,19 @@ void UWorld::DuplicateSubObjects(const UObject* SourceObj)
         }
     }
     // 복제된 배열로 교체
-    PointLights = DuplicatedPointLights;
+    PointLights = DuplicatedPointLights;*/
 }
 
 void UWorld::PostDuplicate()
 {
     UObject::PostDuplicate();
+    /*for (auto* SceneComp : TObjectRange<USceneComponent>())
+    {
+        if (auto * Comp = Cast<UFireBallComponent>(SceneComp))
+        {
+            PointLights.Add(Comp);
+        }
+    }*/
 }
 
 void UWorld::ReloadScene(const FString& FileName)
