@@ -22,9 +22,9 @@ cbuffer FogConstant : register(b2){
 }
 
 cbuffer PointLightsConstant : register(b3){
-    float4 PointLightPositions[50];  // xyz: 위치, w: Radius
-    float4 PointLightColors[50];     // rgb: 색상, a: Intensity
-    float4 PointLightFallOff[50];    // x: RadiusFallOff 나머지 Pad
+    float4 PointLightPositions[100];  // xyz: 위치, w: Radius
+    float4 PointLightColors[100];     // rgb: 색상, a: Intensity
+    float4 PointLightFallOff[100];    // x: RadiusFallOff 나머지 Pad
 }
 
 Texture2D PositionTexture : register(t0); // Can be Depth
@@ -61,27 +61,30 @@ float4 mainPS(PSInput input) : SV_Target {
     // mainPS 함수 내 라이팅 계산 부분에 추가  
     float3 pointLightAccumulation = float3(0, 0, 0);  
 
-    for (int i = 0; i < 50; ++i)  
-    {  
-        // 1. 유효 라이트 필터링  
-        if (PointLightFallOff[i].y < 0.5f) break;  // 유효성 플래그  
+    if (all(worldPos != float3(0.025, 0.025, 0.025))) //배경(오브젝트가 아닐때)
+    {
+        for (int i = 0; i < 100; ++i)  
+        {  
+            // 1. 유효 라이트 필터링  
+            if (PointLightFallOff[i].y < 0.5f) break;  // 유효성 플래그  
 
-        // 2. 거리/방향 계산  
-        float3 lightDir = PointLightPositions[i].xyz - worldPos;  
-        float dist = length(lightDir);  
-        lightDir = normalize(lightDir);  
+            // 2. 거리/방향 계산  
+            float3 lightDir = PointLightPositions[i].xyz - worldPos;  
+            float dist = length(lightDir);  
+            lightDir = normalize(lightDir);  
 
-        // 3. 감쇠 계산 (물리 기반)  
-        float radius = PointLightPositions[i].w;  
-        float fallOff = PointLightFallOff[i].x;  
-        float attenuation = saturate(1.0 - dist / radius);  
-        attenuation *= exp(-dist * fallOff);  
+            // 3. 감쇠 계산 (물리 기반)  
+            float radius = PointLightPositions[i].w;  
+            float fallOff = PointLightFallOff[i].x;  
+            float attenuation = saturate(1.0 - dist / radius);  
+            attenuation *= exp(-dist * fallOff);  
 
-        // 4. 확산광 계산  
-        float diff = max(dot(normal, lightDir), 0.0);  
-        float3 lightColor = PointLightColors[i].rgb * PointLightColors[i].a;  
-        pointLightAccumulation += lightColor * diff * attenuation;  
-    }  
+            // 4. 확산광 계산  
+            float diff = max(dot(normal, lightDir), 0.0);  
+            float3 lightColor = PointLightColors[i].rgb * PointLightColors[i].a;  
+            pointLightAccumulation += lightColor * diff * attenuation;  
+        }  
+    }
 
     // 5. 최종 라이트 합성  
     litColor += albedo * pointLightAccumulation;  

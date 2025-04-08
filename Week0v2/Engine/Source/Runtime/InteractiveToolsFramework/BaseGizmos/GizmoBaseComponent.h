@@ -20,7 +20,7 @@ public:
         ScaleZ
     };
 public:
-    UGizmoBaseComponent() = default;
+    UGizmoBaseComponent();
 
     virtual int CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance) override;
     virtual void TickComponent(float DeltaTime) override;

@@ -14,7 +14,7 @@ public:
     void Initialize(ID3D11DeviceContext* InDeviceContext);
 
     void UpdateConstant(ID3D11Buffer* ConstantBuffer, const FMatrix& M, const FMatrix& VP, const FMatrix& NormalMatrix, FVector4 UUIDColor, bool
-                        IsSelected) const;
+                        IsSelected, bool bIsGizmo) const;
     void UpdateMaterialConstant(ID3D11Buffer* MaterialConstantBuffer, const FObjMaterialInfo& MaterialInfo) const;
     void UpdateLightConstant(ID3D11Buffer* LightingBuffer) const;
     void UpdateLitUnlitConstant(ID3D11Buffer* FlagBuffer, int isLit) const;

@@ -7,8 +7,9 @@ cbuffer MatrixConstants : register(b0)
     row_major float4x4 VP;
     row_major float4x4 MInverse;
     float4 UUID;
-    bool isSelected;
-    float3 MatrixPad0;
+    int isSelected;
+    int isGizmo;
+    float2 MatrixPad0;
 };
 
 struct FMaterial
@@ -109,7 +110,7 @@ float4 PaperTexture(float3 originalColor)
 PS_OUTPUT mainPS(PS_INPUT input)
 {
     PS_OUTPUT output;
-
+    
     // 1. position 버퍼 (월드 좌표)
     output.position = float4(input.worldPos, 1.0);
 
@@ -159,5 +160,11 @@ PS_OUTPUT mainPS(PS_INPUT input)
         //Albedo에 라이팅 적용
         output.albedo.rgb = ambient + (diffuseLight * linearColor) + specularLight + Material.EmissiveColor;
     }
+
+    if (isGizmo > 0.5)
+    {
+        output.position = output.albedo;
+    }
+    
     return output;
 }

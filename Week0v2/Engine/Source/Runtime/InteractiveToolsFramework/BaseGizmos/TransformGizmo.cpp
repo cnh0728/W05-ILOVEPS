@@ -7,7 +7,7 @@
 #include "Engine/World.h"
 #include "Engine/FLoaderOBJ.h"
 
-UTransformGizmo::UTransformGizmo()
+ATransformGizmo::ATransformGizmo()
 {
     FManagerOBJ::CreateStaticMesh("Assets/gizmo_loc_x.obj");
     FManagerOBJ::CreateStaticMesh("Assets/gizmo_loc_y.obj");
@@ -19,9 +19,7 @@ UTransformGizmo::UTransformGizmo()
     FManagerOBJ::CreateStaticMesh("Assets/gizmo_scale_y.obj");
     FManagerOBJ::CreateStaticMesh("Assets/gizmo_scale_z.obj");
 
-    SetRootComponent(
-        AddComponent<USceneComponent>()
-    );
+    SetRootComponent(AddComponent<USceneComponent>());
 
     UGizmoArrowComponent* locationX = AddComponent<UGizmoArrowComponent>();
     locationX->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"gizmo_loc_x.obj"));
@@ -78,7 +76,7 @@ UTransformGizmo::UTransformGizmo()
     CircleArr.Add(CircleZ);
 }
 
-void UTransformGizmo::Tick(float DeltaTime)
+void ATransformGizmo::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 

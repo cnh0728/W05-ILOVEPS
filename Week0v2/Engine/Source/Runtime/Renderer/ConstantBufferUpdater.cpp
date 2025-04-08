@@ -11,7 +11,7 @@ void FConstantBufferUpdater::Initialize(ID3D11DeviceContext* InDeviceContext)
     DeviceContext = InDeviceContext;
 }
 
-void FConstantBufferUpdater::UpdateConstant(ID3D11Buffer* ConstantBuffer, const FMatrix& M, const FMatrix& VP, const FMatrix& NormalMatrix, FVector4 UUIDColor, bool IsSelected) const
+void FConstantBufferUpdater::UpdateConstant(ID3D11Buffer* ConstantBuffer, const FMatrix& M, const FMatrix& VP, const FMatrix& NormalMatrix, FVector4 UUIDColor, bool IsSelected, bool bIsGizmo) const
 {
     if (ConstantBuffer)
     {
@@ -25,6 +25,7 @@ void FConstantBufferUpdater::UpdateConstant(ID3D11Buffer* ConstantBuffer, const 
             constants->ModelMatrixInverseTranspose = NormalMatrix;
             constants->UUIDColor = UUIDColor;
             constants->IsSelected = IsSelected;
+            constants->IsGizmo = bIsGizmo;
         }
         DeviceContext->Unmap(ConstantBuffer, 0);
     }
