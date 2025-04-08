@@ -104,6 +104,7 @@ PS_OUTPUT mainPS(PS_INPUT input)
 {
     PS_OUTPUT output;
 
+    output.position = float4(input.worldPos, 1.0);
     // 2. Normal 버퍼 (범위 변환 -> Texture는 음수저장이 안되기 때문에 나중에 사용할때 역변환해서 사용)  
     output.normal = float4(input.normal * 0.5 + 0.5, 1.0);  
 
