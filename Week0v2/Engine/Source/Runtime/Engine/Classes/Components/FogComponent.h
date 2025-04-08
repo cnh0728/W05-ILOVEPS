@@ -33,11 +33,11 @@ public:
 private:
     FVector Color = FVector(0.8f, 0.9f, 1.0f); //푸른빛
     float Start = 0.0f;
-    float End = 10.f;
+    float End = 100.f;
     float Density = 0.02f;
     float HeightFallOff = 0.2f;
-    float BaseHeight = 10.f;
-    float ScatteringIntensity = 100.f;  // 추가: 빛 산란 강도 [4]
+    float BaseHeight = 5.f;
+    float ScatteringIntensity = 10.f;  // 추가: 빛 산란 강도 [4]
     float LightShaftDensity = 0.02f;    // 추가: 광선 밀도 [4]
 
     bool bIsHeight = true;

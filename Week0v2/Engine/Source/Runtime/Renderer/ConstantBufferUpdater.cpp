@@ -180,6 +180,8 @@ void FConstantBufferUpdater::UpdateCameraPosConstant(ID3D11Buffer* CameraPosCons
         FCameraPosConstants* constants = (FCameraPosConstants*)constantbufferMSR.pData;
         {
             constants->CameraPos = ActiveViewPort->ViewTransformPerspective.GetLocation();
+            constants->InverseVMatrix = FMatrix::Inverse(ActiveViewPort->View);
+            constants->InversePMatrix = FMatrix::Inverse(ActiveViewPort->Projection);
         }
         DeviceContext->Unmap(CameraPosConstantBuffer, 0);
     }

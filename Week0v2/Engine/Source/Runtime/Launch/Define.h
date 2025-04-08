@@ -330,6 +330,8 @@ struct alignas(16) FFogConstants
 struct alignas(16) FCameraPosConstants{
     FVector CameraPos;
     float Padding;
+    FMatrix InverseVMatrix;
+    FMatrix InversePMatrix;
 };
 
 struct FPointLightConstants{

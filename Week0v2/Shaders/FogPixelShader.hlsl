@@ -1,6 +1,8 @@
 cbuffer CameraConstant : register(b0){
     float3 CameraPos;
     float Padding;
+    row_major float4x4 InverseVMatrix;
+    row_major float4x4 InversePMatrix;
 }
 
 cbuffer FogConstant : register(b1){
@@ -34,6 +36,22 @@ struct PSInput {
     float2 Texcoord : TEXCOORD;
 };
 
+// 깊이 버퍼에서 월드 좌표 계산 함수
+float3 ReconstructWorldPos(float2 uv)
+{
+    // 1. 클립 공간 좌표 계산
+    float4 clipPos = float4(uv * 2.0 - 1.0, 1.0, 1.0);
+
+    clipPos.y *= -1.0;
+    
+    // 2. 뷰/프로젝션 행렬 역변환 (엔진별 행렬 전달 필요)
+    float4 worldPos = mul(clipPos, InversePMatrix);
+    worldPos /= worldPos.w;
+    worldPos = mul(worldPos, InverseVMatrix);
+    
+    return worldPos.xyz;
+}
+
 float4 mainPS(PSInput input) : SV_Target {
 
     // 1. G-Buffer 샘플링  
@@ -48,50 +66,39 @@ float4 mainPS(PSInput input) : SV_Target {
 
     float3 litColor = light;
     
-    // 3. 포그 효과 (수정된 공식)
     if (bIsFogOn)  
-    {
-        // 거리 기반 포그
-        
-        float dist = distance(worldPos, CameraPos);  
-        float distanceFog = 1.0 - exp(FogDensity * -dist);  
-
-        bool bIsInFog = true;
-        
-        // 높이 기반 포그  
-        float heightFog = 0.0;
-        float fogFactor = distanceFog;
-        if (bIsHeightFog)  
-        {  
-            // 기준 높이 아래로 갈수록 포그 증가  
-            float heightDelta = (FogZPosition + FogBaseHeight) - worldPos.z;  
-            heightFog = exp(-HeightFallOff * max(heightDelta, 0.0));  
-            heightFog = 1.0 - heightFog;
-
-            //HeightFog안이라면 
-            if (heightDelta > CameraPos.z)
-            {
-                fogFactor = max(distanceFog, heightFog);
-            }else
-            {
-                //밖이면 배경처리 안해주고 싶은데
-                //fog 깔린곳만 색칠해주고 싶음
-                bIsInFog = false;
-            }
-        }
+    {        
 
         // 포그 혼합 (거리 + 높이)          
-        if (bIsInFog)
+        if (all(worldPos == float3(0.025, 0.025, 0.025))) //배경(오브젝트가 아닐때)
         {
-            if (all(worldPos == float3(0.025, 0.025, 0.025))) //배경(오브젝트가 아닐때)
-            {
-                litColor = FogColor;  
-            }else
-            {
-                
-                litColor = lerp(litColor, FogColor, fogFactor);  
-                // litColor = lerp(litColor, fogLightInfluence, fogFactor * 0.5); // 50% 블렌딩
-            }
+            worldPos = ReconstructWorldPos(input.Texcoord);
+        }
+
+        float dist = distance(CameraPos, worldPos);
+        // 거리 기반
+        float fogRange = FogEnd - FogStart;
+        float disFactor = saturate((dist - FogStart) / fogRange); // 0~1  50일떄 0
+
+        float fogFactor = disFactor;
+        
+        if (bIsHeightFog)  
+        {  
+
+            float FogHeight = FogZPosition + FogBaseHeight;
+        
+            // 높이 기반 (지수 감쇠)
+            float heightDiff = worldPos.z - FogHeight;
+            float heightFactor = saturate(exp(-heightDiff * HeightFallOff * FogDensity)); // 0~1
+            fogFactor = fogFactor * heightFactor;
+        }
+
+        if (all(worldPos == float3(0.025, 0.025, 0.025))) //배경(오브젝트가 아닐때)
+        {
+            litColor = FogColor;
+        }else
+        {
+            litColor = lerp(FogColor, litColor, 1 - fogFactor); 
         }
     }  
 

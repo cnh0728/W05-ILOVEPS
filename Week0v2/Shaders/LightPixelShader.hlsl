@@ -1,6 +1,8 @@
 cbuffer CameraConstant : register(b0){
     float3 CameraPos;
     float Padding;
+    row_major float4x4 InverseVMatrix;
+    row_major float4x4 InversePMatrix;
 }
 
 cbuffer PointLightsConstant : register(b1){

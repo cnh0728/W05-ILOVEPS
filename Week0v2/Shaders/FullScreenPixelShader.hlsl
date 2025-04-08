@@ -6,6 +6,8 @@ cbuffer FullScreenConstant : register(b0)
 cbuffer CameraConstant : register(b1){
     float3 CameraPos;
     float Padding;
+    row_major float4x4 InverseVMatrix;
+    row_major float4x4 InversePMatrix;
 }
 
 Texture2D PositionTexture : register(t0); // Can be Depth
