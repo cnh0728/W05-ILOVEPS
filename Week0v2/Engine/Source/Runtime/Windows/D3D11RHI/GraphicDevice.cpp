@@ -229,6 +229,22 @@ void FGraphicsDevice::CreateFrameBuffer()
     Device->CreateTexture2D(&textureDesc, nullptr, &MaterialFrameBuffer);
     Device->CreateRenderTargetView(MaterialFrameBuffer, nullptr, &MaterialFrameBufferRTV);
     Device->CreateShaderResourceView(MaterialFrameBuffer, nullptr, &MaterialResourceView);
+
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    Device->CreateTexture2D(&textureDesc, nullptr, &SpecularFrameBuffer);
+    Device->CreateRenderTargetView(SpecularFrameBuffer, nullptr, &SpecularFrameBufferRTV);
+    Device->CreateShaderResourceView(SpecularFrameBuffer, nullptr, &SpecularResourceView);
+
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    Device->CreateTexture2D(&textureDesc, nullptr, &EmissiveFrameBuffer);
+    Device->CreateRenderTargetView(EmissiveFrameBuffer, nullptr, &EmissiveFrameBufferRTV);
+    Device->CreateShaderResourceView(EmissiveFrameBuffer, nullptr, &EmissiveResourceView);
+
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    Device->CreateTexture2D(&textureDesc, nullptr, &AmbientFrameBuffer);
+    Device->CreateRenderTargetView(AmbientFrameBuffer, nullptr, &AmbientFrameBufferRTV);
+    Device->CreateShaderResourceView(AmbientFrameBuffer, nullptr, &AmbientResourceView);
+
     
     RTVs[0] = FrameBufferRTV;
     RTVs[1] = UUIDFrameBufferRTV;
@@ -237,11 +253,17 @@ void FGraphicsDevice::CreateFrameBuffer()
     DefferedRTVs[1] = NormalFrameBufferRTV;
     DefferedRTVs[2] = AlbedoFrameBufferRTV;
     DefferedRTVs[3] = MaterialFrameBufferRTV;
+    DefferedRTVs[4] = SpecularFrameBufferRTV;
+    DefferedRTVs[5] = EmissiveFrameBufferRTV;
+    DefferedRTVs[6] = AmbientFrameBufferRTV;
 
     DeferredSRVs[0] = PositionResourceView;
     DeferredSRVs[1] = NormalResourceView;
     DeferredSRVs[2] = AlbedoResourceView;
     DeferredSRVs[3] = MaterialResourceView;
+    DeferredSRVs[4] = SpecularResourceView;
+    DeferredSRVs[5] = EmissiveResourceView;
+    DeferredSRVs[6] = AmbientResourceView;
 }
 
 void FGraphicsDevice::ReleaseFrameBuffer()

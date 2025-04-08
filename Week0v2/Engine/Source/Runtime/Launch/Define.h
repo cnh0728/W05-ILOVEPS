@@ -273,7 +273,7 @@ struct FPrimitiveCounts
 	int ConeCount; 
 	int pad1;
 };
-struct FLighting
+struct FDirectionalLight
 {
 	float lightDirX, lightDirY, lightDirZ; // 조명 방향
 	float pad1;                      // 16바이트 정렬용 패딩
@@ -299,7 +299,7 @@ struct FMaterialConstants {
 struct FConstants {
     FMatrix M;      // 모델
     FMatrix VP;      // 모델
-    FMatrix ModelMatrixInverseTranspose; // normal 변환을 위한 행렬
+    FMatrix ModelMatrixInverse; // normal 변환을 위한 행렬
     FVector4 UUIDColor;
     int IsSelected;
     int IsGizmo;

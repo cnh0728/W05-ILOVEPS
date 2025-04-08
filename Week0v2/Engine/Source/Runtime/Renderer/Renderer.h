@@ -35,7 +35,7 @@ public:
     
     ID3D11InputLayout* InputLayout = nullptr;
     ID3D11Buffer* ConstantBuffer = nullptr;
-    ID3D11Buffer* LightingBuffer = nullptr;
+    ID3D11Buffer* DirectionalLightBuffer = nullptr;
     ID3D11Buffer* FlagBuffer = nullptr;
     ID3D11Buffer* MaterialConstantBuffer = nullptr;
     ID3D11Buffer* SubMeshConstantBuffer = nullptr;
@@ -45,7 +45,7 @@ public:
     ID3D11Buffer* CameraPosConstantBuffer = nullptr;
     ID3D11Buffer* PointLightConstantBuffer = nullptr;
     
-    FLighting lightingData;
+    FDirectionalLight lightingData;
 
     uint32 Stride;
     uint32 Stride2;

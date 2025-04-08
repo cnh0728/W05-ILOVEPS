@@ -16,7 +16,7 @@ public:
     void UpdateConstant(ID3D11Buffer* ConstantBuffer, const FMatrix& M, const FMatrix& VP, const FMatrix& NormalMatrix, FVector4 UUIDColor, bool
                         IsSelected, bool bIsGizmo) const;
     void UpdateMaterialConstant(ID3D11Buffer* MaterialConstantBuffer, const FObjMaterialInfo& MaterialInfo) const;
-    void UpdateLightConstant(ID3D11Buffer* LightingBuffer) const;
+    void UpdateDirectionalLightConstant(ID3D11Buffer* DirectionalLightBuffer) const;
     void UpdateLitUnlitConstant(ID3D11Buffer* FlagBuffer, int isLit) const;
     void UpdateFullScreenConstant(ID3D11Buffer* FullScreenConstantBuffer, bool bIsDepth) const;
     void UpdateSubMeshConstant(ID3D11Buffer* SubMeshConstantBuffer, bool isSelected) const;

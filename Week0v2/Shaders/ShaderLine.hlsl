@@ -326,6 +326,7 @@ PS_OUTPUT mainPS(PS_INPUT input) : SV_Target
 {
     PS_OUTPUT output;
     output.position = float4(input.WorldPosition, 1.0);
+    output.normal = float4(1.0,1.0,1.0,1.0);
     output.albedo = input.Color;
     
     return output;
