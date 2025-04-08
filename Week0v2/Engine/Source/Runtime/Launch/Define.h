@@ -301,8 +301,10 @@ struct FConstants {
     FMatrix VP;      // 모델
     FMatrix ModelMatrixInverseTranspose; // normal 변환을 위한 행렬
     FVector4 UUIDColor;
-    bool IsSelected;
-    FVector pad;
+    int IsSelected;
+    int IsGizmo;
+    float pad1;
+    float pad2;
 };
 struct FLitUnlitConstants {
     int isLit; // 1 = Lit, 0 = Unlit 
@@ -329,9 +331,9 @@ struct alignas(16) FCameraPosConstants{
 };
 
 struct FPointLightConstants{
-    FVector4 PointLightPosition[50]; //w값은 Radius
-    FVector4 Color[50]; //w값은 Intensity
-    FVector4 FallOff[50]; //x FallOff, y Light갯수
+    FVector4 PointLightPosition[100]; //w값은 Radius
+    FVector4 Color[100]; //w값은 Intensity
+    FVector4 FallOff[100]; //x FallOff, y Light갯수
 };
 
 struct alignas(16) FFullScreenConstants{

@@ -5,8 +5,9 @@ cbuffer MatrixConstants : register(b0)
     row_major float4x4 VP;
     row_major float4x4 MInverse;
     float4 UUID;
-    bool isSelected;
-    float3 MatrixPad0;
+    int isSelected;
+    int isGizmo;
+    float2 MatrixPad0;
 };
 
 struct VS_INPUT

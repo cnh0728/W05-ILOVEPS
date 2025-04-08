@@ -16,7 +16,7 @@ class UGizmoArrowComponent;
 class UCameraComponent;
 class AEditorPlayer;
 class USceneComponent;
-class UTransformGizmo;
+class ATransformGizmo;
 
 class UWorld final : public UObject
 {
@@ -25,7 +25,7 @@ class UWorld final : public UObject
 public:
     UWorld() = default;
     UWorld(const UWorld& Other);
-    ;
+    
     void InitWorld();
     void CreateBaseObject();
     void ReleaseBaseObject();
@@ -62,7 +62,7 @@ public:
     EWorldType::Type WorldType = EWorldType::None;
     const TSet<AActor*>& GetActors() const { return Level->GetActors(); }
     ULevel* GetLevel() const { return Level; }
-    UTransformGizmo* LocalGizmo = nullptr;
+    ATransformGizmo* LocalGizmo = nullptr;
     AEditorPlayer* GetEditorPlayer() const { return EditorPlayer; }
     // EditorManager 같은데로 보내기
     AActor* GetSelectedActor() const { return SelectedActor; }

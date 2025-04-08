@@ -44,6 +44,11 @@ struct FVector
         return FVector(x + other.x, y + other.y, z + other.z);
     }
 
+    FVector operator*(const FVector& other) const
+    {
+        return FVector(x * other.x, y * other.y, z * other.z);
+    }
+
     // 벡터 내적
     float Dot(const FVector& other) const {
         return x * other.x + y * other.y + z * other.z;

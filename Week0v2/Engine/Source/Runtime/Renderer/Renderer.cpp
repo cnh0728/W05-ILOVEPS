@@ -301,9 +301,9 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
         RenderBillboards(World, ActiveViewport);
     RenderLight(World, ActiveViewport);
     
-    RenderGizmos(World, ActiveViewport);
-    
     RenderFullScreen();
+
+    RenderGizmos(World, ActiveViewport);
     
     ClearRenderArr();
 }
@@ -479,10 +479,10 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
         FVector4 UUIDColor = StaticMeshComp->EncodeUUID() / 255.0f;
         if (World->GetSelectedActor() == StaticMeshComp->GetOwner())
         {
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, true);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, true, false);
         }
         else
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, false);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, false, false);
 
         if (USkySphereComponent* skysphere = Cast<USkySphereComponent>(StaticMeshComp))
         {
@@ -520,12 +520,24 @@ void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorV
     }
 
 #pragma region GizmoDepth
+    Graphics->DeviceContext->OMSetRenderTargets(1, &Graphics->FrameBufferRTV, nullptr);
     Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStateDisable, 0);
 #pragma endregion GizmoDepth
 
     //  fill solid,  Wirframe 에서도 제대로 렌더링되기 위함
     Graphics->DeviceContext->RSSetState(UEditorEngine::graphicDevice.RasterizerStateSOLID);
 
+    if (ConstantBuffer)
+    {
+        Graphics->DeviceContext->VSSetConstantBuffers(0, 1, &ConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(0, 1, &ConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(1, 1, &MaterialConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(2, 1, &LightingBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(3, 1, &FlagBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(4, 1, &SubMeshConstantBuffer);
+        Graphics->DeviceContext->PSSetConstantBuffers(5, 1, &TextureConstantBufer);
+    }
+    
     for (auto GizmoComp : GizmoObjs)
     {
         if ((GizmoComp->GetGizmoType() == UGizmoBaseComponent::ArrowX ||
@@ -553,9 +565,9 @@ void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorV
         FMatrix VP = ActiveViewport->GetViewMatrix() * ActiveViewport->GetProjectionMatrix();
 
         if (GizmoComp == World->GetPickingGizmo())
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, true);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, true, true);
         else
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, false);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, false, true);
 
         if (!GizmoComp->GetStaticMesh()) continue;
 
@@ -568,6 +580,7 @@ void FRenderer::RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorV
     Graphics->DeviceContext->RSSetState(Graphics->GetCurrentRasterizer());
 
 #pragma region GizmoDepth
+    Graphics->DeviceContext->OMSetRenderTargets(1, &Graphics->FrameBufferRTV, Graphics->DepthStencilView); // 렌더 타겟 설정(백버퍼를 가르킴)
     Graphics->DeviceContext->OMSetDepthStencilState(Graphics->DepthStencilState, 0);
 #pragma endregion GizmoDepth
 }
@@ -587,9 +600,9 @@ void FRenderer::RenderBillboards(UWorld* World, std::shared_ptr<FEditorViewportC
         FMatrix NormalMatrix = FMatrix::Inverse(Model);
         FVector4 UUIDColor = BillboardComp->EncodeUUID() / 255.0f;
         if (BillboardComp == World->GetPickingGizmo())
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, true);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, true, false);
         else
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, false);
+            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, false, false);
 
         if (UParticleSubUVComp* SubUVParticle = Cast<UParticleSubUVComp>(BillboardComp))
         {

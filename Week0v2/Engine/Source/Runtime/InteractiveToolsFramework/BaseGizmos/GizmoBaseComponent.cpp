@@ -6,6 +6,10 @@
 #include "UnrealEd/EditorViewportClient.h"
 
 
+UGizmoBaseComponent::UGizmoBaseComponent()
+{
+}
+
 int UGizmoBaseComponent::CheckRayIntersection(FVector& rayOrigin, FVector& rayDirection, float& pfNearHitDistance)
 {
     int nIntersections = 0;

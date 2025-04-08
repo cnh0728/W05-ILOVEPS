@@ -38,7 +38,7 @@ void UWorld::CreateBaseObject()
     
     if (LocalGizmo == nullptr)
     {
-        LocalGizmo = FObjectFactory::ConstructObject<UTransformGizmo>();
+        LocalGizmo = FObjectFactory::ConstructObject<ATransformGizmo>();
     }
 }
 

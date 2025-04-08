@@ -1,14 +1,13 @@
 #pragma once
 #include "GameFramework/Actor.h"
 
-
 class UStaticMeshComponent;
-class UTransformGizmo : public AActor
+class ATransformGizmo : public AActor
 {
-    DECLARE_CLASS(UTransformGizmo, AActor)
+    DECLARE_CLASS(ATransformGizmo, AActor)
 
 public:
-    UTransformGizmo();
+    ATransformGizmo();
 
     virtual void Tick(float DeltaTime) override;
 

@@ -314,9 +314,8 @@ PS_INPUT mainVS(VS_INPUT input)
         pos = ComputeOrientedBoxPosition(obbIndex, edgeIndex, input.vertexID);
         color = float4(0.4, 1.0, 0.4, 1.0); // 예시: 연두색
     }
-    
     // 출력 변환
-    float4 worldPos = mul(float4(pos, 1.0), M);
+    float4 worldPos = float4(pos, 1.0);
     output.WorldPosition = worldPos.xyz;
     output.Position = mul(worldPos, VP);
     output.Color = color;
