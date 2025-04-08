@@ -4,8 +4,8 @@
 
 AActor::AActor()
 {
-    RootComponent = AddComponent<USceneComponent>();
-    RootComponent->SetOwner(this);
+    //RootComponent = AddComponent<USceneComponent>();
+    //RootComponent->SetOwner(this);
 }
 
 AActor::AActor(const AActor& Other)
@@ -17,7 +17,7 @@ AActor::AActor(const AActor& Other)
     OwnedComponents(Other.OwnedComponents)
 {
     OwnedComponents.Empty();
-    RootComponent = AddComponent<USceneComponent>();
+    //RootComponent = AddComponent<USceneComponent>();
 }
 void AActor::BeginPlay()
 {

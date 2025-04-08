@@ -59,16 +59,31 @@ void PropertyEditorPanel::Render()
                 {
                     if (SceneComp->GetAttachParent() == nullptr)
                     {
-                        DrawSceneComponentTree(SceneComp, PickedComponent, PickedActor, AllComponents);
+                        //DrawSceneComponentTree(SceneComp, PickedComponent, PickedActor, AllComponents);
+                        DrawSceneComponentTree(SceneComp, PickedComponent); // SceneComponent의 자식 컴포넌트 출력)
                     }
                 }
             }
-
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
             // 그리고, SceneComponent가 아닌 컴포넌트 중에 부착 정보가 없는 경우(예, 별도로 출력되어야 할 경우)는 리프 노드로 출력
             for (UActorComponent* Component : AllComponents)
             {
                 // UProjectileMovementComponent는 이미 위에서 Actor의 RootComponent에 부착된 것으로 출력되므로 건너뜁니다.
                 if (!Component->IsA<USceneComponent>() && !Component->IsA<UProjectileMovementComponent>())
+                {
+                    FString Label = *Component->GetName();
+                    bool bSelected = (PickedComponent == Component);
+                    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                    if (bSelected)
+                        nodeFlags |= ImGuiTreeNodeFlags_Selected;
+
+                    ImGui::TreeNodeEx(*Label, nodeFlags);
+                    if (ImGui::IsItemClicked())
+                        PickedComponent = Component;
+                }
+                if (!Component->IsA<USceneComponent>() && !Component->IsA<URotationMovementComponent>())
                 {
                     FString Label = *Component->GetName();
                     bool bSelected = (PickedComponent == Component);
@@ -132,13 +147,11 @@ void PropertyEditorPanel::Render()
                 }
                 if (ImGui::Selectable("ProjectileMovementComponent"))
                 {
-                    // 추가 시, UProjectileMovementComponent는 이후에 Actor의 RootComponent에 “부착”된 것으로 처리됩니다.
                     UProjectileMovementComponent* ProjectileMovementComponent = PickedActor->AddComponent<UProjectileMovementComponent>();
                     PickedComponent = ProjectileMovementComponent;
                 }
                 if (ImGui::Selectable("RotationMovementComponent"))
                 {
-                    // 추가 시, UProjectileMovementComponent는 이후에 Actor의 RootComponent에 “부착”된 것으로 처리됩니다.
                     URotationMovementComponent* RotationMovementComponent = PickedActor->AddComponent<URotationMovementComponent>();
                     PickedComponent = RotationMovementComponent;
                 }
@@ -147,7 +160,6 @@ void PropertyEditorPanel::Render()
             ImGui::TreePop();
         }
     }
-
 
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor && PickedComponent && PickedComponent->IsA<USceneComponent>())
@@ -475,26 +487,36 @@ void PropertyEditorPanel::DrawSceneComponentTree(USceneComponent* Component, UAc
             DrawSceneComponentTree(Child, PickedComponent, Actor, AllComponents);
         }
 
-        // 추가: 현재 SceneComponent(예, Actor의 RootComponent)에 부착된 비씬 컴포넌트 출력
-        // 여기서는 UProjectileMovementComponent를 예로 들었음.
-        if (Actor && Actor->GetRootComponent() == Component)
-        {
-            for (UActorComponent* Comp : AllComponents)
-            {
-                if (Comp->IsA<UProjectileMovementComponent>())
-                {
-                    // Actor의 RootComponent에 “부착된” 것으로 간주하고 리프 노드로 출력
-                    FString Label2 = *Comp->GetName();
-                    bool bSelected2 = (PickedComponent == Comp);
-                    ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
-                    if (bSelected2)
-                        leafFlags |= ImGuiTreeNodeFlags_Selected;
-                    ImGui::TreeNodeEx(*Label2, leafFlags);
-                    if (ImGui::IsItemClicked())
-                        PickedComponent = Comp;
-                }
-            }
-        }
+        //// 추가: 현재 SceneComponent(예, Actor의 RootComponent)에 부착된 비씬 컴포넌트 출력
+        //if (Actor && Actor->GetRootComponent() == Component)
+        //{
+        //    for (UActorComponent* Comp : AllComponents)
+        //    {
+        //        if (Comp->IsA<UProjectileMovementComponent>())
+        //        {
+        //            // Actor의 RootComponent에 “부착된” 것으로 간주하고 리프 노드로 출력
+        //            FString Label2 = *Comp->GetName();
+        //            bool bSelected2 = (PickedComponent == Comp);
+        //            ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        //            if (bSelected2)
+        //                leafFlags |= ImGuiTreeNodeFlags_Selected;
+        //            ImGui::TreeNodeEx(*Label2, leafFlags);
+        //            if (ImGui::IsItemClicked())
+        //                PickedComponent = Comp;
+        //        }
+        //        if (Comp->IsA<URotationMovementComponent>())
+        //        {
+        //            FString Label2 = *Comp->GetName();
+        //            bool bSelected2 = (PickedComponent == Comp);
+        //            ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        //            if (bSelected2)
+        //                leafFlags |= ImGuiTreeNodeFlags_Selected;
+        //            ImGui::TreeNodeEx(*Label2, leafFlags);
+        //            if (ImGui::IsItemClicked())
+        //                PickedComponent = Comp;
+        //        }
+        //    }
+        //}
         ImGui::TreePop();
     }
 }
