@@ -195,7 +195,7 @@ void USceneComponent::SetAttachParent(USceneComponent* InParent)
 UObject* USceneComponent::Duplicate() const
 {
     USceneComponent* NewComp = FObjectFactory::ConstructObjectFrom<USceneComponent>(this);
-    NewComp->DuplicateSubObjects(this);
+    NewComp->DuplicateSubObjects(this); 
     NewComp->PostDuplicate();
     return NewComp;
 }
