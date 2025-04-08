@@ -3,6 +3,7 @@
 
 #include "Renderer.h"
 #include "Fog/FogTypes.h"
+#include "PostProcess/LightPostProcess.h"
 
 void FConstantBufferUpdater::Initialize(ID3D11DeviceContext* InDeviceContext)
 {
@@ -45,7 +46,16 @@ void FConstantBufferUpdater::UpdateFogConstant(ID3D11Buffer* FogConstantBuffer, 
         DeviceContext->Unmap(FogConstantBuffer, 0);
     }
 }
-
+void FConstantBufferUpdater::UpdateLightConstant(ID3D11Buffer* LightConstantBuffer,const FLightParams& LightParams)
+{
+    if (LightConstantBuffer)
+    {
+        D3D11_MAPPED_SUBRESOURCE mapped;
+        DeviceContext->Map(LightConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+        memcpy(mapped.pData, &LightParams, sizeof(FLightParams));
+        DeviceContext->Unmap(LightConstantBuffer, 0);
+    }
+}
 void FConstantBufferUpdater::UpdateMaterialConstant(ID3D11Buffer* MaterialConstantBuffer, const FObjMaterialInfo& MaterialInfo) const
 {
     if (MaterialConstantBuffer)

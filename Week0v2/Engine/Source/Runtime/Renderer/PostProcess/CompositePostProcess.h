@@ -12,7 +12,8 @@ enum class EPostProcessViewMode
 {
     Composite,
     FogOnly,
-    DepthOnly
+    DepthOnly,
+    LightOnly,
 };
 class FCompositePostProcess
 {

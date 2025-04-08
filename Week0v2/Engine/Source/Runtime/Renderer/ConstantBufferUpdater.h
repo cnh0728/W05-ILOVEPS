@@ -4,6 +4,7 @@
 #include <d3d11.h>
 #include "Define.h"
 
+struct FLightParams;
 struct FFogParams;
 
 class FConstantBufferUpdater
@@ -15,6 +16,7 @@ public:
         const FMatrix& Model,const FMatrix& View,const FMatrix& Proj,const FMatrix& NormalMatrix,
         const FVector4& UUIDColor,bool IsSelected) const;
     void UpdateFogConstant(ID3D11Buffer* FogConstantBuffer, const FFogParams& FogParams) const;
+    void UpdateLightConstant(ID3D11Buffer* LightConstantBuffer, const FLightParams& LightParams);
 
     void UpdateMaterialConstant(ID3D11Buffer* MaterialConstantBuffer, const FObjMaterialInfo& MaterialInfo) const;
     void UpdateLightConstant(ID3D11Buffer* LightingBuffer) const;

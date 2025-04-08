@@ -17,7 +17,6 @@ struct PS_INPUT
 {
     float4 Position : SV_POSITION;
     float2 TexCoord : TEXCOORD;
-    float3 WorldPosition : TEXCOORD1;
 };
 float4 mainPS(PS_INPUT input) : SV_TARGET
 {

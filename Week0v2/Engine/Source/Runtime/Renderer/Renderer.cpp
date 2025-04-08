@@ -23,6 +23,7 @@
 #include "Fog/UFogComponent.h"
 #include "PostProcess/CompositePostProcess.h"
 #include "PostProcess/FogPostProcess.h"
+#include "PostProcess/LightPostProcess.h"
 #include "Utils/FullscreenQuad.h"
 
 
@@ -41,6 +42,8 @@ void FRenderer::Initialize(FGraphicsDevice* graphics)
     ConstantBufferUpdater.UpdateLitUnlitConstant(FlagBuffer, 1);
     FogPostProcess = new FFogPostProcess();
     FogPostProcess->Initialize(this);
+    LightPostProcess = new FLightPostProcess();
+    LightPostProcess->Initialize(this);
     FinalComposite = new FCompositePostProcess();
     FinalComposite->Initialize(this);
 
@@ -326,6 +329,8 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
     Graphics->CopyDepthToSceneTexture();
     FogPostProcess->SetFogParams(World->GetFogComponent()->GetFogParams());
     FogPostProcess->Render(Graphics->DeviceContext,ActiveViewport);
+
+    LightPostProcess->Render(Graphics->DeviceContext, ActiveViewport);
     //ID3D11ShaderResourceView* finalScene = FogPostProcess->GetOutputSRV();
     //finalScene = Graphics->SceneColorSRV;
     //FullscreenQuad::Get()->DrawFullscreenTexture(this, finalScene, Graphics->FrameBufferRTV);
@@ -334,8 +339,7 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
     FinalComposite->SetInputs({
         { Graphics->SceneColorSRV, 1.0f }, // 원본 SceneColor
         { FogPostProcess->GetOutputSRV(), 1.0f }, // Fog 결과
-        {nullptr,0.0f},//나중에 Light 추가 가능
-        // { LightPostProcess->GetOutputSRV(), 0.5f } // 나중에 Light 추가 가능
+        { LightPostProcess->GetOutputSRV(), 1.0f }
         });
     FinalComposite->Render(Graphics->DeviceContext);
     ClearRenderArr();

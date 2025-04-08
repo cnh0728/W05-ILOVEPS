@@ -207,6 +207,7 @@
     <ClCompile Include="Engine\Source\Runtime\Renderer\PostProcess\CompositePostProcess.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\PostProcess\FogPostProcess.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\PostProcess\FPostProcessPass.cpp" />
+    <ClCompile Include="Engine\Source\Runtime\Renderer\PostProcess\LightPostProcess.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Renderer\Utils\FullscreenQuad.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Slate\Widgets\Layout\SSplitter.cpp" />
     <ClCompile Include="Engine\Source\Runtime\Engine\Classes\Engine\ResourceMgr.cpp" />
@@ -312,6 +313,7 @@
     <ClInclude Include="Engine\Source\Runtime\Renderer\PostProcess\CompositePostProcess.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\PostProcess\FogPostProcess.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\PostProcess\FPostProcessPass.h" />
+    <ClInclude Include="Engine\Source\Runtime\Renderer\PostProcess\LightPostProcess.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\ShaderManager.h" />
     <ClInclude Include="Engine\Source\Runtime\Launch\LaunchEngineLoop.h" />
     <ClInclude Include="Engine\Source\Runtime\Renderer\Utils\FullscreenQuad.h" />
@@ -404,22 +406,32 @@
     <FxCompile Include="Shaders\PixelTextureShader.hlsl">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </FxCompile>
-  <FxCompile Include="Shaders\PostProcess\CompositePostProcess.hlsl">
-    <ShaderType>Vertex</ShaderType>
-    <EntryPointName>mainVS</EntryPointName>
-    <ShaderModel>5.0</ShaderModel>
-  </FxCompile>
-  <FxCompile Include="Shaders\PostProcess\CompositePostProcess.hlsl">
-    <ShaderType>Pixel</ShaderType>
-    <EntryPointName>mainPS</EntryPointName>
-    <ShaderModel>5.0</ShaderModel>
-  </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\CompositePostProcess.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\CompositePostProcess.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
     <FxCompile Include="Shaders\PostProcess\FogPostProcessPixelShader.hlsl">
       <ShaderType>Pixel</ShaderType>
       <EntryPointName>mainPS</EntryPointName>
       <ShaderModel>5.0</ShaderModel>
     </FxCompile>
     <FxCompile Include="Shaders\PostProcess\FogPostProcessVertexShader.hlsl">
+      <ShaderType>Vertex</ShaderType>
+      <EntryPointName>mainVS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\LightPostProcessPixelShader.hlsl">
+      <ShaderType>Pixel</ShaderType>
+      <EntryPointName>mainPS</EntryPointName>
+      <ShaderModel>5.0</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="Shaders\PostProcess\LightPostProcessVertexShader.hlsl">
       <ShaderType>Vertex</ShaderType>
       <EntryPointName>mainVS</EntryPointName>
       <ShaderModel>5.0</ShaderModel>

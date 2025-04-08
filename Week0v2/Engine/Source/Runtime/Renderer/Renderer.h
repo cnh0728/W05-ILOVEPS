@@ -12,6 +12,7 @@
 #include "ShaderManager.h"
 #include "ConstantBufferUpdater.h"
 
+class FLightPostProcess;
 class FCompositePostProcess;
 class FFogPostProcess;
 class ULightComponentBase;
@@ -182,6 +183,7 @@ public:
     UINT FullscreenStride = 0;
 
     FFogPostProcess* FogPostProcess = nullptr;
+    FLightPostProcess* LightPostProcess = nullptr;
     FCompositePostProcess* FinalComposite = nullptr;
 };
 

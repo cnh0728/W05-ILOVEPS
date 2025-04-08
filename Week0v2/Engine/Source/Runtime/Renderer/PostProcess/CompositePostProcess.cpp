@@ -63,6 +63,9 @@ void FCompositePostProcess::Render(ID3D11DeviceContext* context)
     {
         Renderer->RenderDebugDepth();
         return;
+    }else if (ViewMode == EPostProcessViewMode::LightOnly && Inputs.size() >= 3)
+    {
+        context->PSSetShaderResources(0, 1, &Inputs[2].SRV);
     }
     else
     {
