@@ -1,16 +1,23 @@
-﻿#include "Actor.h"
+#include "Actor.h"
 
 #include "Engine/World.h"
 
+AActor::AActor()
+{
+    //RootComponent = AddComponent<USceneComponent>();
+    //RootComponent->SetOwner(this);
+}
+
 AActor::AActor(const AActor& Other)
     : UObject(Other),
-      RootComponent(nullptr),
-      bTickInEditor(Other.bTickInEditor),
-      bActorIsBeingDestroyed(Other.bActorIsBeingDestroyed),
-      ActorLabel(Other.ActorLabel),
+    RootComponent(nullptr),
+    bTickInEditor(Other.bTickInEditor),
+    bActorIsBeingDestroyed(Other.bActorIsBeingDestroyed),
+    ActorLabel(Other.ActorLabel),
     OwnedComponents(Other.OwnedComponents)
 {
     OwnedComponents.Empty();
+    //RootComponent = AddComponent<USceneComponent>();
 }
 void AActor::BeginPlay()
 {
@@ -118,14 +125,20 @@ bool AActor::SetRootComponent(USceneComponent* NewRootComponent)
 {
     if (NewRootComponent == nullptr || NewRootComponent->GetOwner() == this)
     {
-        if (RootComponent != NewRootComponent)
+        if (RootComponent == NewRootComponent) true;
+        else
         {
-            USceneComponent* OldRootComponent = RootComponent;
-            RootComponent = NewRootComponent;
-
-            OldRootComponent->SetupAttachment(RootComponent);
+            if (RootComponent == nullptr)
+            {
+                RootComponent = NewRootComponent;
+            }
+            else
+            {
+                USceneComponent* OldRootComponent = RootComponent;
+                RootComponent = NewRootComponent;
+                OldRootComponent->SetupAttachment(RootComponent);
+            }
         }
-        return true;
     }
     return false;
 }

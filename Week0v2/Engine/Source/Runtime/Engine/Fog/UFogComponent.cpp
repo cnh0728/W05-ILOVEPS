@@ -15,6 +15,10 @@ void UFogComponent::SetFogParams(
     FogParams.HeightEnd = heightEnd;
     FogParams.FogColor = fogColor;
 }
+void UFogComponent::SetFogParams(const FFogParams& inFogParams)
+{
+    FogParams = inFogParams;
+}
 void UFogComponent::SetInvViewProj(const FMatrix& InvViewProj)
 {
     FogParams.InvViewProj = InvViewProj;

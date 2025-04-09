@@ -15,6 +15,8 @@ public:
         float linearStart, float linearEnd,
         float heightStart, float heightEnd,
         const FVector4& fogColor);
+    void SetFogParams(const FFogParams& inFogParams);
+
     void SetInvViewProj(const FMatrix& InvViewProj);
     void SetCameraWorldPosition(const FVector& inCameraPos);
     const FFogParams& GetFogParams() const;

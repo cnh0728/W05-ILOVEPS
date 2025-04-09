@@ -29,8 +29,8 @@ void UWorld::InitWorld()
     // TODO: Load Scene
     FManagerOBJ::CreateStaticMesh("Assets/Cube.obj");
     FManagerOBJ::CreateStaticMesh("Assets/apple_mid.obj");
-    CreateBaseObject();
     Level = FObjectFactory::ConstructObject<ULevel>();
+    CreateBaseObject();
     FogComponent = new UFogComponent();
     FogComponent->SetFogParams(5.0f,30.0f,0.0f,10.0f,FVector4(0.4f, 0.4f, 0.7f, 1.0f));
 }
@@ -145,6 +145,9 @@ void UWorld::DuplicateSubObjects(const UObject* SourceObj)
     UObject::DuplicateSubObjects(SourceObj);
     Level = Cast<ULevel>(Level->Duplicate());
     EditorPlayer = FObjectFactory::ConstructObject<AEditorPlayer>();
+    FogComponent = FObjectFactory::ConstructObject<UFogComponent>();
+    FogComponent->SetFogParams(Cast<UWorld>(SourceObj)->GetFogComponent()->GetFogParams());
+    
 }
 
 void UWorld::PostDuplicate()

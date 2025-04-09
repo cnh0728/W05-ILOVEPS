@@ -15,7 +15,7 @@ class AActor : public UObject
     DECLARE_CLASS(AActor, UObject)
 
 public:
-    AActor() = default;
+    AActor();
     AActor(const AActor& Other);
     /** Actor가 게임에 배치되거나 스폰될 때 호출됩니다. */
     virtual void BeginPlay();
@@ -86,7 +86,7 @@ public:
     bool SetActorLocation(const FVector& NewLocation);
     bool SetActorRotation(const FVector& NewRotation);
     bool SetActorScale(const FVector& NewScale);
-    
+
     virtual UObject* Duplicate() const override;
     virtual void DuplicateSubObjects(const UObject* Source) override;
     virtual void PostDuplicate() override;
@@ -103,7 +103,7 @@ private:
 
     /** 에디터 모드에서도 Tick이 작동하게 할 것인지 여부 */
     bool bTickInEditor = false;
-    
+
     /** 본인이 소유하고 있는 컴포넌트들의 정보 */
     TSet<UActorComponent*> OwnedComponents;
 
