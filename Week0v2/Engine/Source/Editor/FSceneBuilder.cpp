@@ -34,9 +34,10 @@ void SpawnAppleGrid(UWorld* World, int x, int y, int z)
                 float g = static_cast<float>(rand()) / RAND_MAX;
                 float b = static_cast<float>(rand()) / RAND_MAX;
                 FVector color(r, g, b);
-
                 LightComponent->SetLight(4.0f, color, 2.0f);
                 LightComponent->SetColorCycling(true);
+                LightComponent->SetColorPhaseOffset(static_cast<float>(rand()) / RAND_MAX * 3.0f); // 0 ~ 3초 중 랜덤 위상
+
             }
         }
     }

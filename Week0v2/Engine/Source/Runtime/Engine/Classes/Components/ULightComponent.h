@@ -31,9 +31,11 @@ public:
 
     void SetColorCycling(bool bEnable) { bCycleColor = bEnable; }
 
+    void SetColorPhaseOffset(float InOffset) { ColorPhaseOffset = InOffset; }
 private:
     FLightParams LightParams;
     FVector OriginalColor;
     bool bCycleColor = false;
+    float ColorPhaseOffset = 0.0f;
     float ColorCycleTime = 0.0f;
 };

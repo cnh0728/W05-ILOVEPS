@@ -28,7 +28,7 @@ ULightComponent::ULightComponent(const FLightParams& InParams)
     }
 }
 ULightComponent::ULightComponent(const ULightComponent& Other)
-    : UActorComponent(Other), LightParams(Other.LightParams),OriginalColor(Other.OriginalColor)
+    : UActorComponent(Other), LightParams(Other.LightParams),OriginalColor(Other.OriginalColor),ColorPhaseOffset(Other.ColorPhaseOffset)
 {
     if (UWorld* World = GetWorld())
     {
@@ -44,35 +44,22 @@ ULightComponent::~ULightComponent()
 }
 void ULightComponent::TickComponent(float DeltaTime)
 {
-    if (true | bCycleColor) {
+    if (true || bCycleColor)
+    {
         ColorCycleTime += DeltaTime / 1000.0f; // Convert ms to sec
-        float cycleDuration = 3.0f; // 3 seconds for full RGB rotation
-        float t = fmod(ColorCycleTime, cycleDuration);
+        float cycleSpeed = 2.0f * 3.14159265f / 1.0f; // 1초 주기
+        float t = ColorCycleTime + ColorPhaseOffset;
+        // 사인 곡선 기반 순환 값 (0~1)
+        float rWave = (std::sin(t * cycleSpeed + 0.0f) + 1.0f) * 0.5f;
+        float gWave = (std::sin(t * cycleSpeed + 2.0f) + 1.0f) * 0.5f;
+        float bWave = (std::sin(t * cycleSpeed + 4.0f) + 1.0f) * 0.5f;
 
-        float r = 0.0f, g = 0.0f, b = 0.0f;
-        if (t < 1.0f)
-        {
-            r = 1.0f - t;
-            g = t;
-            b = 0.0f;
-        }
-        else if (t < 2.0f)
-        {
-            r = 0.0f;
-            g = 2.0f - t;
-            b = t - 1.0f;
-        }
-        else
-        {
-            r = t - 2.0f;
-            g = 0.0f;
-            b = 3.0f - t;
-        }
+        // 원래 색상 기준으로 부드럽게 보간
+        float alpha = 0.5f; // blending strength (0.0 ~ 1.0)
 
-        LightParams.LightColor.x = fmodf(OriginalColor.x + r, 1.0f);
-        LightParams.LightColor.y = fmodf(OriginalColor.y + g, 1.0f);
-        LightParams.LightColor.z = fmodf(OriginalColor.z + b, 1.0f);
-
+        LightParams.LightColor.x = (1.0f - alpha) * OriginalColor.x + alpha * rWave;
+        LightParams.LightColor.y = (1.0f - alpha) * OriginalColor.y + alpha * gWave;
+        LightParams.LightColor.z = (1.0f - alpha) * OriginalColor.z + alpha * bWave;
     }
 }
 UObject* ULightComponent::Duplicate() const
