@@ -190,11 +190,11 @@ void UEditorEngine::StopPIE()
     // 1. World Clear
     GWorld = worldContexts[0].thisCurrentWorld;
 
-    auto lights = GWorld->GetPointLights();
+    /*auto lights = GWorld->GetPointLights();
     for (auto light : lights)
     {
         GWorld->RemovePointLights(light);
-    }
+    }*/
 
     for (auto iter : worldContexts[1].World()->GetActors())
     {
