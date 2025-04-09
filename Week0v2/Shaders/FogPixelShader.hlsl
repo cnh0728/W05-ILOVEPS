@@ -87,8 +87,8 @@ float4 mainPS(PSInput input) : SV_Target {
         
             // 높이 기반 (지수 감쇠)
             float heightDiff = worldPos.z - FogHeight;
-            float heightFactor = saturate(exp(-heightDiff * HeightFallOff * FogDensity)); // 0~1
-            fogFactor = fogFactor * heightFactor; //factor가 클수록 fogcolor에 가까워짐
+            float heightFactor = saturate(exp(-heightDiff * HeightFallOff)); // 0~1
+            fogFactor = fogFactor * heightFactor * FogDensity; //factor가 클수록 fogcolor에 가까워짐
         }
 
         litColor = lerp(litColor, FogColor, fogFactor); 
