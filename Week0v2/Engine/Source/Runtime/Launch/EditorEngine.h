@@ -56,6 +56,7 @@ private:
     bool bTestInput = false;
 public:
     UWorld* GetWorld() const { return GWorld; }
+    void SetWorld(UWorld* newWorld) { GWorld = newWorld; }
     SLevelEditor* GetLevelEditor() const { return LevelEditor; }
     UnrealEd* GetUnrealEditor() const { return UnrealEditor; }
     FSceneMgr* GetSceneManager() const { return SceneMgr; }

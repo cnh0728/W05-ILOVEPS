@@ -35,6 +35,17 @@ void UWorld::InitWorld()
     FogComponent->SetFogParams(5.0f,30.0f,0.0f,10.0f,FVector4(0.4f, 0.4f, 0.7f, 1.0f));
 }
 
+void UWorld::CreateTestScene()
+{
+    /*
+    AStaticMeshActor* TempActor = SpawnActor<AStaticMeshActor>();
+    TempActor->SetActorLabel(TEXT("OBJ_CUBE"));*/
+    // 사과 배치
+    SpawnAppleGrid(this, 10, 10, 1);
+
+    // 방 구조체 배치 (중심: 0,0,0 / 크기: 500x500 / 높이: 300)
+    SpawnBoxStructure(this, FVector(0, 0, -1.5f), FVector(500, 500, 0), 300.0f);
+}
 void UWorld::CreateBaseObject()
 {
     if (EditorPlayer == nullptr)
@@ -46,15 +57,7 @@ void UWorld::CreateBaseObject()
     {
         LocalGizmo = FObjectFactory::ConstructObject<UTransformGizmo>();
     }
-    
-    /*
-    AStaticMeshActor* TempActor = SpawnActor<AStaticMeshActor>();
-    TempActor->SetActorLabel(TEXT("OBJ_CUBE"));*/
-    // 사과 배치
-    SpawnAppleGrid(this,2,2,100);
 
-    // 방 구조체 배치 (중심: 0,0,0 / 크기: 500x500 / 높이: 300)
-    SpawnBoxStructure(this, FVector(0, 0, -1.5f), FVector(500, 500, 0), 300.0f);
 
 }
 
@@ -135,6 +138,7 @@ void UWorld::ClearScene()
 UObject* UWorld::Duplicate() const
 {
     UWorld* CloneWorld = FObjectFactory::ConstructObjectFrom<UWorld>(this);
+    GEngine->SetWorld(CloneWorld);
     CloneWorld->DuplicateSubObjects(this);
     CloneWorld->PostDuplicate();
     return CloneWorld;
@@ -222,3 +226,18 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* world)
     return new UWorld();
 }
 /**********************************************************/
+void UWorld::RegisterLightComponent(ULightComponent* LightComp)
+{
+    if (LightComp && !WorldLightComponents.Contains(LightComp))
+    {
+        WorldLightComponents.Add(LightComp);
+    }
+}
+
+void UWorld::UnregisterLightComponent(ULightComponent* LightComp)
+{
+    if (LightComp)
+    {
+        WorldLightComponents.Remove(LightComp);
+    }
+}

@@ -7,6 +7,7 @@
 #include "UObject/ObjectFactory.h"
 #include "UObject/ObjectMacros.h"
 
+class ULightComponent;
 class UFogComponent;
 class FObjectFactory;
 class AActor;
@@ -27,6 +28,7 @@ public:
     
     void InitWorld();
     void CreateBaseObject();
+    void CreateTestScene();
     void ReleaseBaseObject();
     void Tick(ELevelTick tickType, float deltaSeconds);
     void Release();
@@ -56,6 +58,11 @@ private:
     USceneComponent* pickingGizmo = nullptr;
     AEditorPlayer* EditorPlayer = nullptr;
     UFogComponent* FogComponent;
+public:
+    TArray<ULightComponent*> WorldLightComponents;
+    void RegisterLightComponent(ULightComponent* LightComp);
+    void UnregisterLightComponent(ULightComponent* LightComp);
+
 public:
     EWorldType::Type WorldType = EWorldType::None;
     const TSet<AActor*>& GetActors() const { return Level->GetActors(); }

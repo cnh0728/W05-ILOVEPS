@@ -25,19 +25,18 @@ void UProjectileMovementComponent::InitializeComponent()
 
     InitialSpeed = 100.0f;
     MaxSpeed = 1000.0f;
-    Acceleration = FVector(0.1f, 0.1f, 0.1f);
+    Acceleration = FVector(0.1f, 0.0f, 0.0f);
     Velocity = Acceleration * InitialSpeed;
 
-    GravityScale = 1.0f;
+    GravityScale = 0.0f;
 }
 
 void UProjectileMovementComponent::TickComponent(float DeltaTime)
 {
     Super::TickComponent(DeltaTime);
 
-    Timer = DeltaTime * 0.005;
+    Timer = DeltaTime / 1000.0f;
     FVector Gravity = FVector(0.f, 0.f, -9.8f) * GravityScale;
-
     Velocity = Velocity + Gravity * Timer;
 
     if (Velocity.Magnitude() > MaxSpeed)

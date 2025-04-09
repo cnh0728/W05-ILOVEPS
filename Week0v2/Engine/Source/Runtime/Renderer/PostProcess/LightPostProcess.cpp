@@ -1,22 +1,33 @@
 #include "LightPostProcess.h"
 
+#include "EditorEngine.h"
 #include "FogPostProcess.h"
 #include "D3D11RHI/GraphicDevice.h"
+#include "Engine/World.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Utils/FullscreenQuad.h"
+#include "UnrealEd/EditorViewportClient.h"
+
 bool FLightPostProcess::Initialize(FRenderer* inRenderer)
 {
     Renderer = inRenderer;
     LoadShaders();
     CreateOutputRenderTarget();
-    LightConstantBuffer =  Renderer->GetResourceManager().CreateConstantBuffer(sizeof(FLightParams));
-    LightParams =
-    {
-    FVector(0, 0, 0),  // 테스트용 광원 위치
-    5.0f,              // Radius
-    FVector(1.0f, 0.0f, 0.0f), // Red
-    1.5f                // Intensity
-    };
+    LightConstantBuffer = Renderer->GetResourceManager().CreateConstantBuffer(
+        sizeof(FVector4) * MAX_LIGHT_COUNT * 2 + sizeof(int32) + sizeof(float) * 3);
+
+    //LightConstantBuffer =  Renderer->GetResourceManager().CreateConstantBuffer(sizeof(FLightParams));
+    /*
+    TArray<FLightParams> TestLights;
+    float rad = 7.0f;
+    TestLights.Add({ FVector(-5, 0, 0), rad, FVector(1.0f, 0.0f, 0.0f), 2.0f }); // Red
+    TestLights.Add({ FVector(5, 0, 0), rad, FVector(0.0f, 1.0f, 0.0f), 2.0f });  // Green
+    TestLights.Add({ FVector(0, 5, 0), rad, FVector(0.0f, 0.0f, 1.0f), 2.0f });  // Blue
+    TestLights.Add({ FVector(0, -5, 0), rad, FVector(1.0f, 1.0f, 0.0f), 2.0f }); // Yellow
+    TestLights.Add({ FVector(0, 0, 0), rad, FVector(1.0f, 0.0f, 1.0f), 2.0f });   // Magenta
+
+    SetLightParams(TestLights);*/
+
     return true;
 }
 
@@ -43,10 +54,18 @@ void FLightPostProcess::LoadShaders()
         PixelShader
     );
 }
+void FLightPostProcess::UpdateConstants(std::shared_ptr<FEditorViewportClient> ActiveViewport)
+{
+    if (LightConstantBuffer)
+    {
 
+        Renderer->GetConstantBufferUpdater().UpdateLightConstant(LightConstantBuffer,GEngine->GetWorld()->WorldLightComponents,ActiveViewport->ViewTransformPerspective.GetLocation());
+        //Renderer->GetConstantBufferUpdater().UpdateLightConstant(LightConstantBuffer, LightParamsArray.GetData(), LightParamsArray.Num());
+    }
+}
 void FLightPostProcess::Render(ID3D11DeviceContext* context, std::shared_ptr<FEditorViewportClient> ActiveViewport)
 {
-    Renderer->GetConstantBufferUpdater().UpdateLightConstant(LightConstantBuffer, LightParams);
+    UpdateConstants(ActiveViewport);
     context->OMSetRenderTargets(1, &LightRTV, nullptr);
     context->IASetInputLayout(InputLayout);
     context->VSSetShader(VertexShader, nullptr, 0);

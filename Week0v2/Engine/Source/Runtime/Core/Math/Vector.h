@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <DirectXMath.h>
 
@@ -91,3 +91,8 @@ struct FVector
     static const FVector ForwardVector;
     static const FVector RightVector;
 };
+inline float DistSquared(const FVector& A, const FVector& B)
+{
+    FVector Delta = A - B;
+    return Delta.x * Delta.x + Delta.y * Delta.y + Delta.z * Delta.z;
+}

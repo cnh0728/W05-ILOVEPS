@@ -2,6 +2,7 @@
 
 #include "Components/ProjectileMovementComponent.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/ULightComponent.h"
 #include "Engine/FLoaderOBJ.h"
 #include "Engine/StaticMeshActor.h"
 #include "Engine/World.h"
@@ -9,8 +10,6 @@
 
 void SpawnAppleGrid(UWorld* World, int x, int y, int z)
 {
-    AActor* appleActor = World->SpawnActor<AActor>();
-    appleActor->SetActorLabel(TEXT("OBJ_Apple"));
     for (int i = 0; i < x; i++)
     {
         for (int j = 0; j < y; j++)
@@ -30,6 +29,9 @@ void SpawnAppleGrid(UWorld* World, int x, int y, int z)
                 apple->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"apple_mid.obj"));
                 apple->SetLocation(FVector(i, j, k)); // 소문자 x, y, z 기준
                 appleActor->AddComponent(apple);
+                ULightComponent* LightComponent = appleActor->AddComponent<ULightComponent>();
+                LightComponent->SetLightParams(FLightParams({ 0,0,0 }, 5.0f, { 1, 0, 0 }, 2.0f));
+
             }
         }
     }

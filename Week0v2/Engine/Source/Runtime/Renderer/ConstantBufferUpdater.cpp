@@ -2,7 +2,9 @@
 #include <Engine/Texture.h>
 
 #include "Renderer.h"
+#include "Components/ULightComponent.h"
 #include "Fog/FogTypes.h"
+#include "GameFramework/Actor.h"
 #include "PostProcess/LightPostProcess.h"
 
 void FConstantBufferUpdater::Initialize(ID3D11DeviceContext* InDeviceContext)
@@ -46,16 +48,71 @@ void FConstantBufferUpdater::UpdateFogConstant(ID3D11Buffer* FogConstantBuffer, 
         DeviceContext->Unmap(FogConstantBuffer, 0);
     }
 }
-void FConstantBufferUpdater::UpdateLightConstant(ID3D11Buffer* LightConstantBuffer,const FLightParams& LightParams)
+void FConstantBufferUpdater::UpdateLightConstant(
+    ID3D11Buffer* LightConstantBuffer,
+    const TArray<ULightComponent*>& LightComponents,
+    const FVector& CameraPosition)
 {
-    if (LightConstantBuffer)
+    if (!LightConstantBuffer || LightComponents.Num() == 0)
+        return;
+
+    struct FLightBuffer
     {
-        D3D11_MAPPED_SUBRESOURCE mapped;
-        DeviceContext->Map(LightConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
-        memcpy(mapped.pData, &LightParams, sizeof(FLightParams));
+        FVector4 LightPositionRadius[MAX_LIGHT_COUNT];
+        FVector4 LightColorIntensity[MAX_LIGHT_COUNT];
+        int LightCount;
+        float Padding[3];
+    };
+
+    FLightBuffer BufferData = {};
+
+    // 복사 및 우선순위 기반 정렬용 구조체
+    struct FSortableLight
+    {
+        ULightComponent* Comp;
+        float Priority;
+    };
+
+    TArray<FSortableLight> Sorted;
+    for (ULightComponent* Comp : LightComponents)
+    {
+        if (!Comp) continue;
+        float Score = Comp->ComputeLightPriority(CameraPosition);
+        Sorted.Add({ Comp, Score });
+    }
+
+    Sorted.Sort([](const FSortableLight& A, const FSortableLight& B)
+        {
+            return A.Priority > B.Priority;
+        });
+
+    int Count = 0;
+    for (const FSortableLight& LightEntry : Sorted)
+    {
+        if (Count >= MAX_LIGHT_COUNT)
+            break;
+
+        const FLightParams* Light = LightEntry.Comp->GetLightParamsPtr();
+        if (!Light) continue;
+
+        const FVector WorldPosition = Light->LightPosition + LightEntry.Comp->GetOwner()->GetActorLocation();
+        BufferData.LightPositionRadius[Count] = FVector4(WorldPosition, Light->LightRadius);
+        BufferData.LightColorIntensity[Count] = FVector4(Light->LightColor, Light->LightIntensity);
+        ++Count;
+    }
+
+    BufferData.LightCount = Count;
+
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    if (SUCCEEDED(DeviceContext->Map(LightConstantBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped)))
+    {
+        memcpy(mapped.pData, &BufferData, sizeof(FLightBuffer));
         DeviceContext->Unmap(LightConstantBuffer, 0);
     }
 }
+
+
+
 void FConstantBufferUpdater::UpdateMaterialConstant(ID3D11Buffer* MaterialConstantBuffer, const FObjMaterialInfo& MaterialInfo) const
 {
     if (MaterialConstantBuffer)

@@ -6,9 +6,9 @@
 #include "UObject/Object.h"
 #include "UObject/ObjectFactory.h"
 #include "UObject/ObjectMacros.h"
+#include "Components/ActorComponent.h"
 
-
-class UActorComponent;
+//class UActorComponent;
 
 class AActor : public UObject
 {

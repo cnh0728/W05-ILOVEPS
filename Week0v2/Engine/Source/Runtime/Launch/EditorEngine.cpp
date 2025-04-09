@@ -60,6 +60,7 @@ int32 UEditorEngine::Init(HWND hwnd)
     LevelEditor->Initialize();
     
     SceneMgr = new FSceneMgr();
+    GetWorld()->CreateTestScene();
     return 0;
 }
 
@@ -159,7 +160,7 @@ void UEditorEngine::PreparePIE()
 {
     // 1. World 복제
     worldContexts[1].thisCurrentWorld = Cast<UWorld>(GWorld->Duplicate());
-    GWorld = worldContexts[1].thisCurrentWorld;
+    //GWorld = worldContexts[1].thisCurrentWorld;
     GWorld->WorldType = EWorldType::PIE;
     levelType = LEVELTICK_All;
     
