@@ -129,7 +129,7 @@ public: // line shader
     void ProcessLightScreen();
     void ProcessFogScreen();
     void CreateScreenBuffer();
-    void RenderPostProcess();
+    void RenderPostProcess(std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void OrganizeFullScreen();
     void RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport);

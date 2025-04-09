@@ -357,7 +357,7 @@ void FRenderer::Render(UWorld* World, std::shared_ptr<FEditorViewportClient> Act
 
     ProcessLightScreen();
     ProcessFogScreen();
-    RenderPostProcess();
+    RenderPostProcess(ActiveViewport);
     
 #pragma endregion
     
@@ -400,7 +400,7 @@ void FRenderer::ProcessFogScreen()
     Graphics->DeviceContext->DrawIndexed(FullScreenIndexCount, 0, 0);
 }
 
-void FRenderer::RenderPostProcess()
+void FRenderer::RenderPostProcess(std::shared_ptr<FEditorViewportClient> ActiveViewport)
 {
     PrepareFullScreenShader();
 
@@ -409,7 +409,14 @@ void FRenderer::RenderPostProcess()
     {
         PostProcessSRV[i] = Graphics->FullScreenResourceView[i];
     }
-    PostProcessSRV[7] = Graphics->FogResourceView;
+
+    if (ActiveViewport->GetShowFlag() & static_cast<uint64>(EEngineShowFlags::SF_FOG))
+    {
+        PostProcessSRV[7] = Graphics->FogResourceView;
+    }else
+    {
+        PostProcessSRV[7] = Graphics->LightResourceView;
+    }
     
     UINT offset = 0;
     Graphics->DeviceContext->IASetVertexBuffers(0, 1, &FullScreenVertexBuffer, &TextureStride, &offset);
