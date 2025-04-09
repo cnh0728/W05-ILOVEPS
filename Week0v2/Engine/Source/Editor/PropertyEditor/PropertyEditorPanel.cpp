@@ -12,6 +12,10 @@
 #include "UObject/ObjectFactory.h"
 #include <Components/CubeComp.h>
 #include <Components/UParticleSubUVComp.h>
+#include "Components/ProjectileMovementComponent.h"
+#include "GameFramework/Actor.h"
+#include "Components/RotationMovementComponent.h"
+#include "Components/FireballComponent.h"
 
 void PropertyEditorPanel::Render()
 {
@@ -24,10 +28,10 @@ void PropertyEditorPanel::Render()
 
     ImVec2 MinSize(140, 370);
     ImVec2 MaxSize(FLT_MAX, 900);
-    
+
     /* Min, Max Size */
     ImGui::SetNextWindowSizeConstraints(MinSize, MaxSize);
-    
+
     /* Panel Position */
     ImGui::SetNextWindowPos(ImVec2(PanelPosX, PanelPosY), ImGuiCond_Always);
 
@@ -39,33 +43,66 @@ void PropertyEditorPanel::Render()
 
     /* Render Start */
     ImGui::Begin("Detail", nullptr, PanelFlags);
-    
+
     AEditorPlayer* player = GEngine->GetWorld()->GetEditorPlayer();
     AActor* PickedActor = GEngine->GetWorld()->GetSelectedActor();
 
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor)
     {
+        const TSet<UActorComponent*>& AllComponents = PickedActor->GetComponents();
         if (ImGui::TreeNodeEx("Components", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnArrow))
         {
-            const TSet<UActorComponent*>& AllComponents = PickedActor->GetComponents();
+            // 먼저, SceneComponent(AttachParent가 없는 루트 컴포넌트)를 트리 구조로 출력
             for (UActorComponent* Component : AllComponents)
             {
                 if (USceneComponent* SceneComp = Cast<USceneComponent>(Component))
                 {
                     if (SceneComp->GetAttachParent() == nullptr)
                     {
-                        DrawSceneComponentTree(SceneComp, PickedComponent);
+                        //DrawSceneComponentTree(SceneComp, PickedComponent, PickedActor, AllComponents);
+                        DrawSceneComponentTree(SceneComp, PickedComponent); // SceneComponent의 자식 컴포넌트 출력)
                     }
                 }
             }
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
+            // 그리고, SceneComponent가 아닌 컴포넌트 중에 부착 정보가 없는 경우(예, 별도로 출력되어야 할 경우)는 리프 노드로 출력
+            for (UActorComponent* Component : AllComponents)
+            {
+                // UProjectileMovementComponent는 이미 위에서 Actor의 RootComponent에 부착된 것으로 출력되므로 건너뜁니다.
+                if (!Component->IsA<USceneComponent>() && !Component->IsA<UProjectileMovementComponent>())
+                {
+                    FString Label = *Component->GetName();
+                    bool bSelected = (PickedComponent == Component);
+                    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                    if (bSelected)
+                        nodeFlags |= ImGuiTreeNodeFlags_Selected;
 
+                    ImGui::TreeNodeEx(*Label, nodeFlags);
+                    if (ImGui::IsItemClicked())
+                        PickedComponent = Component;
+                }
+                if (!Component->IsA<USceneComponent>() && !Component->IsA<URotationMovementComponent>())
+                {
+                    FString Label = *Component->GetName();
+                    bool bSelected = (PickedComponent == Component);
+                    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+                    if (bSelected)
+                        nodeFlags |= ImGuiTreeNodeFlags_Selected;
+
+                    ImGui::TreeNodeEx(*Label, nodeFlags);
+                    if (ImGui::IsItemClicked())
+                        PickedComponent = Component;
+                }
+            }
+
+            // 컴포넌트 추가 버튼 및 팝업은 그대로 유지
             if (ImGui::Button("+", ImVec2(ImGui::GetWindowContentRegionMax().x * 0.9f, 32)))
             {
                 ImGui::OpenPopup("AddComponentPopup");
             }
-
-            // 팝업 메뉴
             if (ImGui::BeginPopup("AddComponentPopup"))
             {
                 if (ImGui::Selectable("TextComponent"))
@@ -76,7 +113,7 @@ void PropertyEditorPanel::Render()
                     TextComponent->SetRowColumnCount(106, 106);
                     TextComponent->SetText(L"안녕하세요 Jungle");
                 }
-                if (ImGui::Selectable("BillboardComponent"))    
+                if (ImGui::Selectable("BillboardComponent"))
                 {
                     UBillboardComponent* BillboardComponent = PickedActor->AddComponent<UBillboardComponent>();
                     PickedComponent = BillboardComponent;
@@ -109,7 +146,16 @@ void PropertyEditorPanel::Render()
                     UCubeComp* CubeComponent = PickedActor->AddComponent<UCubeComp>();
                     PickedComponent = CubeComponent;
                 }
-
+                if (ImGui::Selectable("ProjectileMovementComponent"))
+                {
+                    UProjectileMovementComponent* ProjectileMovementComponent = PickedActor->AddComponent<UProjectileMovementComponent>();
+                    PickedComponent = ProjectileMovementComponent;
+                }
+                if (ImGui::Selectable("RotationMovementComponent"))
+                {
+                    URotationMovementComponent* RotationMovementComponent = PickedActor->AddComponent<URotationMovementComponent>();
+                    PickedComponent = RotationMovementComponent;
+                }
                 ImGui::EndPopup();
             }
             ImGui::TreePop();
@@ -280,6 +326,198 @@ void PropertyEditorPanel::Render()
         }
         ImGui::PopStyleColor();
     }
+    // test
+    if (PickedActor && PickedComponent && PickedComponent->IsA<UProjectileMovementComponent>())
+    {
+        UProjectileMovementComponent* projComp = Cast<UProjectileMovementComponent>(PickedComponent);
+        if (ImGui::TreeNodeEx("Projectile Movement Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            // Initial Speed 수정
+            float initialSpeed = projComp->GetInitialSpeed();
+            if (ImGui::DragFloat("Initial Speed", &initialSpeed, 0.1f, 0.0f, 1000.0f))
+            {
+                projComp->SetInitialSpeed(initialSpeed);
+            }
+
+            // Max Speed 수정
+            float maxSpeed = projComp->GetMaxSpeed();
+            if (ImGui::DragFloat("Max Speed", &maxSpeed, 0.1f, 0.0f, 1000.0f))
+            {
+                projComp->SetMaxSpeed(maxSpeed);
+            }
+
+            // Acceleration (FVector) 수정
+            FVector accel = projComp->GetAcceleration();
+            float acceleration[3] = { accel.x, accel.y, accel.z };
+            if (ImGui::DragFloat3("Acceleration", acceleration, 0.1f))
+            {
+                projComp->SetAcceleration(FVector(acceleration[0], acceleration[1], acceleration[2]));
+            }
+
+            // Gravity Scale 수정
+            float gravityScale = projComp->GetGravityScale();
+            if (ImGui::DragFloat("Gravity Scale", &gravityScale, 0.1f, 0.0f, 10.0f))
+            {
+                projComp->SetGravityScale(gravityScale);
+            }
+
+            // Velocity 수정 (필요에 따라 추가; 이미 계산된 값이므로 수정이 불필요할 수 있음)
+            FVector vel = projComp->GetVelocity();
+            float velocity[3] = { vel.x, vel.y, vel.z };
+            if (ImGui::DragFloat3("Velocity", velocity, 0.1f))
+            {
+                projComp->SetVelocity(FVector(velocity[0], velocity[1], velocity[2]));
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    if (PickedActor && PickedComponent && PickedComponent->IsA<URotationMovementComponent>())
+    {
+        URotationMovementComponent* rotComp = Cast<URotationMovementComponent>(PickedComponent);
+        if (ImGui::TreeNodeEx("Rotation Movement Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            // Initial Speed 수정
+            float initialSpeed = rotComp->GetInitialSpeed();
+            if (ImGui::DragFloat("Initial Speed", &initialSpeed, 0.1f, 0.0f, 1000.0f))
+            {
+                rotComp->SetInitialSpeed(initialSpeed);
+            }
+
+            bool bisCounterClockwise = rotComp->IsCounterClockwise();
+            if (ImGui::Checkbox("Counter Clockwise", &bisCounterClockwise))
+            {
+                rotComp->SetCounterClockwise(bisCounterClockwise);
+            }
+
+            ImGui::TreePop();
+        }
+    }
+
+    if (PickedActor && PickedComponent && PickedComponent->IsA<UFogComponent>())
+    {
+        UFogComponent* fogComp = Cast<UFogComponent>(PickedComponent);
+        if (ImGui::TreeNodeEx("Rotation Movement Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            FVector Color = fogComp->GetColor();
+            float r = Color.x;
+            float g = Color.y;
+            float b = Color.z;
+            float lightColor[3] = { r, g, b };
+
+            if (ImGui::ColorPicker4("##Fog Color", lightColor,
+                ImGuiColorEditFlags_DisplayRGB |
+                ImGuiColorEditFlags_NoSidePreview |
+                ImGuiColorEditFlags_NoInputs |
+                ImGuiColorEditFlags_Float))
+            {
+                r = lightColor[0];
+                g = lightColor[1];
+                b = lightColor[2];
+                fogComp->SetColor(FVector(r, g, b));
+            }
+
+            ImGui::PushItemWidth(50.0f);
+            if (ImGui::DragFloat("R##R", &r, 0.001f, 0.f, 1.f)) fogComp->SetColor(FVector(r, g, b));
+            ImGui::SameLine();
+            if (ImGui::DragFloat("G##G", &g, 0.001f, 0.f, 1.f)) fogComp->SetColor(FVector(r, g, b));
+            ImGui::SameLine();
+            if (ImGui::DragFloat("B##B", &b, 0.001f, 0.f, 1.f)) fogComp->SetColor(FVector(r, g, b));
+            ImGui::PopItemWidth();
+            ImGui::Spacing();
+
+            float Start = fogComp->GetStart();
+            if (ImGui::DragFloat("Start", &Start, 0.1f, 0.f, 1000.f))
+            {
+                fogComp->SetStartEnd(Start);
+            }
+            float End = fogComp->GetEnd();
+            if (ImGui::DragFloat("End", &End, 0.1f, 0.f, 1000.f))
+            {
+                fogComp->SetEnd(End);
+            }
+
+            float Density = fogComp->GetDensity();
+            if (ImGui::DragFloat("Density", &Density, 0.1f, 0.f, 1000.f))
+            {
+                fogComp->SetDensity(Density);
+            }
+
+            float HeightFallOff = fogComp->GetHeightFallOff();
+            if (ImGui::DragFloat("HeightFallOff", &HeightFallOff, 0.1f, 0.f, 1000.f))
+            {
+                fogComp->SetHeightFallOff(HeightFallOff);
+            }
+
+            float BaseHeight = fogComp->GetBaseHeight();
+            if (ImGui::DragFloat("BaseHeight", &BaseHeight, 0.1f, 0.f, 1000.f))
+            {
+                fogComp->SetBaseHeight(BaseHeight);
+            }
+
+            bool bIsHeight = fogComp->GetIsHeightFog();
+            if (ImGui::Checkbox("bIsHeight", &bIsHeight))
+            {
+                fogComp->SetIsHeightFog(bIsHeight);
+            }
+
+            ImGui::TreePop();
+        }
+
+
+    }
+
+    if (PickedActor && PickedComponent && PickedComponent->IsA<UFireBallComponent>())
+    {
+        UFireBallComponent* fireBallComp = Cast<UFireBallComponent>(PickedComponent);
+        if (ImGui::TreeNodeEx("Rotation Movement Component", ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_DefaultOpen))
+        {
+            FVector Color = fireBallComp->GetColor();
+            float r = Color.x;
+            float g = Color.y;
+            float b = Color.z;
+            float lightColor[3] = { r, g, b };
+
+            if (ImGui::ColorPicker4("##FireBall Color", lightColor,
+                ImGuiColorEditFlags_DisplayRGB |
+                ImGuiColorEditFlags_NoSidePreview |
+                ImGuiColorEditFlags_NoInputs |
+                ImGuiColorEditFlags_Float))
+            {
+                r = lightColor[0];
+                g = lightColor[1];
+                b = lightColor[2];
+                fireBallComp->SetColor(FVector(r, g, b));
+            }
+
+            ImGui::PushItemWidth(50.0f);
+            if (ImGui::DragFloat("R##R", &r, 0.001f, 0.f, 1.f)) fireBallComp->SetColor(FVector(r, g, b));
+            ImGui::SameLine();
+            if (ImGui::DragFloat("G##G", &g, 0.001f, 0.f, 1.f)) fireBallComp->SetColor(FVector(r, g, b));
+            ImGui::SameLine();
+            if (ImGui::DragFloat("B##B", &b, 0.001f, 0.f, 1.f)) fireBallComp->SetColor(FVector(r, g, b));
+            ImGui::PopItemWidth();
+            ImGui::Spacing();
+
+            float Intensity = fireBallComp->GetIntensity();
+            if (ImGui::DragFloat("Intensity", &Intensity, 0.1f, 0.f, 1000.f))
+            {
+                fireBallComp->SetIntensity(Intensity);
+            }
+            float Radius = fireBallComp->GetRadius();
+            if (ImGui::DragFloat("Radius", &Radius, 0.1f, 0.f, 1000.f))
+            {
+                fireBallComp->SetRadius(Radius);
+            }
+            float RadiusFallOff = fireBallComp->GetRadiusFallOff();
+            if (ImGui::DragFloat("RadiusFallOff", &RadiusFallOff, 0.1f, 0.f, 1000.f))
+            {
+                fireBallComp->SetRadiusFallOff(RadiusFallOff);
+            }
+            ImGui::TreePop();
+        }
+    }
 
     // TODO: 추후에 RTTI를 이용해서 프로퍼티 출력하기
     if (PickedActor)
@@ -352,6 +590,60 @@ void PropertyEditorPanel::DrawSceneComponentTree(USceneComponent* Component, UAc
        }
        ImGui::TreePop();
    }
+}
+
+void PropertyEditorPanel::DrawSceneComponentTree(USceneComponent* Component, UActorComponent*& PickedComponent, AActor* Actor, const TSet<UActorComponent*>& AllComponents)
+{
+    // 현재 SceneComponent의 노드를 생성
+    FString Label = *Component->GetName();
+    bool bSelected = (PickedComponent == Component);
+    ImGuiTreeNodeFlags nodeFlags = ImGuiTreeNodeFlags_OpenOnArrow;
+    if (bSelected)
+        nodeFlags |= ImGuiTreeNodeFlags_Selected;
+    bool bOpened = ImGui::TreeNodeEx(*Label, nodeFlags);
+    if (ImGui::IsItemClicked())
+        PickedComponent = Component;
+
+    if (bOpened)
+    {
+        // 자식 SceneComponent 출력
+        for (USceneComponent* Child : Component->GetAttachChildren())
+        {
+            DrawSceneComponentTree(Child, PickedComponent, Actor, AllComponents);
+        }
+
+        //// 추가: 현재 SceneComponent(예, Actor의 RootComponent)에 부착된 비씬 컴포넌트 출력
+        //if (Actor && Actor->GetRootComponent() == Component)
+        //{
+        //    for (UActorComponent* Comp : AllComponents)
+        //    {
+        //        if (Comp->IsA<UProjectileMovementComponent>())
+        //        {
+        //            // Actor의 RootComponent에 “부착된” 것으로 간주하고 리프 노드로 출력
+        //            FString Label2 = *Comp->GetName();
+        //            bool bSelected2 = (PickedComponent == Comp);
+        //            ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        //            if (bSelected2)
+        //                leafFlags |= ImGuiTreeNodeFlags_Selected;
+        //            ImGui::TreeNodeEx(*Label2, leafFlags);
+        //            if (ImGui::IsItemClicked())
+        //                PickedComponent = Comp;
+        //        }
+        //        if (Comp->IsA<URotationMovementComponent>())
+        //        {
+        //            FString Label2 = *Comp->GetName();
+        //            bool bSelected2 = (PickedComponent == Comp);
+        //            ImGuiTreeNodeFlags leafFlags = ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_NoTreePushOnOpen;
+        //            if (bSelected2)
+        //                leafFlags |= ImGuiTreeNodeFlags_Selected;
+        //            ImGui::TreeNodeEx(*Label2, leafFlags);
+        //            if (ImGui::IsItemClicked())
+        //                PickedComponent = Comp;
+        //        }
+        //    }
+        //}
+        ImGui::TreePop();
+    }
 }
 
 void PropertyEditorPanel::RGBToHSV(float r, float g, float b, float& h, float& s, float& v) const
@@ -508,6 +800,7 @@ void PropertyEditorPanel::RenderForMaterial(UStaticMeshComponent* StaticMeshComp
         RenderCreateMaterialView();
     }
 }
+
 
 void PropertyEditorPanel::RenderMaterialView(UMaterial* Material)
 {

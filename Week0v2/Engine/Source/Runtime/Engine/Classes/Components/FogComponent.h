@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "SceneComponent.h"
 
 class UFogComponent : public USceneComponent
@@ -14,7 +14,7 @@ public:
     void SetStartEnd(float InStart){Start = InStart;}
     void SetEnd(float InEnd){End = InEnd;}
     void SetDensity(float InDensity){Density = InDensity;}
-    void SetHeightFallOf(float InHeightFallOf){HeightFallOff=InHeightFallOf;}
+    void SetHeightFallOff(float InHeightFallOf){HeightFallOff=InHeightFallOf;}
     void SetBaseHeight(float InBaseHeight) {BaseHeight = InBaseHeight;}
     void SetScatteringIntensity(float InScatteringIntensity) {  ScatteringIntensity = InScatteringIntensity; }
     void SetLightShaftDensity(float InLightShaftDensity) {  LightShaftDensity = InLightShaftDensity; }

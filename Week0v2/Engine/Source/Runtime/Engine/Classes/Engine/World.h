@@ -58,6 +58,7 @@ private:
     AEditorPlayer* EditorPlayer = nullptr;
     UFogComponent* FogComponent;
     TArray<UFireBallComponent*> PointLights;
+
 public:
     EWorldType::Type WorldType = EWorldType::None;
     const TSet<AActor*>& GetActors() const { return Level->GetActors(); }

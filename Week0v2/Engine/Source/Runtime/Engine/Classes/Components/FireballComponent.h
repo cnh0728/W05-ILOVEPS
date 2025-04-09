@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "StaticMeshComponent.h"
 
 class UFireBallComponent : public UStaticMeshComponent
@@ -7,6 +7,8 @@ class UFireBallComponent : public UStaticMeshComponent
 
 public:
     UFireBallComponent();
+
+    UFireBallComponent(const UFireBallComponent& Other);
     ~UFireBallComponent() override;
     
     void InitializeComponent() override;
@@ -21,6 +23,10 @@ public:
     void SetRadius(float radius) { Radius = radius; }
     void SetRadiusFallOff(float radius_fall_off) { RadiusFallOff = radius_fall_off; }
     void SetColor(const FVector& color) { Color = color; }
+
+    virtual UObject* Duplicate() const override;
+    virtual void DuplicateSubObjects(const UObject* Source) override;
+    virtual void PostDuplicate() override;
 
 private:
     float Intensity = 100.f;

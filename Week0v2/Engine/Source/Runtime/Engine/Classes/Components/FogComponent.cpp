@@ -1,4 +1,4 @@
-﻿#include "FogComponent.h"
+#include "FogComponent.h"
 
 void UFogComponent::InitializeComponent()
 {
@@ -8,6 +8,6 @@ void UFogComponent::InitializeComponent()
 
 
 void UFogComponent::TickComponent(float DeltaTime)
-{
+{   
     Super::TickComponent(DeltaTime);
 }
