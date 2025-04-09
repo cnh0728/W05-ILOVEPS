@@ -578,12 +578,8 @@ void FRenderer::RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewpor
         // 노말 회전시 필요 행렬
         FMatrix NormalMatrix = FMatrix::Inverse(Model);
         FVector4 UUIDColor = StaticMeshComp->EncodeUUID() / 255.0f;
-        if (World->GetSelectedActor() == StaticMeshComp->GetOwner())
-        {
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, true, false);
-        }
-        else
-            ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, false, false);
+
+        ConstantBufferUpdater.UpdateConstant(ConstantBuffer, Model, VP, NormalMatrix, UUIDColor, true, false);
 
         if (USkySphereComponent* skysphere = Cast<USkySphereComponent>(StaticMeshComp))
         {

@@ -6,7 +6,8 @@ class UFogComponent : public USceneComponent
     DECLARE_CLASS(UFogComponent, USceneComponent)
 public:
     UFogComponent() = default;
-    
+    UFogComponent(const UFogComponent& Other);
+
     virtual void InitializeComponent() override;
     virtual void TickComponent(float DeltaTime) override;
     
@@ -29,7 +30,10 @@ public:
     float GetScatteringIntensity(){ return ScatteringIntensity;}
     float GetLightShaftDensity(){return LightShaftDensity;}
     bool GetIsHeightFog(){return bIsHeight;}
-    
+
+    virtual UObject* Duplicate() const override;
+    virtual void DuplicateSubObjects(const UObject* Source) override;
+    virtual void PostDuplicate() override;
 private:
     FVector Color = FVector(0.8f, 0.9f, 1.0f); //푸른빛
     float Start = 0.0f;

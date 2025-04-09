@@ -38,7 +38,7 @@ UObject* UFireBallComponent::Duplicate() const
 
 void UFireBallComponent::DuplicateSubObjects(const UObject* Source)
 {
-    UStaticMeshComponent::DuplicateSubObjects(Source);
+    Super::DuplicateSubObjects(Source);
 }
 
 void UFireBallComponent::PostDuplicate() {
