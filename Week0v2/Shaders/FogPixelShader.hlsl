@@ -77,7 +77,7 @@ float4 mainPS(PSInput input) : SV_Target {
         float dist = distance(CameraPos, worldPos);
         // 거리 기반
         float fogRange = FogEnd - FogStart;
-        float disFactor = saturate((dist - FogStart) / fogRange); // 0~1  50일떄 0
+        float disFactor = saturate((dist - FogStart) / fogRange);
 
         float fogFactor = disFactor;
         
@@ -88,10 +88,10 @@ float4 mainPS(PSInput input) : SV_Target {
             // 높이 기반 (지수 감쇠)
             float heightDiff = worldPos.z - FogHeight;
             float heightFactor = saturate(exp(-heightDiff * HeightFallOff)); // 0~1
-            fogFactor = fogFactor * heightFactor * FogDensity; //factor가 클수록 fogcolor에 가까워짐
+            fogFactor = fogFactor * heightFactor ; //factor가 클수록 fogcolor에 가까워짐
         }
 
-        litColor = lerp(litColor, FogColor, fogFactor); 
+        litColor = lerp(litColor, FogColor, fogFactor * FogDensity); 
     }  
 
     return float4(litColor, 1.0);  
