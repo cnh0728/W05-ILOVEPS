@@ -68,7 +68,6 @@ float4 mainPS(PSInput input) : SV_Target {
     
     if (bIsFogOn)  
     {        
-
         // 포그 혼합 (거리 + 높이)          
         if (all(worldPos == float3(0.025, 0.025, 0.025))) //배경(오브젝트가 아닐때)
         {
@@ -84,22 +83,15 @@ float4 mainPS(PSInput input) : SV_Target {
         
         if (bIsHeightFog)  
         {  
-
             float FogHeight = FogZPosition + FogBaseHeight;
         
             // 높이 기반 (지수 감쇠)
             float heightDiff = worldPos.z - FogHeight;
             float heightFactor = saturate(exp(-heightDiff * HeightFallOff * FogDensity)); // 0~1
-            fogFactor = fogFactor * heightFactor;
+            fogFactor = fogFactor * heightFactor; //factor가 클수록 fogcolor에 가까워짐
         }
 
-        if (all(worldPos == float3(0.025, 0.025, 0.025))) //배경(오브젝트가 아닐때)
-        {
-            litColor = FogColor;
-        }else
-        {
-            litColor = lerp(FogColor, litColor, 1 - fogFactor); 
-        }
+        litColor = lerp(litColor, FogColor, fogFactor); 
     }  
 
     return float4(litColor, 1.0);  
