@@ -247,6 +247,11 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
                 if (Distance < minDistance)
                 {
                     minDistance = Distance;
+                    Possible = pObj;
+                }
+                /*if (Distance < minDistance)
+                {
+                    minDistance = Distance;
                     maxIntersect = currentIntersectCount;
                     Possible = pObj;
                 }
@@ -254,7 +259,7 @@ void AEditorPlayer::PickActor(const FVector& pickPosition)
                 {
                     maxIntersect = currentIntersectCount;
                     Possible = pObj;
-                }
+                }*/
             }
         }
     }

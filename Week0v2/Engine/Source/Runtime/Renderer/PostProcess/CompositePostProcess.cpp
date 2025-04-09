@@ -67,6 +67,10 @@ void FCompositePostProcess::Render(ID3D11DeviceContext* context)
     {
         context->PSSetShaderResources(0, 1, &Inputs[2].SRV);
     }
+    else if (ViewMode == EPostProcessViewMode::SceneOnly)
+    {
+        context->PSSetShaderResources(0, 1, &Inputs[0].SRV);
+    }
     else
     {
         for (size_t i = 0; i < Inputs.size(); ++i)

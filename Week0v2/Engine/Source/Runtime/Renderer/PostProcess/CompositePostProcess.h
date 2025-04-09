@@ -11,6 +11,7 @@ struct FCompositeInput
 enum class EPostProcessViewMode
 {
     Composite,
+    SceneOnly,
     FogOnly,
     DepthOnly,
     LightOnly,

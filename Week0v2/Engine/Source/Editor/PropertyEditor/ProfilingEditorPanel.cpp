@@ -31,7 +31,7 @@ void ProfilingEditorPanel::Render()
         //ImGui::Text("Picking Time %.4fms\nNum Attempts: %d\nAccumulated Time %.2fms",FStatRegistry::GetLastMilliseconds("Picking"),FStatRegistry::TotalPickCount,FStatRegistry::TotalPickTime);
         ImGui::Text("FPS (1s): %.2f", Stats.FPS_1Sec);
         ImGui::Text("FPS (5s): %.2f", Stats.FPS_5Sec);
-        const char* modeNames[] = { "Composite", "FogOnly", "DepthOnly","LightOnly" };
+        const char* modeNames[] = { "Composite","SceneOnly", "FogOnly", "DepthOnly","LightOnly" };
         static int selectedMode = static_cast<int>(EPostProcessViewMode::Composite);
         if (ImGui::Combo("Post Process View Mode", &selectedMode, modeNames, IM_ARRAYSIZE(modeNames)))
         {
