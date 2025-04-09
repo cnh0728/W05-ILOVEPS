@@ -1,4 +1,4 @@
-﻿#include "LaunchEngineLoop.h"
+#include "LaunchEngineLoop.h"
 
 #include "EditorEngine.h"
 #include "Engine/Engine.h"
@@ -104,7 +104,7 @@ int32 FEngineLoop::PreInit()
 int32 FEngineLoop::Init(HINSTANCE hInstance)
 {
     WindowInit(hInstance);
-
+    srand(static_cast<unsigned>(time(nullptr)));
     if (bIsEditor)
     {
         GEngine = FObjectFactory::ConstructObject<UEditorEngine>();

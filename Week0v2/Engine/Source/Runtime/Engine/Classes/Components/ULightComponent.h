@@ -13,7 +13,7 @@ public:
 
     FLightParams* GetLightParamsPtr() { return &LightParams; } 
     FLightParams GetLightParams() const { return LightParams; }
-    void SetLightParams(const FLightParams& InParams) { LightParams = InParams; }
+    //void SetLightParams(const FLightParams& InParams) { LightParams = InParams; }
     virtual void TickComponent(float DeltaTime) override;
 
     virtual UObject* Duplicate() const override;
@@ -21,6 +21,19 @@ public:
     virtual void PostDuplicate() override;
     float ComputeLightPriority(const FVector& CameraPosition) const;
 
+    void SetLight(const float radius, const FVector& color, float intensity)
+    {
+        LightParams.LightRadius = radius;
+        LightParams.LightColor = color;
+        LightParams.LightIntensity = intensity;
+        OriginalColor = color;
+    }
+
+    void SetColorCycling(bool bEnable) { bCycleColor = bEnable; }
+
 private:
     FLightParams LightParams;
+    FVector OriginalColor;
+    bool bCycleColor = false;
+    float ColorCycleTime = 0.0f;
 };

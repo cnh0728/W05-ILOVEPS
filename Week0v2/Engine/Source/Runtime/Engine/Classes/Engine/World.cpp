@@ -149,6 +149,7 @@ void UWorld::DuplicateSubObjects(const UObject* SourceObj)
     UObject::DuplicateSubObjects(SourceObj);
     Level = Cast<ULevel>(Level->Duplicate());
     EditorPlayer = FObjectFactory::ConstructObject<AEditorPlayer>();
+    //FogComponent = Cast<UFogComponent>(Cast<UWorld>(SourceObj)->GetFogComponent()->Duplicate());
     FogComponent = FObjectFactory::ConstructObject<UFogComponent>();
     FogComponent->SetFogParams(Cast<UWorld>(SourceObj)->GetFogComponent()->GetFogParams());
     

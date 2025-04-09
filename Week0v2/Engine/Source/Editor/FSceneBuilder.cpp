@@ -10,28 +10,33 @@
 
 void SpawnAppleGrid(UWorld* World, int x, int y, int z)
 {
+    const float spacing = 5.0f; // 사과 간 간격
+
     for (int i = 0; i < x; i++)
     {
         for (int j = 0; j < y; j++)
         {
             for (int k = 0; k < z; k++)
             {
-
-                /*
-                AStaticMeshActor* TempActor = World->SpawnActor<AStaticMeshActor>();
-                TempActor->SetActorLabel(TEXT("OBJ_Apple"));
-                UStaticMeshComponent* MeshComp = TempActor->GetStaticMeshComponent();
-                MeshComp->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"apple_mid.obj"));*/
                 AActor* appleActor = World->SpawnActor<AActor>();
                 appleActor->SetActorLabel(TEXT("OBJ_Apple"));
                 appleActor->AddComponent<UProjectileMovementComponent>();
+
                 UStaticMeshComponent* apple = FObjectFactory::ConstructObject<UStaticMeshComponent>();
                 apple->SetStaticMesh(FManagerOBJ::GetStaticMesh(L"apple_mid.obj"));
-                apple->SetLocation(FVector(i, j, k)); // 소문자 x, y, z 기준
+                apple->SetLocation(FVector(i * spacing, j * spacing, k * spacing));
                 appleActor->AddComponent(apple);
-                ULightComponent* LightComponent = appleActor->AddComponent<ULightComponent>();
-                LightComponent->SetLightParams(FLightParams({ 0,0,0 }, 5.0f, { 1, 0, 0 }, 2.0f));
 
+                ULightComponent* LightComponent = appleActor->AddComponent<ULightComponent>();
+
+                // 랜덤 색상 생성
+                float r = static_cast<float>(rand()) / RAND_MAX;
+                float g = static_cast<float>(rand()) / RAND_MAX;
+                float b = static_cast<float>(rand()) / RAND_MAX;
+                FVector color(r, g, b);
+
+                LightComponent->SetLight(4.0f, color, 2.0f);
+                LightComponent->SetColorCycling(true);
             }
         }
     }

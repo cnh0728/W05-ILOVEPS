@@ -6,7 +6,7 @@
 
 ULightComponent::ULightComponent() : UActorComponent()
 {
-    LightParams.LightPosition = FVector(0, 0, 100);
+    LightParams.LightPosition = FVector(0, 0, 0);
     LightParams.LightRadius = 200.0f;
     LightParams.LightColor = FVector(1, 1, 1);
     LightParams.LightIntensity = 1.0f;
@@ -21,13 +21,14 @@ ULightComponent::ULightComponent(const FLightParams& InParams)
     : LightParams(InParams)
 {
     bAutoActive = true;
+    OriginalColor = LightParams.LightColor;
     if (UWorld* World = GetWorld())
     {
         World->RegisterLightComponent(this);
     }
 }
 ULightComponent::ULightComponent(const ULightComponent& Other)
-    : UActorComponent(Other), LightParams(Other.LightParams)
+    : UActorComponent(Other), LightParams(Other.LightParams),OriginalColor(Other.OriginalColor)
 {
     if (UWorld* World = GetWorld())
     {
@@ -43,10 +44,36 @@ ULightComponent::~ULightComponent()
 }
 void ULightComponent::TickComponent(float DeltaTime)
 {
-    /*if (GetOwner())
-    {
-        LightParams.LightPosition = GetOwner()->GetActorLocation();
-    }*/
+    if (true | bCycleColor) {
+        ColorCycleTime += DeltaTime / 1000.0f; // Convert ms to sec
+        float cycleDuration = 3.0f; // 3 seconds for full RGB rotation
+        float t = fmod(ColorCycleTime, cycleDuration);
+
+        float r = 0.0f, g = 0.0f, b = 0.0f;
+        if (t < 1.0f)
+        {
+            r = 1.0f - t;
+            g = t;
+            b = 0.0f;
+        }
+        else if (t < 2.0f)
+        {
+            r = 0.0f;
+            g = 2.0f - t;
+            b = t - 1.0f;
+        }
+        else
+        {
+            r = t - 2.0f;
+            g = 0.0f;
+            b = 3.0f - t;
+        }
+
+        LightParams.LightColor.x = fmodf(OriginalColor.x + r, 1.0f);
+        LightParams.LightColor.y = fmodf(OriginalColor.y + g, 1.0f);
+        LightParams.LightColor.z = fmodf(OriginalColor.z + b, 1.0f);
+
+    }
 }
 UObject* ULightComponent::Duplicate() const
 {
