@@ -245,6 +245,15 @@ void FGraphicsDevice::CreateFrameBuffer()
     Device->CreateRenderTargetView(AmbientFrameBuffer, nullptr, &AmbientFrameBufferRTV);
     Device->CreateShaderResourceView(AmbientFrameBuffer, nullptr, &AmbientResourceView);
 
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    Device->CreateTexture2D(&textureDesc, nullptr, &FogFrameBuffer);
+    Device->CreateRenderTargetView(FogFrameBuffer, nullptr, &FogFrameBufferRTV);
+    Device->CreateShaderResourceView(FogFrameBuffer, nullptr, &FogResourceView);
+
+    textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+    Device->CreateTexture2D(&textureDesc, nullptr, &LightFrameBuffer);
+    Device->CreateRenderTargetView(LightFrameBuffer, nullptr, &LightFrameBufferRTV);
+    Device->CreateShaderResourceView(LightFrameBuffer, nullptr, &LightResourceView);
     
     RTVs[0] = FrameBufferRTV;
     RTVs[1] = UUIDFrameBufferRTV;

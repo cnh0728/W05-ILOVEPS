@@ -322,12 +322,16 @@ struct alignas(16) FFogConstants
     float FogBaseHeight;
     float HeightFallOff;
     int bIsHeightFog;
-    float Padding1;
+    float ScatteringIntensity;  // 추가: 빛 산란 강도 [4]
+    float LightShaftDensity;    // 추가: 광선 밀도 [4]
+    FVector Padding1;
 };
 
 struct alignas(16) FCameraPosConstants{
     FVector CameraPos;
     float Padding;
+    FMatrix InverseVMatrix;
+    FMatrix InversePMatrix;
 };
 
 struct FPointLightConstants{

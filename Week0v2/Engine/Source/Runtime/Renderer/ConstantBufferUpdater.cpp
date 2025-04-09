@@ -180,6 +180,8 @@ void FConstantBufferUpdater::UpdateCameraPosConstant(ID3D11Buffer* CameraPosCons
         FCameraPosConstants* constants = (FCameraPosConstants*)constantbufferMSR.pData;
         {
             constants->CameraPos = ActiveViewPort->ViewTransformPerspective.GetLocation();
+            constants->InverseVMatrix = FMatrix::Inverse(ActiveViewPort->View);
+            constants->InversePMatrix = FMatrix::Inverse(ActiveViewPort->Projection);
         }
         DeviceContext->Unmap(CameraPosConstantBuffer, 0);
     }
@@ -213,6 +215,9 @@ void FConstantBufferUpdater::UpdateFogConstant(ID3D11Buffer* FogConstantBuffer, 
                 constants->HeightFallOff = FogComp->GetHeightFallOff();
                 constants->FogBaseHeight = FogComp->GetBaseHeight();
                 constants->bIsHeightFog = FogComp->GetIsHeightFog();
+
+                constants->ScatteringIntensity = FogComp->GetScatteringIntensity();
+                constants->LightShaftDensity = FogComp->GetLightShaftDensity();
             }
         }
         DeviceContext->Unmap(FogConstantBuffer, 0);

@@ -19,7 +19,6 @@ public:
     ID3D11Texture2D* FrameBuffer = nullptr;
     ID3D11Texture2D* UUIDFrameBuffer = nullptr;
     ID3D11RenderTargetView* RTVs[2];
-    ID3D11RenderTargetView* DefferedRTVs[7];
     ID3D11RenderTargetView* FrameBufferRTV = nullptr;
     ID3D11RenderTargetView* UUIDFrameBufferRTV = nullptr;
     ID3D11RasterizerState* RasterizerStateSOLID = nullptr;
@@ -42,6 +41,7 @@ public:
     ID3D11RenderTargetView* SpecularFrameBufferRTV = nullptr;
     ID3D11RenderTargetView* EmissiveFrameBufferRTV = nullptr;
     ID3D11RenderTargetView* AmbientFrameBufferRTV = nullptr;
+    ID3D11RenderTargetView* DefferedRTVs[7];
 
     ID3D11ShaderResourceView* PositionResourceView = nullptr;
     ID3D11ShaderResourceView* NormalResourceView = nullptr;
@@ -51,6 +51,16 @@ public:
     ID3D11ShaderResourceView* EmissiveResourceView = nullptr;
     ID3D11ShaderResourceView* AmbientResourceView = nullptr;
     ID3D11ShaderResourceView* DeferredSRVs[7];
+
+    //포스트프로세싱
+    ID3D11Texture2D* FogFrameBuffer = nullptr;
+    ID3D11RenderTargetView* FogFrameBufferRTV = nullptr;
+    ID3D11ShaderResourceView* FogResourceView = nullptr;
+
+    ID3D11Texture2D* LightFrameBuffer = nullptr;
+    ID3D11RenderTargetView* LightFrameBufferRTV = nullptr;
+    ID3D11ShaderResourceView* LightResourceView = nullptr;
+    
 //depth 렌더링 변수
     ID3D11Texture2D* DepthStencilResourceBuffer = nullptr;
     ID3D11ShaderResourceView* DepthStencilResourceView = nullptr;

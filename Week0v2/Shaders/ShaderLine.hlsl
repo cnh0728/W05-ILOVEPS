@@ -325,7 +325,8 @@ PS_INPUT mainVS(VS_INPUT input)
 PS_OUTPUT mainPS(PS_INPUT input) : SV_Target
 {
     PS_OUTPUT output;
-    output.position = float4(input.WorldPosition, 1.0);
+    // output.position = float4(input.WorldPosition, 1.0);
+    output.position = float4(float3(0.025,0.025,0.025), 1.0); //clear컬러로 배경취급
     output.normal = float4(1.0,1.0,1.0,1.0);
     output.albedo = input.Color;
     

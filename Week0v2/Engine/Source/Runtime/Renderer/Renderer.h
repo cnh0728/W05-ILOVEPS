@@ -54,6 +54,8 @@ public:
     void Initialize(FGraphicsDevice* graphics);
    
     void PrepareShader() const;
+    void PrepareLightProcessShader() const;
+    void PrepareFogProcessShader() const;
     void PrepareFullScreenShader() const;
 
     //Render
@@ -124,8 +126,10 @@ public: // line shader
     void PrepareRender();
     void ClearRenderArr();
     void Render(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
+    void ProcessLightScreen();
+    void ProcessFogScreen();
     void CreateScreenBuffer();
-    void RenderFullScreen();
+    void RenderPostProcess();
     void OrganizeFullScreen();
     void RenderStaticMeshes(UWorld* World, std::shared_ptr<FEditorViewportClient> ActiveViewport);
     void RenderGizmos(const UWorld* World, const std::shared_ptr<FEditorViewportClient>& ActiveViewport);
@@ -148,6 +152,10 @@ public:
 
     ID3D11VertexShader* FullScreenVertexShader = nullptr;
     ID3D11PixelShader* FullScreenPixelShader = nullptr;
+    ID3D11VertexShader* LightVertexShader = nullptr;
+    ID3D11PixelShader* LightPixelShader = nullptr;
+    ID3D11VertexShader* FogVertexShader = nullptr;
+    ID3D11PixelShader* FogPixelShader = nullptr;
 
     ID3D11Buffer* FullScreenVertexBuffer = nullptr;
     ID3D11Buffer* FullScreenIndexBuffer = nullptr;

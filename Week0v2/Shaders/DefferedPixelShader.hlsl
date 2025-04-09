@@ -103,10 +103,8 @@ float4 PaperTexture(float3 originalColor)
 PS_OUTPUT mainPS(PS_INPUT input)
 {
     PS_OUTPUT output;
-    
-    // 1. position 버퍼 (월드 좌표)
-    output.position = float4(input.worldPos, 1.0);
 
+    output.position = float4(input.worldPos, 1.0);
     // 2. Normal 버퍼 (범위 변환 -> Texture는 음수저장이 안되기 때문에 나중에 사용할때 역변환해서 사용)  
     output.normal = float4(input.normal * 0.5 + 0.5, 1.0);  
 
